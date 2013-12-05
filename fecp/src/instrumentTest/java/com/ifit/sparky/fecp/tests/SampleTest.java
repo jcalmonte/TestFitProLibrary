@@ -27,4 +27,9 @@ public class SampleTest extends TestCase {
         assertEquals(true, true);
         assertEquals(3, hey.add());
     }
+    public void test2() {
+        HelloWorld hey = new HelloWorld();
+        int temp = hey.add();
+        assertEquals(temp, 4);
+    }
 }
