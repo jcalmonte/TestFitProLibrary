@@ -1,5 +1,5 @@
 /**
- * Handles all the status SuperClass items
+ * Handles all the status SuperClass items.
  * @author Levi.Balling
  * @date 12/9/2013
  * @version 1
@@ -8,9 +8,26 @@
 
 package com.ifit.sparky.fecp.interpreter.status;
 
-/**
- * Created by Levi.Balling on 12/6/13.
- */
-public abstract class Status {
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+
+public class Status {
+
+    private StatusId stsId;
+    private int length;
+    private CommandId cmdId;
+    private DeviceId devId;
+
+    /**
+     * Default Constructor for the Status object.
+     */
+    public Status()
+    {
+        this.stsId = StatusId.DEV_NOT_SUPPORTED;
+        this.length = 0;
+        this.cmdId = CommandId.NONE;
+        this.devId = DeviceId.NONE;
+    }
+
 
 }

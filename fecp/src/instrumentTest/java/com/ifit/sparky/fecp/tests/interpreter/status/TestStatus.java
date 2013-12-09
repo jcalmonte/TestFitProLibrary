@@ -8,7 +8,12 @@
  */
 package com.ifit.sparky.fecp.tests.interpreter.status;
 
+import android.util.StateSet;
+
 import com.ifit.sparky.fecp.interpreter.status.Status;
+import com.ifit.sparky.fecp.interpreter.status.StatusId;
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import junit.framework.TestCase;
 
@@ -27,7 +32,7 @@ public class TestStatus extends TestCase{
         super.tearDown();
     }
 
-    /** Tests the Constructors
+    /** Tests the Constructors.
      *
      * @throws Exception
      */
@@ -39,9 +44,9 @@ public class TestStatus extends TestCase{
         statusObjOne = new Status();
 
         // assert default values
-        assertEquals(StatusId.NOT_SUPPORTED, statusObjOne.getStsId());
+        assertEquals(StatusId.DEV_NOT_SUPPORTED, statusObjOne.getStsId());
         assertEquals(0, statusObjOne.getLength());
-        assertEquals(CommandId.NO_COMMAND, statusObjOne.getCmdId());
+        assertEquals(CommandId.NONE, statusObjOne.getCmdId());
         assertEquals(DeviceId.NO_DEVICE, statusObjOne.getDeviceId());
 
         //assert none default values
