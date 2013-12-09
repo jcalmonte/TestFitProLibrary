@@ -32,6 +32,4 @@ public class SampleTest extends TestCase {
         int temp = hey.add();
         assertEquals(temp, 4);
     }
-
-    
 }
