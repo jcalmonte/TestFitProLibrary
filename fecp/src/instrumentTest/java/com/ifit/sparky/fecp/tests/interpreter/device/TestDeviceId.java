@@ -1,20 +1,22 @@
 /**
- * Tests the CommandId enum object.
+ * Tests the Device Id enum.
  * @author Levi.Balling
  * @date 12/9/13
  * @version 1
- * This will handle all the different enums and validate that they are correct.
+ * Release Date
+ * @date 12/10/13
+ * Tests the Device Id enum for any abnormal values.
  */
-package com.ifit.sparky.fecp.tests.interpreter.command;
+package com.ifit.sparky.fecp.tests.interpreter.device;
 
-import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import junit.framework.TestCase;
 
-public class TestCommandId extends TestCase {
+public class TestDeviceId extends TestCase {
 
     /**
-     * Setups the TestRunner for CommandId
+     * Setups the TestRunner for DeviceId.
      * @throws Exception
      */
     @Override
@@ -23,7 +25,7 @@ public class TestCommandId extends TestCase {
     }
 
     /**
-     * Closes the TestRunner for CommandId
+     * Closes the TestRunner for DeviceId.
      * @throws Exception
      */
     @Override
@@ -32,29 +34,28 @@ public class TestCommandId extends TestCase {
     }
 
     /**
-     * Runs through the Tests for the Enum values
-     * @throws Exception
+     * This tests the enums to make sure the values are correct
      */
     public void testEnum() throws Exception{
-        CommandId idOne = CommandId.NONE;
-        CommandId idTwo = CommandId.CALIBRATE;
+        DeviceId idOne = DeviceId.NONE;
+        DeviceId idTwo = DeviceId.TREADMILL;
 
-        assertEquals(CommandId.NONE, idOne);
+        assertEquals(DeviceId.NONE, idOne);
         assertEquals(0x00, idOne.getVal());
 
-        assertEquals(CommandId.CALIBRATE, idTwo);
-        assertEquals(0x06, idTwo.getVal());
+        assertEquals(DeviceId.TREADMILL, idTwo);
+        assertEquals(0x04, idTwo.getVal());
     }
 
     /**
      * Runs through the Tests for the Enum values
      * @throws Exception
      */
-    public void testGetStatic_CommandId() throws Exception{
+    public void testGetStatic_DeviceId() throws Exception{
         try
         {
-            CommandId idOne = CommandId.getCommandId(0);
-            assertEquals(CommandId.NONE, idOne);
+            DeviceId idOne = DeviceId.getDeviceId(0);
+            assertEquals(DeviceId.NONE, idOne);
         }
         catch (Exception ex)
         {
@@ -62,7 +63,7 @@ public class TestCommandId extends TestCase {
         }
         try
         {
-            CommandId idTwo = CommandId.getCommandId(257);
+            DeviceId idTwo = DeviceId.getDeviceId(257);
             fail();//should throw an exception before here
         }
         catch (Exception ex)
@@ -70,5 +71,4 @@ public class TestCommandId extends TestCase {
             assertTrue(true);//this should throw an exception
         }
     }
-
 }

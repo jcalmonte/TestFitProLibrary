@@ -3,7 +3,9 @@
  * @author Levi.Balling
  * @date 12/9/13
  * @version 1
- * Contains a id and a description of the Device.
+ * Release Date
+ * @date 12/10/13
+ * Contains a id and a description of the Device. don't use the ordinal
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
@@ -25,11 +27,18 @@ public enum DeviceId {
      */
     DeviceId(int id, String description)
     {
-
         this.id = id;
         this.description = description;
     }
 
+    /**
+     * gets the device id
+     * @return
+     */
+    public int getVal()
+    {
+        return this.id;
+    }
     /**
      * gets the description of the device.
      * @return a description of the device id
@@ -37,5 +46,26 @@ public enum DeviceId {
     public String getDescription()
     {
         return  this.description;
+    }
+
+    /**
+     * Gets the DeviceId based on the id value
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    public static DeviceId getDeviceId(int id) throws Exception
+    {
+        //go through all device ids and if it equals then return it.
+        for (DeviceId devId : DeviceId.values())
+        {
+            if(id == devId.getVal())
+            {
+                return devId;
+            }
+        }
+
+        //error throw exception
+        throw new Exception("Invalid Device id ("+id+").");
     }
 }

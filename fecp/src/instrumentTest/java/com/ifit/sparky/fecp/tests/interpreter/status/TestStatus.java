@@ -3,30 +3,35 @@
  * @author Levi.Balling
  * @date 12/9/2013
  * @version 1
+ * Release Date
+ * @date 12/10/13
  * This class will test all the items of the status superclass. This includes the enums, invalid
  * inputs, and valid inputs
  */
 package com.ifit.sparky.fecp.tests.interpreter.status;
 
-import android.util.StateSet;
-
-import com.ifit.sparky.fecp.interpreter.status.Status;
-import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.Status;
+import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import junit.framework.TestCase;
 
-
-/**
- * Created by Levi.Balling on 12/6/13.
- */
 public class TestStatus extends TestCase{
 
+    /**
+     * Setups the TestRunner for Status.
+     * @throws Exception
+     */
     @Override
     protected void setUp() throws Exception{
         super.setUp();
     }
+
+    /**
+     * Closes the TestRunner for Status.
+     * @throws Exception
+     */
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -47,15 +52,15 @@ public class TestStatus extends TestCase{
         assertEquals(StatusId.DEV_NOT_SUPPORTED, statusObjOne.getStsId());
         assertEquals(0, statusObjOne.getLength());
         assertEquals(CommandId.NONE, statusObjOne.getCmdId());
-        assertEquals(DeviceId.NO_DEVICE, statusObjOne.getDeviceId());
+        assertEquals(DeviceId.NONE, statusObjOne.getDevId());
 
         //assert none default values
         statusObjTwo = new Status(StatusId.DONE, 1, CommandId.CONNECT, DeviceId.TREADMILL);
 
         assertEquals(StatusId.DONE, statusObjTwo.getStsId());
         assertEquals(1, statusObjTwo.getLength());
-        assertEquals(CommandId.CONNECT, statusObjTwo.getStsId());
-        assertEquals(DeviceId.TREADMILL, statusObjTwo.getDevicId());
+        assertEquals(CommandId.CONNECT, statusObjTwo.getCmdId());
+        assertEquals(DeviceId.TREADMILL, statusObjTwo.getDevId());
     }
 
     /** This test method is to throw errors when the values are out of the limits
@@ -79,12 +84,12 @@ public class TestStatus extends TestCase{
         statusObjOne.setStsId(StatusId.DONE);
         statusObjOne.setLength(1);
         statusObjOne.setCmdId(CommandId.CONNECT);
-        statusObjOne.setDeviceId(DeviceId.TREADMILL);
+        statusObjOne.setDevId(DeviceId.TREADMILL);
 
         assertEquals(StatusId.DONE, statusObjOne.getStsId());
         assertEquals(1, statusObjOne.getLength());
-        assertEquals(CommandId.CONNECT, statusObjOne.getStsId());
-        assertEquals(DeviceId.TREADMILL, statusObjOne.getDevicId());
+        assertEquals(CommandId.CONNECT, statusObjOne.getCmdId());
+        assertEquals(DeviceId.TREADMILL, statusObjOne.getDevId());
     }
 
 

@@ -3,6 +3,8 @@
  * @author Levi.Balling
  * @date 12/9/13
  * @version 1
+ * Release Date
+ * @date 12/10/13
  * To make sure the StatusId works properly we will use it to test comparisons, get descriptions
  * and more.
  */
@@ -14,20 +16,62 @@ import junit.framework.TestCase;
 
 public class TestStatusId extends TestCase {
 
-        @Override
-        protected void setUp() throws Exception {
-            super.setUp();
-        }
+    /**
+     * Setups the TestRunner for StatusId
+     * @throws Exception
+     */
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
 
-        @Override
-        protected void tearDown() throws Exception {
-            super.tearDown();
-        }
+    /**
+     * Closes the TestRunner for StatusId
+     * @throws Exception
+     */
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 
-        public void testEnum() {
-            StatusId idOne = StatusId.DEV_NOT_SUPPORTED;
+    /**
+     * Tests the StatusId enum values to make sure they work correctly
+     */
+    public void testEnum() throws Exception{
+        StatusId idOne = StatusId.DEV_NOT_SUPPORTED;
+        StatusId idTwo = StatusId.DONE;
+
+        assertEquals(StatusId.DEV_NOT_SUPPORTED, idOne);
+        assertEquals(0x00, idOne.getVal());
+
+        assertEquals(StatusId.DONE, idTwo);
+        assertEquals(0x02, idTwo.getVal());
+
+    }
+
+    /**
+     * Runs through the Tests for the Enum values
+     * @throws Exception
+     */
+    public void testGetStatic_DeviceId() throws Exception{
+        try
+        {
+            StatusId idOne = StatusId.getStatusId(0);
             assertEquals(StatusId.DEV_NOT_SUPPORTED, idOne);
-            assertEquals(0x00, idOne);
         }
+        catch (Exception ex)
+        {
+            fail();//shouldn't throw an exception
+        }
+        try
+        {
+            StatusId idTwo = StatusId.getStatusId(257);
+            fail();//should throw an exception before here
+        }
+        catch (Exception ex)
+        {
+            assertTrue(true);//this should throw an exception
+        }
+    }
 
 }
