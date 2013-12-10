@@ -99,6 +99,7 @@ public class TestCommand extends TestCase {
         //test all the Constructor exception throws
         try
         {
+            //noinspection UnusedAssignment
             commandObjOne = new Command(commandObjOne.MAX_MSG_LENGTH+1
                     , CommandId.CONNECT, DeviceId.TREADMILL);
             fail();
@@ -110,6 +111,7 @@ public class TestCommand extends TestCase {
 
         try
         {
+            //noinspection UnusedAssignment
             commandObjOne = new Command(-1, CommandId.CONNECT, DeviceId.TREADMILL);
             fail();
         }
@@ -122,6 +124,7 @@ public class TestCommand extends TestCase {
         {
             //CommandId exception throw
             stsObj = new Status(StatusId.DONE, 1, CommandId.DISCONNECT, DeviceId.TREADMILL);
+            //noinspection UnusedAssignment
             commandObjOne = new Command(stsObj, 0, CommandId.CONNECT, DeviceId.TREADMILL);
             fail();
         }

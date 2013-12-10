@@ -46,6 +46,7 @@ public class TestStatusId extends TestCase {
 
         assertEquals(StatusId.DONE, idTwo);
         assertEquals(0x02, idTwo.getVal());
+        assertNotNull(StatusId.DEV_NOT_SUPPORTED.getDescription());
 
     }
 
@@ -65,7 +66,7 @@ public class TestStatusId extends TestCase {
         }
         try
         {
-            StatusId idTwo = StatusId.getStatusId(257);
+            StatusId.getStatusId(257);
             fail();//should throw an exception before here
         }
         catch (Exception ex)

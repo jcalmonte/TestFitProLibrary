@@ -15,10 +15,8 @@ import com.ifit.sparky.fecp.interpreter.command.CommandId;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class Device {
 
@@ -95,7 +93,7 @@ public class Device {
 
     /**
      * gets the list of subdevices
-     * @return
+     * @return list of subdevices
      */
     public ArrayList<Device> getSubDeviceList()
     {
@@ -104,7 +102,7 @@ public class Device {
 
     /**
      * gets the device from the list of subdevices, based on the id value.
-     * @return
+     * @return returns the Device that matches
      */
     public Device getSubDevice(int idVal)
     {
@@ -121,7 +119,7 @@ public class Device {
 
     /**
      * gets the device from the list of subdevices, based on the id.
-     * @return
+     * @return returns the Device that matches
      */
     public Device getSubDevice(DeviceId id)
     {
@@ -138,7 +136,7 @@ public class Device {
 
     /**
      * gets the list of supported Commands
-     * @return
+     * @return list of commands
      */
     public Map<CommandId, Command> getCommandSet()
     {
@@ -147,7 +145,7 @@ public class Device {
 
     /**
      * gets the Command from the list of commands, based on the id value.
-     * @return
+     * @return the Command that matches
      */
     public Command getCommand(int idVal) throws Exception
     {
@@ -162,7 +160,7 @@ public class Device {
 
     /**
      * gets the Command from the list of Commands, based on the id.
-     * @return
+     * @return the Command that matches
      */
     public Command getCommand(CommandId id)
     {
@@ -176,7 +174,7 @@ public class Device {
 
     /**
      * gets the Device Id.
-     * @return
+     * @return The Device Id
      */
     public DeviceId getDevId()
     {

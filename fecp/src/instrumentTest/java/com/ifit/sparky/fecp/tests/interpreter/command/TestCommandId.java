@@ -44,6 +44,7 @@ public class TestCommandId extends TestCase {
 
         assertEquals(CommandId.CALIBRATE, idTwo);
         assertEquals(0x06, idTwo.getVal());
+        assertNotNull(CommandId.CALIBRATE.getDescription());
     }
 
     /**
@@ -62,7 +63,7 @@ public class TestCommandId extends TestCase {
         }
         try
         {
-            CommandId idTwo = CommandId.getCommandId(257);
+            CommandId.getCommandId(257);
             fail();//should throw an exception before here
         }
         catch (Exception ex)

@@ -152,4 +152,29 @@ public class TestDevice extends TestCase {
         assertEquals(3, deviceObjOne.getSubDeviceList().size());
     }
 
+
+
+    /** Tests the getters and Setters.
+     *
+     * @throws Exception
+     */
+    public void testExceptions_device() throws Exception{
+
+        Device deviceObjOne;
+        //just need to test that if you add a command that already is in the list.
+        //It throws an exception
+        try
+        {
+            //test
+            deviceObjOne = new Device();
+            deviceObjOne.addCommand(new Command(2,CommandId.CONNECT, DeviceId.INCLINE_TRAINER));
+            assertTrue(true);
+            deviceObjOne.addCommand(new Command(2,CommandId.CONNECT, DeviceId.INCLINE_TRAINER));
+            fail();
+        }
+        catch (Exception ex)
+        {
+            assertTrue(true);
+        }
+    }
 }

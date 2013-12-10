@@ -45,6 +45,7 @@ public class TestDeviceId extends TestCase {
 
         assertEquals(DeviceId.TREADMILL, idTwo);
         assertEquals(0x04, idTwo.getVal());
+        assertNotNull(DeviceId.TREADMILL.getDescription());
     }
 
     /**
@@ -63,7 +64,7 @@ public class TestDeviceId extends TestCase {
         }
         try
         {
-            DeviceId idTwo = DeviceId.getDeviceId(257);
+            DeviceId.getDeviceId(257);
             fail();//should throw an exception before here
         }
         catch (Exception ex)

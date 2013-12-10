@@ -63,7 +63,7 @@ public class Status {
 
     /**
      * gets the Status Id
-     * @return
+     * @return the StatusId
      */
     public StatusId getStsId()
     {
@@ -72,7 +72,7 @@ public class Status {
 
     /**
      *  gets the mLength of the message
-     * @return
+     * @return the Length of the message
      */
     public int getLength()
     {
@@ -81,7 +81,7 @@ public class Status {
 
     /**
      * gets the Command id
-     * @return
+     * @return the Command Id
      */
     public CommandId getCmdId()
     {
@@ -90,7 +90,7 @@ public class Status {
 
     /**
      * Gets the device id that is in the message
-     * @return
+     * @return The Device Id
      */
     public DeviceId getDevId()
     {
@@ -103,7 +103,7 @@ public class Status {
 
     /**
      * Sets the Status id from the message
-     * @param id
+     * @param id the StatusId
      */
     public void setStsId(StatusId id)
     {
@@ -112,7 +112,7 @@ public class Status {
 
     /**
      * sets the length of the message
-     * @param length
+     * @param length the Length of the message
      * @throws Exception if the length is outside of the bounds
      */
     public void setLength(int length) throws Exception
@@ -129,7 +129,7 @@ public class Status {
 
     /**
      * Sets the Command Id
-     * @param id
+     * @param id The CommandId
      */
     public void setCmdId(CommandId id)
     {
@@ -138,7 +138,7 @@ public class Status {
 
     /**
      * Sets the Device Id
-     * @param id
+     * @param id The DeviceId
      */
     public  void setDevId(DeviceId id)
     {

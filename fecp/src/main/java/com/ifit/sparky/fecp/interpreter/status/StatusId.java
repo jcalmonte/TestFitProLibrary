@@ -19,8 +19,8 @@ public enum StatusId {
 
     /**
      * Constructor for the StatusId
-     * @param id
-     * @param description
+     * @param id the StatusID
+     * @param description what the status is.
      */
     StatusId(int id, String description)
     {
@@ -30,7 +30,7 @@ public enum StatusId {
 
     /**
      * gets the id value
-     * @return
+     * @return the Status Id Value
      */
     public int getVal()
     {
@@ -48,9 +48,9 @@ public enum StatusId {
 
     /**
      * Gets the StatusId based on the id value
-     * @param id
-     * @return
-     * @throws Exception
+     * @param id the statusId value
+     * @return the Status ID
+     * @throws Exception if it doesn't exist.
      */
     public static StatusId getStatusId(int id) throws Exception
     {

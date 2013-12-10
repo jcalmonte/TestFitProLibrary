@@ -95,7 +95,7 @@ public class Command {
 
     /**
      * Get the Command status, or reply. may be none as default
-     * @return
+     * @return the Status of the command
      */
     public Status getStatus()
     {
@@ -104,7 +104,7 @@ public class Command {
 
     /**
      * Gets the length of the message to send.
-     * @return
+     * @return the length of the message to send
      */
     public int getLength()
     {
@@ -113,7 +113,7 @@ public class Command {
 
     /**
      * Gets the commandId
-     * @return
+     * @return the Command Id for the command
      */
     public CommandId getCmdId()
     {
@@ -122,7 +122,7 @@ public class Command {
 
     /**
      * Gets the DeviceId for the command.
-     * @return
+     * @return the Device Id for the command
      */
     public DeviceId getDevId()
     {
@@ -131,7 +131,8 @@ public class Command {
 
     /**
      * Sets the Status of the command, this is the reply of the message sent.
-     * @param sts
+     * @param sts the status of the command
+     * @exception Exception if cmdId's don't match
      */
     public void setStatus(Status sts) throws Exception
     {
@@ -183,7 +184,7 @@ public class Command {
 
     /**
      * sets the Device Id
-     * @param id
+     * @param id The DeviceId
      */
     public void setDevId(DeviceId id)
     {

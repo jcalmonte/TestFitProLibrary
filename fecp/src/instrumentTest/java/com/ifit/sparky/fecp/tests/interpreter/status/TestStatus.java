@@ -68,7 +68,32 @@ public class TestStatus extends TestCase{
      */
     public void testConstructorExceptions_status() throws Exception{
 
-    //assign invalid values, and check exceptions
+        Status statusObjOne;
+
+        statusObjOne = new Status();
+        //assign invalid values, and check exceptions
+        try
+        {
+            //test
+            statusObjOne.setLength(statusObjOne.MAX_MSG_LENGTH);
+            assertTrue(true);
+            statusObjOne.setLength(0);
+            assertTrue(true);
+        }
+        catch (Exception ex)
+        {
+            fail();
+        }
+        try {
+
+            statusObjOne.setLength(statusObjOne.MAX_MSG_LENGTH+1);
+            fail();
+        }
+        catch (Exception ex)
+        {
+            assertTrue(true);
+        }
+
 
     }
 

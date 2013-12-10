@@ -33,7 +33,7 @@ public enum DeviceId {
 
     /**
      * gets the device id
-     * @return
+     * @return the device id
      */
     public int getVal()
     {
@@ -50,9 +50,9 @@ public enum DeviceId {
 
     /**
      * Gets the DeviceId based on the id value
-     * @param id
-     * @return
-     * @throws Exception
+     * @param id the Device Id value
+     * @return the Device Id
+     * @throws Exception if deviceId doesn't exist throw
      */
     public static DeviceId getDeviceId(int id) throws Exception
     {
@@ -61,7 +61,7 @@ public enum DeviceId {
         {
             if(id == devId.getVal())
             {
-                return devId;
+                return devId; // the Device ID
             }
         }
 
