@@ -15,11 +15,12 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 public class Status {
 
+    public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
+
     private StatusId mStsId;
     private int mLength;
     private CommandId mCmdId;
     private DeviceId mDevId;
-    public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
     /**
      * Default Constructor for the Status object.
@@ -39,10 +40,19 @@ public class Status {
      * @param cmdId the ommand Id
      * @param devId the Device Id
      */
-    public Status(StatusId stsId, int length, CommandId cmdId, DeviceId devId)
+    public Status(StatusId stsId, int length, CommandId cmdId, DeviceId devId) throws Exception
     {
         this.mStsId = stsId;
-        this.mLength = length;
+
+        if(length <= MAX_MSG_LENGTH && length >= 0)
+        {
+            this.mLength = length;
+        }
+        else
+        {
+            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+        }
+
         this.mCmdId = cmdId;
         this.mDevId = devId;
     }
@@ -107,7 +117,7 @@ public class Status {
      */
     public void setLength(int length) throws Exception
     {
-        if(length <= MAX_MSG_LENGTH || length >= 0)
+        if(length <= MAX_MSG_LENGTH && length >= 0)
         {
             this.mLength = length;
         }
