@@ -30,6 +30,6 @@ public class SampleTest extends TestCase {
     public void test2() {
         HelloWorld hey = new HelloWorld();
         int temp = hey.add();
-        assertEquals(temp, 4);
+        assertEquals(temp, 3);
     }
 }
