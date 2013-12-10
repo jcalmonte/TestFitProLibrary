@@ -12,7 +12,7 @@ package com.ifit.sparky.fecp.interpreter.status;
 public enum StatusId {
     DEV_NOT_SUPPORTED(0, "Device is not supported"),
     CMD_NOT_SUPPORTED(0x01, "Command is not supported"),
-    DONE(0x02, "Command was successful send and recieved");
+    DONE(0x02, "Command was successful send and received");
 
     private int id;
     private String description;
@@ -50,9 +50,9 @@ public enum StatusId {
      * Gets the StatusId based on the id value
      * @param id the statusId value
      * @return the Status ID
-     * @throws Exception if it doesn't exist.
+     * @throws InvalidStatusException if it doesn't exist.
      */
-    public static StatusId getStatusId(int id) throws Exception
+    public static StatusId getStatusId(int id) throws InvalidStatusException
     {
         //go through all device ids and if it equals then return it.
         for (StatusId stsId : StatusId.values())
@@ -64,6 +64,6 @@ public enum StatusId {
         }
 
         //error throw exception
-        throw new Exception("Invalid Status id ("+id+").");
+        throw new InvalidStatusException(id);
     }
 }

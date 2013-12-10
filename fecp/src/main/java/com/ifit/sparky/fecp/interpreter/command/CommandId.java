@@ -55,7 +55,7 @@ public enum CommandId {
      * @return the Command Id
      * @throws Exception if it doesn't exist
      */
-    public static CommandId getCommandId(int id) throws Exception
+    public static CommandId getCommandId(int id) throws InvalidCommandException
     {
         //go through all command ids and if it equals then return it.
         for (CommandId cmdId : CommandId.values())
@@ -67,7 +67,7 @@ public enum CommandId {
         }
 
         //error throw exception
-        throw new Exception("Invalid Command id ("+id+").");
+        throw new InvalidCommandException(id);
     }
 
 }

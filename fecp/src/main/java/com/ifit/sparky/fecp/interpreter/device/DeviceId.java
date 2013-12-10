@@ -52,9 +52,9 @@ public enum DeviceId {
      * Gets the DeviceId based on the id value
      * @param id the Device Id value
      * @return the Device Id
-     * @throws Exception if deviceId doesn't exist throw
+     * @throws InvalidDeviceException if deviceId doesn't exist throw
      */
-    public static DeviceId getDeviceId(int id) throws Exception
+    public static DeviceId getDeviceId(int id) throws InvalidDeviceException
     {
         //go through all device ids and if it equals then return it.
         for (DeviceId devId : DeviceId.values())
@@ -66,6 +66,6 @@ public enum DeviceId {
         }
 
         //error throw exception
-        throw new Exception("Invalid Device id ("+id+").");
+        throw new InvalidDeviceException(id);
     }
 }

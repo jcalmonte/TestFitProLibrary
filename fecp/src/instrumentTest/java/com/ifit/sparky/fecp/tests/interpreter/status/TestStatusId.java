@@ -10,6 +10,7 @@
  */
 package com.ifit.sparky.fecp.tests.interpreter.status;
 
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import junit.framework.TestCase;
@@ -69,7 +70,7 @@ public class TestStatusId extends TestCase {
             StatusId.getStatusId(257);
             fail();//should throw an exception before here
         }
-        catch (Exception ex)
+        catch (InvalidStatusException ex)
         {
             assertTrue(true);//this should throw an exception
         }

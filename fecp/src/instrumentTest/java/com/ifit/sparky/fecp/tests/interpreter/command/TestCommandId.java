@@ -8,6 +8,7 @@
 package com.ifit.sparky.fecp.tests.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 
 import junit.framework.TestCase;
 
@@ -66,7 +67,7 @@ public class TestCommandId extends TestCase {
             CommandId.getCommandId(257);
             fail();//should throw an exception before here
         }
-        catch (Exception ex)
+        catch (InvalidCommandException ex)
         {
             assertTrue(true);//this should throw an exception
         }

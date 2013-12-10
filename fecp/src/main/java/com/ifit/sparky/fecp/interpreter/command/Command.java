@@ -9,7 +9,7 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
-import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.*;
 import com.ifit.sparky.fecp.interpreter.status.Status;
 
 public class Command {
@@ -70,8 +70,7 @@ public class Command {
         // if the sts command id doesn't match there is a mistake, there may be a few exceptions.
         if(sts.getCmdId() != cmdId)
         {
-            throw new Exception("Invalid Status-CommandId("+sts.getCmdId().name()+
-                    "), doesn't match given CommandId("+cmdId.name() +").");
+            throw new InvalidCommandException(cmdId, sts.getCmdId());
         }
 
         // The device Id can be different if they are sending
@@ -132,15 +131,14 @@ public class Command {
     /**
      * Sets the Status of the command, this is the reply of the message sent.
      * @param sts the status of the command
-     * @exception Exception if cmdId's don't match
+     * @exception InvalidCommandException if cmdId's don't match
      */
-    public void setStatus(Status sts) throws Exception
+    public void setStatus(Status sts) throws InvalidCommandException
     {
         // if the sts command id doesn't match there is a mistake, there may be a few exceptions.
         if(sts.getCmdId() != this.mCmdId)
         {
-            throw new Exception("Invalid Status-CommandId("+sts.getCmdId().name()+
-                    "), doesn't match given CommandId("+this.mCmdId.name() +").");
+            throw new InvalidCommandException(this.mCmdId, sts.getCmdId());
         }
 
         this.mStatus = sts;
@@ -175,9 +173,9 @@ public class Command {
     /**
      * Sets the Command Id,
      * @param idVal int value of the actual byte value.
-     * @throws Exception if the int value is invalid.
+     * @throws InvalidCommandException if the int value is invalid.
      */
-    public void setCmdId(int idVal) throws Exception
+    public void setCmdId(int idVal) throws InvalidCommandException
     {
         this.mCmdId = CommandId.getCommandId(idVal);// if invalid int it will throw exception.
     }
@@ -194,9 +192,9 @@ public class Command {
     /**
      * Sets the Device Id
      * @param idVal int value of the actual byte value
-     * @throws Exception if the idVal isn't valid.
+     * @throws InvalidDeviceException if the idVal isn't valid.
      */
-    public void setDevId(int idVal) throws Exception
+    public void setDevId(int idVal) throws InvalidDeviceException
     {
         this.mDevId = DeviceId.getDeviceId(idVal); // if invalid int
     }
