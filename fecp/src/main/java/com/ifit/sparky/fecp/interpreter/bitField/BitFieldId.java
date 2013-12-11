@@ -104,10 +104,43 @@ public enum BitFieldId {
         return  this.mDescription;
     }
 
-    public BitfieldDataConverter getData(ArrayList<Byte> rawData)
+    public BitfieldDataConverter getData(ArrayList<Byte> rawData) throws Exception
     {
-        this.mConverter.setRawData(rawData);
+        this.mConverter.setRawData(rawData, this.mByteSize);
         return this.mConverter.getData();
+    }
+
+    /**
+     * Converts the data into a formatted array of bytes.
+     * @param data data that is to be formatted.
+     * @return Array of bytes that are ready to be sent
+     * @throws InvalidBitFieldException if the types don't match up
+     */
+    public ArrayList<Byte> getRawFromData(int data)throws InvalidBitFieldException
+    {
+        return this.mConverter.convertData(data);
+    }
+
+    /**
+     * Converts the data into a formatted array of bytes.
+     * @param data data that is to be formatted.
+     * @return Array of bytes that are ready to be sent
+     * @throws InvalidBitFieldException if the types don't match up
+     */
+    public ArrayList<Byte> getRawFromData(double data)throws InvalidBitFieldException
+    {
+        return this.mConverter.convertData(data);
+    }
+
+    /**
+     * Converts the data into a formatted array of bytes.
+     * @param data data that is to be formatted.
+     * @return Array of bytes that are ready to be sent
+     * @throws InvalidBitFieldException if the types don't match up
+     */
+    public ArrayList<Byte> getRawFromData(String data)throws InvalidBitFieldException
+    {
+        return this.mConverter.convertData(data);
     }
 
     /**

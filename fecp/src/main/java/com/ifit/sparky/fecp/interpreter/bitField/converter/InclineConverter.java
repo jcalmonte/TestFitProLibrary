@@ -7,6 +7,10 @@
  */
 package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+
+import java.util.ArrayList;
+
 public class InclineConverter extends BitfieldDataConverter {
 
     private double mIncline;
@@ -18,17 +22,26 @@ public class InclineConverter extends BitfieldDataConverter {
     }
 
     @Override
-    public BitfieldDataConverter getData()
+    public BitfieldDataConverter getData() throws Exception
     {
-        int rawIncline;
-
-        rawIncline= this.mRawData.get(0);
-        return this;
+        this.mIncline = this.getRawToInt();
+   return this;
     }
 
-    public double getSpeed(int MaxIncline, int MinIncline)
+    @Override
+    public ArrayList<Byte> convertData(Object obj) throws InvalidBitFieldException {
+        return null;
+    }
+
+    /**
+     * Gets the Incline based off of the MaxIncline and the MinIncline
+     * @param MaxIncline the Max Incline for the current System
+     * @param MinIncline the Min Incline for the current System
+     * @return the incline as a double
+     */
+    public double getIncline(int MaxIncline, int MinIncline)
     {
-        //TODO based on the max and min calculate the incline
+        //TODO convert based on max and Min
         return this.mIncline;
     }
 

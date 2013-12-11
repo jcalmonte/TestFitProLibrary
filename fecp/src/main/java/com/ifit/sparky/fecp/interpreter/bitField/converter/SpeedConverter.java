@@ -7,6 +7,8 @@
  */
 package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+
 import java.util.ArrayList;
 
 public class SpeedConverter extends BitfieldDataConverter {
@@ -20,17 +22,24 @@ public class SpeedConverter extends BitfieldDataConverter {
     }
 
     @Override
-    public BitfieldDataConverter getData()
+    public BitfieldDataConverter getData() throws Exception
     {
-        int rawSpeed;
-        int high =this.mRawData.get(1);//Little Endian
-        int low  =this.mRawData.get(0);
-
-        rawSpeed= ((high & 0xFF) << 8) | (low & 0xFF);
-        //convert the 2 bytes into MPH
-        this.mSpeed = (double)rawSpeed;
+        this.mSpeed = (double)this.getRawToInt();
         this.mSpeed /= 10;
         return this;
+    }
+
+    @Override
+    public ArrayList<Byte> convertData(Object obj) throws InvalidBitFieldException {
+        double temp;
+        //object needs to be a double
+        if(obj.getClass() != Double.class)
+        {
+            throw new InvalidBitFieldException( double.class, obj );
+        }
+        temp = (Double)obj;
+        temp *= 10;//convert to int
+        return this.getRawFromData((int)temp);
     }
 
     public double getSpeed()

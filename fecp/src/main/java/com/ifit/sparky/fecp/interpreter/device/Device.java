@@ -10,19 +10,17 @@
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Device {
 
     private Map<CommandId, Command> mCommandMap;//list of all the available commands.
     private DeviceId    mDevId;
     private ArrayList<Device> mSubDevArrayList;//list of all the subDevices.
-    //todo add the databitfields
+    private Set<BitFieldId> mSupportedBitFields; //list of available items
 
     /**
      * Default constructor for devices.
@@ -32,6 +30,7 @@ public class Device {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
         this.mDevId = DeviceId.NONE;
+        this.mSupportedBitFields = new HashSet<BitFieldId>();
     }
 
     /**
@@ -42,6 +41,7 @@ public class Device {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
         this.mDevId = DeviceId.getDeviceId(idVal);
+        this.mSupportedBitFields = new HashSet<BitFieldId>();
     }
 
     /**
@@ -52,21 +52,29 @@ public class Device {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
         this.mDevId = id;
+        this.mSupportedBitFields = new HashSet<BitFieldId>();
     }
 
     /**
      * Constructor for adding lists of commands and sub-devices.
      * @param commands List of commands to add
      * @param devices the List of Sub devices
+     * @param bitFields the BitFields that the device supports
      * @param id The Device Id
      */
-    public Device(Collection<Command> commands, Collection<Device> devices, DeviceId id) throws Exception
+    public Device(
+            Collection<Command> commands,
+            Collection<Device> devices,
+            Collection<BitFieldId> bitFields,
+            DeviceId id) throws Exception
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
 
         this.addCommands(commands);
         this.mSubDevArrayList.addAll(devices);
+        this.mSupportedBitFields = new HashSet<BitFieldId>();
+        this.addAllBitfield(bitFields);
         this.mDevId = id;
     }
 
@@ -74,15 +82,22 @@ public class Device {
      * Constructor for adding lists of commands and sub-devices, with int device Id value
      * @param commands List of commands to add
      * @param devices the List of Sub devices
+     * @param bitFields the BitFields that the device supports
      * @param idVal The Device Id value
      */
-    public Device(Collection<Command> commands, Collection<Device> devices, int idVal) throws Exception
+    public Device(
+            Collection<Command> commands,
+            Collection<Device> devices,
+            Collection<BitFieldId> bitFields,
+            int idVal) throws Exception
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
 
         this.addCommands(commands);
         this.mSubDevArrayList.addAll(devices);
+        this.mSupportedBitFields = new HashSet<BitFieldId>();
+        this.addAllBitfield(bitFields);
         this.mDevId = DeviceId.getDeviceId(idVal);
     }
 
@@ -172,6 +187,49 @@ public class Device {
     }
 
     /**
+     * gets the set of Supported Bitfields
+     * @return set of BitfieldIds
+     */
+    public Set<BitFieldId> getSupportedBitfields()
+    {
+        return this.mSupportedBitFields; /* list of commands */
+    }
+
+    /**
+     * gets the set of Supported Write enabled Bitfields
+     * @return set of Writable BitfieldIds
+     */
+    public Set<BitFieldId> getSupportedWriteBitfields()
+    {
+        HashSet<BitFieldId> writeBitfields = new HashSet<BitFieldId>();
+        for(BitFieldId bit : this.mSupportedBitFields)
+        {
+            if(bit.getReadOnly() == false)
+            {
+                writeBitfields.add(bit);
+            }
+        }
+        return writeBitfields; /* set of Write Bitfields for the device */
+    }
+
+    /**
+     * gets the set of Supported Read Only Bitfields
+     * @return set of Read only BitfieldIds
+     */
+    public Set<BitFieldId> getSupportedReadBitfields()
+    {
+        HashSet<BitFieldId> readBitfields = new HashSet<BitFieldId>();
+        for(BitFieldId bit : this.mSupportedBitFields)
+        {
+            if(bit.getReadOnly() == true)
+            {
+                readBitfields.add(bit);
+            }
+        }
+        return readBitfields; /* set of Write Bitfields for the device */
+    }
+
+    /**
      * gets the Device Id.
      * @return The Device Id
      */
@@ -245,6 +303,27 @@ public class Device {
         for(Device dev : devices)
         {
             this.addSubDevice(dev);
+        }
+    }
+
+    /**
+     * Adds a bitfield item to the device, or what the device supports.
+     * @param bitfield the bitfield
+     */
+    public void addBitfield(BitFieldId bitfield)
+    {
+        this.mSupportedBitFields.add(bitfield);
+    }
+
+    /**
+     * Adds a collection of bitfields to the device.
+     * @param bitfields to add to the device.
+     */
+    public void addAllBitfield(Collection<BitFieldId> bitfields)
+    {
+        for(BitFieldId singleBit : bitfields)
+        {
+            this.addBitfield(singleBit);
         }
     }
 
