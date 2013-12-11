@@ -17,4 +17,14 @@ public class InvalidBitFieldException extends Exception {
     {
         super("Invalid Bitfield id ("+badId+").");
     }
+
+    /**
+     * Handles an exception if there is a bad section or bit used.
+     * @param section the section used
+     * @param bit the bit used
+     */
+    public InvalidBitFieldException(int section, int bit)
+    {
+        super("Invalid Bitfield id Section("+section+") and Bit("+bit+").");
+    }
 }

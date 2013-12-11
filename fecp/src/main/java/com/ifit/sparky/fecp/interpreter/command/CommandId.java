@@ -17,8 +17,8 @@ public enum CommandId {
     DISCONNECT(0x05, "Disconnects from the device."),
     CALIBRATE(0x06, "Calibrates the device.");
 
-    private int id;
-    private String description;
+    private int mId;
+    private String mDescription;
 
     /**
      * constructor for the CommandId enum.
@@ -27,8 +27,8 @@ public enum CommandId {
      */
     CommandId(int id, String description)
     {
-        this.id = id;
-        this.description = description;
+        this.mId = id;
+        this.mDescription = description;
     }
 
     /**
@@ -37,7 +37,7 @@ public enum CommandId {
      */
     public int getVal()
     {
-        return this.id;
+        return this.mId;
     }
 
     /**
@@ -46,7 +46,7 @@ public enum CommandId {
      */
     public String getDescription()
     {
-        return  this.description;
+        return  this.mDescription;
     }
 
     /**
