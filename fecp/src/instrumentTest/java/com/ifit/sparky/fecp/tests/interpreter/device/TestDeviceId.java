@@ -10,6 +10,7 @@
 package com.ifit.sparky.fecp.tests.interpreter.device;
 
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.InvalidDeviceException;
 
 import junit.framework.TestCase;
 
@@ -67,7 +68,7 @@ public class TestDeviceId extends TestCase {
             DeviceId.getDeviceId(257);
             fail();//should throw an exception before here
         }
-        catch (Exception ex)
+        catch (InvalidDeviceException ex)
         {
             assertTrue(true);//this should throw an exception
         }

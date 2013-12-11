@@ -11,6 +11,7 @@ package com.ifit.sparky.fecp.tests.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.Status;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
@@ -128,7 +129,7 @@ public class TestCommand extends TestCase {
             commandObjOne = new Command(stsObj, 0, CommandId.CONNECT, DeviceId.TREADMILL);
             fail();
         }
-        catch (Exception ex)
+        catch (InvalidCommandException ex)
         {
             assertTrue(true);// passed
         }
@@ -143,7 +144,7 @@ public class TestCommand extends TestCase {
             commandObjOne.setStatus(stsObj);
             fail();
         }
-        catch (Exception ex)
+        catch (InvalidCommandException ex)
         {
             assertTrue(true);// passed
         }

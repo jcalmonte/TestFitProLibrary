@@ -10,8 +10,7 @@
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
-import com.ifit.sparky.fecp.interpreter.command.Command;
-import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -202,14 +201,13 @@ public class Device {
     /**
      * Added a command to the list of commands
      * @param cmd command to add to the devices available commands
-     * @throws Exception if the command is already in the list you can't add it again.
+     * @throws InvalidCommandException if the command is already in the list you can't add it again.
      */
-    public void addCommand(Command cmd) throws Exception
+    public void addCommand(Command cmd) throws InvalidCommandException
     {
         if(this.mCommandMap.containsKey(cmd.getCmdId()))
         {
-            throw new Exception("Can't add command("+ cmd.getCmdId().name()
-                    + ") It already is in the list.");
+            throw new InvalidCommandException(cmd);
 
         }
 
