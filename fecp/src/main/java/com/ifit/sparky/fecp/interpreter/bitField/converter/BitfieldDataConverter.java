@@ -86,6 +86,9 @@ public abstract class BitfieldDataConverter {
     protected ByteBuffer getRawFromData(int data) throws InvalidBitFieldException
     {
         //depending on the size convert to int
+        ByteBuffer tempBuff = ByteBuffer.allocate(this.mDataSize);//don't overwrite
+        tempBuff.order(ByteOrder.LITTLE_ENDIAN);
+        tempBuff.position(0);
         if(this.mDataSize == 1)
         {
             if(data > Byte.MAX_VALUE)
@@ -93,7 +96,7 @@ public abstract class BitfieldDataConverter {
                 Byte b = 0;
                 throw new InvalidBitFieldException(data, b);
             }
-            this.mRawData.put((byte) data);
+            tempBuff.put((byte) data);
         }
         else if(this.mDataSize == 2)
         {
@@ -102,7 +105,7 @@ public abstract class BitfieldDataConverter {
                 Short s = 0;
                 throw new InvalidBitFieldException(data, s);
             }
-            this.mRawData.putShort((short)data);
+            tempBuff.putShort((short)data);
         }
         else if(this.mDataSize == 4)
         {
@@ -110,10 +113,10 @@ public abstract class BitfieldDataConverter {
             {
                 throw new InvalidBitFieldException(data, Long.TYPE);
             }
-            this.mRawData.putLong((long)data);
+            tempBuff.putLong((long)data);
         }
 
-        return this.mRawData;
+        return tempBuff;
     }
 
     public abstract BitfieldDataConverter getData()throws Exception;

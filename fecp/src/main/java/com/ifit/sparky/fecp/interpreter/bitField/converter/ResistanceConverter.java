@@ -36,16 +36,25 @@ public class ResistanceConverter extends BitfieldDataConverter {
     @Override
     public ByteBuffer convertData(Object obj) throws InvalidBitFieldException {
         //data coming in as a double
-        short rawData;
-        double temp = (Double)obj;
+        double temp;
+
+        //object needs to be a double
+        if(obj.getClass() == Double.class)
+        {
+            temp = (Double)obj;
+        }
+        else if(obj.getClass() == Integer.class)
+        {
+            temp = (Integer)obj + 0.0;
+        }
+        else
+        {
+            throw new InvalidBitFieldException( double.class, obj );
+        }
+
         temp *= 100;
-        //get a short from it
-        rawData = (short)temp;
 
-        this.mRawData = ByteBuffer.allocate(2);
-        this.mRawData.putShort(rawData);
-
-        return this.mRawData;
+        return this.getRawFromData((int)temp);
     }
 
     /**

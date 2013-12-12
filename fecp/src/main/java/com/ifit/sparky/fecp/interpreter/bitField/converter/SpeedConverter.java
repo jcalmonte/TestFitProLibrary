@@ -39,7 +39,7 @@ public class SpeedConverter extends BitfieldDataConverter {
         {
             temp = (Double)obj;
         }
-        if(obj.getClass() == Integer.class)
+        else if(obj.getClass() == Integer.class)
         {
             temp = (Integer)obj + 0.0;
         }

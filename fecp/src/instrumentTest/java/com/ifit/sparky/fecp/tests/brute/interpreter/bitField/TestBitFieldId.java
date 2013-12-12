@@ -8,6 +8,8 @@
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.bitField;
 
+import android.widget.TableRow;
+
 import com.ifit.sparky.fecp.interpreter.bitField.*;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.*;
 
@@ -218,8 +220,215 @@ public class TestBitFieldId extends TestCase {
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
         assertEquals(resultBuff2, bit.getRawFromData(5));//int test
 
-        // test
+        // test Current MPH
+        bit = BitFieldId.CURRENT_MPH;
+        assertEquals(BitFieldId.CURRENT_MPH, bit);
+        assertEquals(1, bit.getVal());
+        assertEquals(0, bit.getSection());
+        assertEquals(1, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(0.5, ((SpeedConverter)bit.getData(buff2)).getSpeed());
+        resultBuff2.clear();
+        resultBuff2.putShort((short)50);
+        assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(5));//int test
 
+        //test target Incline
+        bit = BitFieldId.TARGET_INCLINE;
+        assertEquals(BitFieldId.TARGET_INCLINE, bit);
+        assertEquals(2, bit.getVal());
+        assertEquals(0, bit.getSection());
+        assertEquals(2, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(false, bit.getReadOnly());
+        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(5));//int test
+
+        //test Current Incline
+        bit = BitFieldId.CURRENT_INCLINE;
+        assertEquals(BitFieldId.CURRENT_INCLINE, bit);
+        assertEquals(3, bit.getVal());
+        assertEquals(0, bit.getSection());
+        assertEquals(3, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(5));//int test
+
+        //test target Volume
+        bit = BitFieldId.TARGET_VOLUME;
+        assertEquals(BitFieldId.TARGET_VOLUME, bit);
+        assertEquals(4, bit.getVal());
+        assertEquals(0, bit.getSection());
+        assertEquals(4, bit.getBit());
+        assertEquals(1, bit.getSize());
+        assertEquals(false, bit.getReadOnly());
+        assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
+        resultBuff1.clear();
+        resultBuff1.put((byte) 5);
+        assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
+
+        //test Current Volume
+        bit = BitFieldId.CURRENT_VOLUME;
+        assertEquals(BitFieldId.CURRENT_VOLUME, bit);
+        assertEquals(5, bit.getVal());
+        assertEquals(0, bit.getSection());
+        assertEquals(5, bit.getBit());
+        assertEquals(1, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
+        resultBuff1.clear();
+        resultBuff1.put((byte) 5);
+        assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
+
+        //test Target Fan Speed
+        bit = BitFieldId.TARGET_FAN_SPEED;
+        assertEquals(BitFieldId.TARGET_FAN_SPEED, bit);
+        assertEquals(6, bit.getVal());
+        assertEquals(0, bit.getSection());
+        assertEquals(6, bit.getBit());
+        assertEquals(1, bit.getSize());
+        assertEquals(false, bit.getReadOnly());
+        assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
+        resultBuff1.clear();
+        resultBuff1.put((byte) 5);
+        assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
+
+        //test Current Fan Speed
+        bit = BitFieldId.CURRENT_FAN_SPEED;
+        assertEquals(BitFieldId.CURRENT_FAN_SPEED, bit);
+        assertEquals(7, bit.getVal());
+        assertEquals(0, bit.getSection());
+        assertEquals(7, bit.getBit());
+        assertEquals(1, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
+        resultBuff1.clear();
+        resultBuff1.put((byte) 5);
+        assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
+
+        //test Target Resistance
+        bit = BitFieldId.TARGET_RESISTANCE;
+        assertEquals(BitFieldId.TARGET_RESISTANCE, bit);
+        assertEquals(8, bit.getVal());
+        assertEquals(1, bit.getSection());
+        assertEquals(0, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(false, bit.getReadOnly());
+        assertEquals(0.05, ((ResistanceConverter)bit.getData(buff2)).getResistance());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(5));//int test
+
+        //test Current Resistance
+        bit = BitFieldId.CURRENT_RESISTANCE;
+        assertEquals(BitFieldId.CURRENT_RESISTANCE, bit);
+        assertEquals(9, bit.getVal());
+        assertEquals(1, bit.getSection());
+        assertEquals(1, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(0.05, ((ResistanceConverter)bit.getData(buff2)).getResistance());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(5));//int test
+
+        //test Target Watts
+        bit = BitFieldId.TARGET_WATTS;
+        assertEquals(BitFieldId.TARGET_WATTS, bit);
+        assertEquals(10, bit.getVal());
+        assertEquals(1, bit.getSection());
+        assertEquals(2, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(false, bit.getReadOnly());
+        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(500.123));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
+
+        //test Current Watts
+        bit = BitFieldId.CURRENT_WATTS;
+        assertEquals(BitFieldId.CURRENT_WATTS, bit);
+        assertEquals(11, bit.getVal());
+        assertEquals(1, bit.getSection());
+        assertEquals(3, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(500.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
+
+        //test Target Torque
+        bit = BitFieldId.TARGET_TORQUE;
+        assertEquals(BitFieldId.TARGET_TORQUE, bit);
+        assertEquals(12, bit.getVal());
+        assertEquals(1, bit.getSection());
+        assertEquals(4, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(false, bit.getReadOnly());
+        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(500.123));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
+
+        //test Current Torque
+        bit = BitFieldId.CURRENT_TORQUE;
+        assertEquals(BitFieldId.CURRENT_TORQUE, bit);
+        assertEquals(13, bit.getVal());
+        assertEquals(1, bit.getSection());
+        assertEquals(5, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(500.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
+
+        //test Current Keycode
+        bit = BitFieldId.CURRENT_KEYCODE;
+        assertEquals(BitFieldId.CURRENT_KEYCODE, bit);
+        assertEquals(14, bit.getVal());
+        assertEquals(1, bit.getSection());
+        assertEquals(6, bit.getBit());
+        assertEquals(4, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(500.123));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
+
+        //test Current Torque
+        bit = BitFieldId.CURRENT_TORQUE;
+        assertEquals(BitFieldId.CURRENT_TORQUE, bit);
+        assertEquals(13, bit.getVal());
+        assertEquals(1, bit.getSection());
+        assertEquals(5, bit.getBit());
+        assertEquals(2, bit.getSize());
+        assertEquals(true, bit.getReadOnly());
+        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
+        resultBuff2.clear();
+        resultBuff2.putShort((short) 500);
+        assertEquals(resultBuff2, bit.getRawFromData(500.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
 
     }
 

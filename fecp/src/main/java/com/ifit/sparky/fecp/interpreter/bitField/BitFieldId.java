@@ -28,7 +28,7 @@ public enum BitFieldId {
     CURRENT_WATTS(11, 2, true, new ShortConverter(), "Current Watts"),
     TARGET_TORQUE(12, 2, false, new ShortConverter(), "Target Torque"),
     CURRENT_TORQUE(13, 2, true, new ShortConverter(), "Current Torque"),
-    CURRENT_KEYCODE(14, 4, true, new LongConverter(), "Current Keycode"),
+    KEY_OBJECT(14, 10, true, new LongConverter(), "Current Keycode"),
     COOKED_KEYCODE(15, 2, true, new ShortConverter(), "Cooked Keycode"),
     KEY_BEEP(16, 1, true, new ByteConverter(), "Key Beep"),
     ANDROID_KEYS(17, 1, true, new ByteConverter(), "Android Keys"),

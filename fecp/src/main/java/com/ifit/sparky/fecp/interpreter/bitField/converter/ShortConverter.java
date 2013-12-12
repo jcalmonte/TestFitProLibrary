@@ -10,6 +10,7 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class ShortConverter extends BitfieldDataConverter{
 
@@ -31,8 +32,21 @@ public class ShortConverter extends BitfieldDataConverter{
     @Override
     public ByteBuffer convertData(Object obj) throws InvalidBitFieldException {
 
-        this.mRawData.putShort((Short)obj);
-        return this.mRawData;
+        double temp;
+        //object needs to be a double
+        if(obj.getClass() == Double.class)
+        {
+            temp = (Double)obj;
+        }
+        else if(obj.getClass() == Integer.class)
+        {
+            temp = (Integer)obj + 0.0;
+        }
+        else
+        {
+            throw new InvalidBitFieldException( double.class, obj );
+        }
+        return this.getRawFromData((int)temp);
     }
 
     /**
