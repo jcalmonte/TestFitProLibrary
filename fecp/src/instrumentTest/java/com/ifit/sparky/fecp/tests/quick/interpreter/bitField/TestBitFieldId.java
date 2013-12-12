@@ -154,7 +154,7 @@ public class TestBitFieldId extends TestCase {
         }
 
         //test Byte Converter with int inputs
-        idOne = BitFieldId.CURRENT_KEYCODE;
+        idOne = BitFieldId.KEY_OBJECT;
         buff = ByteBuffer.allocate(4);
         buff.order(ByteOrder.LITTLE_ENDIAN);
 

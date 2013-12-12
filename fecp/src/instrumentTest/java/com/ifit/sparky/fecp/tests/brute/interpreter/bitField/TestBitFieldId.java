@@ -155,8 +155,8 @@ public class TestBitFieldId extends TestCase {
             assertEquals((int)((short)i & 0xFFFF), ((ShortConverter)converter).getValue());
         }
         //test Byte Converter with int inputs
-        idOne = BitFieldId.CURRENT_KEYCODE;
-        buff = ByteBuffer.allocate(4);
+        idOne = BitFieldId.KEY_OBJECT;
+        buff = ByteBuffer.allocate(10);
         buff.order(ByteOrder.LITTLE_ENDIAN);
 
 //        // Test all unsigned short values
@@ -403,32 +403,18 @@ public class TestBitFieldId extends TestCase {
         assertEquals(resultBuff2, bit.getRawFromData(500));//int test
 
         //test Current Keycode
-        bit = BitFieldId.CURRENT_KEYCODE;
-        assertEquals(BitFieldId.CURRENT_KEYCODE, bit);
-        assertEquals(14, bit.getVal());
-        assertEquals(1, bit.getSection());
-        assertEquals(6, bit.getBit());
-        assertEquals(4, bit.getSize());
-        assertEquals(true, bit.getReadOnly());
-        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
-        resultBuff2.clear();
-        resultBuff2.putShort((short) 500);
-        assertEquals(resultBuff2, bit.getRawFromData(500.123));//double test
-        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
-
-        //test Current Torque
-        bit = BitFieldId.CURRENT_TORQUE;
-        assertEquals(BitFieldId.CURRENT_TORQUE, bit);
-        assertEquals(13, bit.getVal());
-        assertEquals(1, bit.getSection());
-        assertEquals(5, bit.getBit());
-        assertEquals(2, bit.getSize());
-        assertEquals(true, bit.getReadOnly());
-        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
-        resultBuff2.clear();
-        resultBuff2.putShort((short) 500);
-        assertEquals(resultBuff2, bit.getRawFromData(500.0));//double test
-        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
+//        bit = BitFieldId.KEY_OBJECT;
+//        assertEquals(BitFieldId.KEY_OBJECT, bit);
+//        assertEquals(14, bit.getVal());
+//        assertEquals(1, bit.getSection());
+//        assertEquals(6, bit.getBit());
+//        assertEquals(10, bit.getSize());
+//        assertEquals(true, bit.getReadOnly());
+//        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
+//        resultBuff2.clear();
+//        resultBuff2.putShort((short) 500);
+//        assertEquals(resultBuff2, bit.getRawFromData(500.123));//double test
+//        assertEquals(resultBuff2, bit.getRawFromData(500));//int test
 
     }
 

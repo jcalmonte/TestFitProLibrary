@@ -60,4 +60,15 @@ public class InvalidBitFieldException extends Exception {
         super("Data("+data+")is to large needs to be value that fits in unsigned "
                 +type.getClass().toString()+").");
     }
+
+    /**
+     * Handles an exception with error message passed into it.
+     * @param message the error that occurred
+     */
+    public InvalidBitFieldException(String message)
+    {
+        super(message);
+    }
+
+
 }

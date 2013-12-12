@@ -10,7 +10,6 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 
 public class SpeedConverter extends BitfieldDataConverter {
 
