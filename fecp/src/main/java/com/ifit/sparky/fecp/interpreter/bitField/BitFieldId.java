@@ -10,17 +10,57 @@ package com.ifit.sparky.fecp.interpreter.bitField;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.*;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public enum BitFieldId {
     TARGET_MPH(0, 2, false, new SpeedConverter(), "Target Speed"),
     CURRENT_MPH(1, 2, true, new SpeedConverter(), "Current Speed"),
-    TARGET_INCLINE(2, 1, false, new InclineConverter(), "Target Incline"),
-    CURRENT_INCLINE(3, 1, true, new InclineConverter(), "Current Incline"),
-    TARGET_VOLUME(4, 1, false, new InclineConverter(), "Target Volume"),
-    CURRENT_VOLUME(5, 1, true, new InclineConverter(), "Current Volume"),
-    TARGET_FAN_SPEED(6, 1, false, new InclineConverter(), "Target Fan Speed"),
-    CURRENT_FAN_SPEED(7, 1, true, new InclineConverter(), "Current fan Speed");
+    TARGET_INCLINE(2, 2, false, new InclineConverter(), "Target Incline"),
+    CURRENT_INCLINE(3, 2, true, new InclineConverter(), "Current Incline"),
+    TARGET_VOLUME(4, 1, false, new ByteConverter(), "Target Volume"),
+    CURRENT_VOLUME(5, 1, true, new ByteConverter(), "Current Volume"),
+    TARGET_FAN_SPEED(6, 1, false, new ByteConverter(), "Target Fan Speed"),
+    CURRENT_FAN_SPEED(7, 1, true, new ByteConverter(), "Current fan Speed"),
+    TARGET_RESISTANCE(8, 2, false, new ResistanceConverter(), "Target Resistance"),
+    CURRENT_RESISTANCE(9, 2, true, new ResistanceConverter(), "Current Resistance"),
+    TARGET_WATTS(10, 2, false, new ShortConverter(), "Target Watts"),
+    CURRENT_WATTS(11, 2, true, new ShortConverter(), "Current Watts"),
+    TARGET_TORQUE(12, 2, false, new ShortConverter(), "Target Torque"),
+    CURRENT_TORQUE(13, 2, true, new ShortConverter(), "Current Torque"),
+    CURRENT_KEYCODE(14, 4, true, new LongConverter(), "Current Keycode"),
+    COOKED_KEYCODE(15, 2, true, new ShortConverter(), "Cooked Keycode"),
+    KEY_BEEP(16, 1, true, new ByteConverter(), "Key Beep"),
+    ANDROID_KEYS(17, 1, true, new ByteConverter(), "Android Keys"),
+    MODE_FLAGS(18, 1, true, new ByteConverter(), "Mode Flags"),
+    STATUS(19, 1, true, new ByteConverter(), "Status"),
+    CURRENT_BV_FREQUENCY(20, 2, true, new ShortConverter(), "Current BroadCast Vision Frequency"),
+    CURRENT_BV_VOLUME(21, 1, true, new ByteConverter(), "Current BroadCast Vision Volume"),
+    CURRENT_AUDIO_SOURCE(22, 1, true, new ByteConverter(), "Current Audio Source"),//TODO create enum for this
+    TARGET_GEARS(23, 1, false, new ByteConverter(), "Target Gears"),
+    SAFETY_FENCE(24, 2, true, new ShortConverter(), "Safety Fence"),
+    UP_RIGHTS(25, 2, true, new ShortConverter(), "Up Right Post Adjusters"),
+    TILT(26, 2, true, new ShortConverter(), "Tilt"),
+    MAX_RESISTANCE(27, 2, true, new ResistanceConverter(), "Max Resistance"),
+    CURRENT_RPM(28, 1, true, new ByteConverter(), "Current RPM"),
+    CURRENT_PULSE(29, 1, true, new ByteConverter(), "Current Pulse"),
+    INCLINE_TRANSMAX(30, 2, false, new ShortConverter(), "Incline Transmax"),
+    MIN_RESISTANCE(31, 2, true, new ResistanceConverter(), "Min Resistance"),
+    INCLINE_TACH(32, 1, true, new ByteConverter(), "Incline Tach"),
+    TARGET_STRIDE_LENGTH(33, 1, false, new ByteConverter(), "Target Stride Length"),
+    CURRENT_STRIDE_POSITION(34, 1, true, new ByteConverter(), "Current Stride Position"),
+    CURRENT_STRIDE_DIRECTION(35, 1, true, new ByteConverter(), "Current Stride Direction"),
+    CURRENT_STRIDE_LENGTH(36, 1, true, new ByteConverter(), "Current Stride Length"),
+    CURRENT_STRIDE_SPEED(37, 1, true, new ByteConverter(), "Current Stride Speed"),
+    LED_BANK(38, 1, true, new ByteConverter(), "LED Bank"),
+    LED_MASK(39, 4, true, new LongConverter(), "LED Mask"),
+    CURRENT_RAW_PULSE(40, 1, true, new ByteConverter(), "Current Raw Pulse"),
+    CURRENT_VSENSE(41, 1, true, new ByteConverter(), "Current Voltage Sense"),
+    WORKOUT_STATE(42, 1, false, new ByteConverter(), "Workout State"),
+    MIN_INCLINE(43, 2, true, new InclineConverter(), "Min Incline"),
+    MAX_INCLINE(44, 2, true, new InclineConverter(), "Max Incline"),
+    STOP_INCLINE(45, 2, true, new InclineConverter(), "Stop Incline"),
+    ACTUAL_MAX_INCLINE(46, 2, true, new InclineConverter(), "Actual Max Incline");
 
     private int mValue; // indexed at 1-255
     private int mSection;
@@ -104,7 +144,7 @@ public enum BitFieldId {
         return  this.mDescription;
     }
 
-    public BitfieldDataConverter getData(ArrayList<Byte> rawData) throws Exception
+    public BitfieldDataConverter getData(ByteBuffer rawData) throws Exception
     {
         this.mConverter.setRawData(rawData, this.mByteSize);
         return this.mConverter.getData();
@@ -116,7 +156,7 @@ public enum BitFieldId {
      * @return Array of bytes that are ready to be sent
      * @throws InvalidBitFieldException if the types don't match up
      */
-    public ArrayList<Byte> getRawFromData(int data)throws InvalidBitFieldException
+    public ByteBuffer getRawFromData(int data)throws InvalidBitFieldException
     {
         return this.mConverter.convertData(data);
     }
@@ -127,7 +167,7 @@ public enum BitFieldId {
      * @return Array of bytes that are ready to be sent
      * @throws InvalidBitFieldException if the types don't match up
      */
-    public ArrayList<Byte> getRawFromData(double data)throws InvalidBitFieldException
+    public ByteBuffer getRawFromData(double data)throws InvalidBitFieldException
     {
         return this.mConverter.convertData(data);
     }
@@ -138,7 +178,7 @@ public enum BitFieldId {
      * @return Array of bytes that are ready to be sent
      * @throws InvalidBitFieldException if the types don't match up
      */
-    public ArrayList<Byte> getRawFromData(String data)throws InvalidBitFieldException
+    public ByteBuffer getRawFromData(String data)throws InvalidBitFieldException
     {
         return this.mConverter.convertData(data);
     }

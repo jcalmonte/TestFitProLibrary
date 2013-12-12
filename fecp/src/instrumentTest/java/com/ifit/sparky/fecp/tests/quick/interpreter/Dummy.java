@@ -1,4 +1,4 @@
-package com.ifit.sparky.fecp.tests.interpreter;
+package com.ifit.sparky.fecp.tests.quick.interpreter;
 
 /**
  * Created by Levi.Balling on 12/6/13.

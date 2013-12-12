@@ -5,7 +5,7 @@
  * @version 1
  * This will handle all the different enums and validate that they are correct.
  */
-package com.ifit.sparky.fecp.tests.interpreter.command;
+package com.ifit.sparky.fecp.tests.quick.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;

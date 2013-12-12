@@ -7,7 +7,7 @@
  * @date 12/10/13
  * Tests the Device Id enum for any abnormal values.
  */
-package com.ifit.sparky.fecp.tests.interpreter.device;
+package com.ifit.sparky.fecp.tests.brute.interpreter.device;
 
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.InvalidDeviceException;

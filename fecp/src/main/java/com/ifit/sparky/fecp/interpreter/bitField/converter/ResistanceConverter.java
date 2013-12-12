@@ -1,9 +1,9 @@
 /**
- * Converts Incline values into double values with 0.01% precision.
+ * Converts Resistance values into double values with 0.01 precision.
  * @author Levi.Balling
  * @date 12/11/13
  * @version 1
- * Converts the 2 byte value from a buffer into a incline value from -100.00% to 100.00%.
+ * Converts the 2 byte value from a buffer into a Resistance value from  0 to 100.00%.
  */
 package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
@@ -11,24 +11,25 @@ import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
 import java.nio.ByteBuffer;
 
-public class InclineConverter extends BitfieldDataConverter {
+public class ResistanceConverter extends BitfieldDataConverter {
 
-    private double mIncline;
+    private double mResistance;
 
-    public InclineConverter()
+    /**
+     * ResistanceConverter Constructor
+     */
+    public ResistanceConverter()
     {
         super();
         this.mDataSize = 2;
-        this.mIncline = 0;
+        this.mResistance = 0;
     }
 
     @Override
     public BitfieldDataConverter getData() throws Exception
     {
-        //need to cast as a signed value of a short.
-        short tempShort = (short)this.getRawToInt();
-        this.mIncline = tempShort;
-        this.mIncline /= 100.0;
+        this.mResistance = this.getRawToInt();
+        this.mResistance /= 100.0;
         return this;
     }
 
@@ -48,11 +49,11 @@ public class InclineConverter extends BitfieldDataConverter {
     }
 
     /**
-     * Gets the incline, doesn't require min or max values
-     * @return the incline as a double
+     * Gets the resistance
+     * @return the resistance as a double 0.00 to 100.00
      */
-    public double getIncline()
+    public double getResistance()
     {
-        return this.mIncline;
+        return this.mResistance;
     }
 }

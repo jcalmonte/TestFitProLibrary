@@ -8,7 +8,7 @@
  * This class will test all the items of the status superclass. This includes the enums, invalid
  * inputs, and valid inputs
  */
-package com.ifit.sparky.fecp.tests.interpreter.status;
+package com.ifit.sparky.fecp.tests.quick.interpreter.status;
 
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;

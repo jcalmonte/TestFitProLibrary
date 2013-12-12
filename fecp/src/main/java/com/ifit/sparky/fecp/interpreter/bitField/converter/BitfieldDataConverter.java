@@ -12,11 +12,10 @@ import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 
 public abstract class BitfieldDataConverter {
 
-    protected ArrayList<Byte> mRawData;
+    protected ByteBuffer mRawData;
     protected int mDataSize;
 
     /**
@@ -24,6 +23,8 @@ public abstract class BitfieldDataConverter {
      */
     public BitfieldDataConverter()
     {
+        this.mRawData = ByteBuffer.allocate(8);//max cap needed
+        this.mRawData.order(ByteOrder.LITTLE_ENDIAN);
     }
 
     /**
@@ -32,15 +33,16 @@ public abstract class BitfieldDataConverter {
      * @param size the number of data bytes
      * @throws InvalidBitFieldException if the sizes don't match up
      */
-    public void setRawData(ArrayList<Byte> rawData, int size) throws InvalidBitFieldException
+    public void setRawData(ByteBuffer rawData, int size) throws InvalidBitFieldException
     {
-        if(rawData.size() != size)
+        this.mRawData = rawData;
+        this.mRawData.order(ByteOrder.LITTLE_ENDIAN);
+        if(this.mRawData.capacity() != size)
         {
             throw new InvalidBitFieldException(rawData, size);
         }
 
         this.mDataSize = size;
-        this.mRawData = rawData;
     }
 
     /**
@@ -48,36 +50,32 @@ public abstract class BitfieldDataConverter {
      * @return int value from the byte array
      * @throws Exception if the number of bytes and the required size don't match up
      */
-    protected int getRawToInt() throws Exception
+    protected long getRawToInt() throws Exception
     {
         //depending on the size convert to int
-        int rawInt = 0;
-        ByteBuffer buffer = ByteBuffer.allocate(this.mDataSize);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
 
-        for(Byte b : this.mRawData)
-        {
-            buffer.put(b);
-        }
-        buffer.position(0);
+        long rawLong;//to get all the values of the int correctly
+
+        this.mRawData.position(0);
 
         if(this.mDataSize == 1)
         {
-            rawInt = buffer.get(0);
+            //value needs to be unsigned
+            rawLong = (this.mRawData.get(0) & 0xFF);//require for unsigned values
         }
         else if(this.mDataSize == 2)
         {
-            rawInt = buffer.getShort(0);
+            rawLong = (this.mRawData.getShort(0) & 0xFFFF);
         }
         else if(this.mDataSize == 4)
         {
-            rawInt = buffer.getInt(0);
+            rawLong = (this.mRawData.getInt(0) & 0xFFFFFFFF);
         }
         else
         {
             throw new Exception("DataSizeCurrentlyNotSupported");
         }
-        return rawInt;
+        return rawLong;
     }
 
     /**
@@ -85,12 +83,9 @@ public abstract class BitfieldDataConverter {
      * @param data the byte, short, or int to be converted
      * @return array of bytes
      */
-    protected ArrayList<Byte> getRawFromData(int data) throws InvalidBitFieldException
+    protected ByteBuffer getRawFromData(int data) throws InvalidBitFieldException
     {
         //depending on the size convert to int
-        ByteBuffer buffer = ByteBuffer.allocate(this.mDataSize);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-
         if(this.mDataSize == 1)
         {
             if(data > Byte.MAX_VALUE)
@@ -98,7 +93,7 @@ public abstract class BitfieldDataConverter {
                 Byte b = 0;
                 throw new InvalidBitFieldException(data, b);
             }
-            buffer.put((byte)data);
+            this.mRawData.put((byte) data);
         }
         else if(this.mDataSize == 2)
         {
@@ -107,7 +102,7 @@ public abstract class BitfieldDataConverter {
                 Short s = 0;
                 throw new InvalidBitFieldException(data, s);
             }
-            buffer.putShort((short)data);
+            this.mRawData.putShort((short)data);
         }
         else if(this.mDataSize == 4)
         {
@@ -115,12 +110,7 @@ public abstract class BitfieldDataConverter {
             {
                 throw new InvalidBitFieldException(data, Long.TYPE);
             }
-            buffer.putLong((long)data);
-        }
-
-        for(int i=0; i < this.mDataSize; i++)
-        {
-            this.mRawData.add(buffer.get(i));
+            this.mRawData.putLong((long)data);
         }
 
         return this.mRawData;
@@ -128,6 +118,6 @@ public abstract class BitfieldDataConverter {
 
     public abstract BitfieldDataConverter getData()throws Exception;
 
-    public abstract ArrayList<Byte> convertData(Object obj)throws InvalidBitFieldException;
+    public abstract ByteBuffer convertData(Object obj)throws InvalidBitFieldException;
 
 }

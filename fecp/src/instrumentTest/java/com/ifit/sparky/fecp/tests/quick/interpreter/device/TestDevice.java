@@ -7,7 +7,7 @@
  * @date 12/10/13
  * Tests the Device constructors, getters and setters, for any abnormal values.
  */
-package com.ifit.sparky.fecp.tests.interpreter.device;
+package com.ifit.sparky.fecp.tests.quick.interpreter.device;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
@@ -19,6 +19,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import junit.framework.TestCase;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -52,9 +53,7 @@ public class TestDevice extends TestCase {
         HashSet<Command> cmdSet = new HashSet<Command>();
         ArrayList<Device> deviceList = new ArrayList<Device>();
         HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
-        ArrayList<Byte> byteList = new ArrayList<Byte>();
-        Byte b1;
-        Byte b2;
+        ByteBuffer byteList = ByteBuffer.allocate(2);
         BitfieldDataConverter converter;
 
         deviceObjOne = new Device();
@@ -97,10 +96,8 @@ public class TestDevice extends TestCase {
         bitSet.add(BitFieldId.TARGET_MPH);
         bitSet.add(BitFieldId.CURRENT_MPH);
 
-        b1 = 0x0B;
-        b2 = 0x01;
-        byteList.add(b1);
-        byteList.add(b2);
+        byteList.put((byte)0x0B);
+        byteList.put((byte)0x01);
 
         deviceObjOne = new Device(cmdSet, deviceList, bitSet, DeviceId.TREADMILL);
 

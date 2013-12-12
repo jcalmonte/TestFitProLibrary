@@ -9,6 +9,7 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public class SpeedConverter extends BitfieldDataConverter {
@@ -18,6 +19,7 @@ public class SpeedConverter extends BitfieldDataConverter {
     public SpeedConverter()
     {
         super();
+        this.mDataSize = 2;
         this.mSpeed = 0;
     }
 
@@ -30,14 +32,21 @@ public class SpeedConverter extends BitfieldDataConverter {
     }
 
     @Override
-    public ArrayList<Byte> convertData(Object obj) throws InvalidBitFieldException {
+    public ByteBuffer convertData(Object obj) throws InvalidBitFieldException {
         double temp;
         //object needs to be a double
-        if(obj.getClass() != Double.class)
+        if(obj.getClass() == Double.class)
+        {
+            temp = (Double)obj;
+        }
+        if(obj.getClass() == Integer.class)
+        {
+            temp = (Integer)obj + 0.0;
+        }
+        else
         {
             throw new InvalidBitFieldException( double.class, obj );
         }
-        temp = (Double)obj;
         temp *= 10;//convert to int
         return this.getRawFromData((int)temp);
     }
