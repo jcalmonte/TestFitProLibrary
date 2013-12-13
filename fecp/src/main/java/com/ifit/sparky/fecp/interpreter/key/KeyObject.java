@@ -7,8 +7,6 @@
  */
 package com.ifit.sparky.fecp.interpreter.key;
 
-import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
-
 public class KeyObject {
 
     private KeyCodes    mCode;
@@ -132,7 +130,7 @@ public class KeyObject {
         this.mTimeHeld = time;
     }
 
-    public String ToString()
+    public String toString()
     {
         return this.mCode.name();//todo add to this.
     }

@@ -31,15 +31,20 @@ public class KeyObjectConverter extends BitfieldDataConverter {
     @Override
     public BitfieldDataConverter getData() throws Exception
     {
-        //Todo all of the following
+        int rawCode;
+        this.mRawData.position(0);
+        //Todo add out of bounds checking
         //convert the first 4 bytes into the rawKeycode value
+        this.mKey.setRawKeyCode(this.mRawData.getInt());
 
         //convert the Next 2 bytes into the CookedKeycode
+        this.mKey.setCode(this.mRawData.getShort());
 
         //convert the Next 2 bytes into the Time it was pressed in seconds
+        this.mKey.setTimePressed(this.mRawData.getShort());
 
         //converts the Next 2 Bytes into how long it was held
-
+        this.mKey.setTimeHeld(this.mRawData.getShort());
 
         return this;
     }
