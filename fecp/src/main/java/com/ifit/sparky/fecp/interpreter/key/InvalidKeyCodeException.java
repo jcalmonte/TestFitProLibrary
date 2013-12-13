@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * Invalid Key Code Exception handles any errors with the Key Code.
  * @author Levi.Balling
  * @date 12/12/13
  * @version 1
- * Details.
+ * Handles all the issues with the keycodes specifically if they don't exist.
  */
 package com.ifit.sparky.fecp.interpreter.key;
 

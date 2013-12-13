@@ -8,14 +8,11 @@
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.bitField;
 
-import android.widget.TableRow;
-
 import com.ifit.sparky.fecp.interpreter.bitField.*;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.*;
 import com.ifit.sparky.fecp.interpreter.key.KeyCodes;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import java.nio.ByteBuffer;
@@ -68,6 +65,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(0, idOne.getBit());
         assertEquals(2, idOne.getSize());
         assertEquals(false, idOne.getReadOnly());
+        assertNotNull(idOne.getDescription());
 
         assertEquals(BitFieldId.TARGET_INCLINE, idTwo);
         assertEquals(2, idTwo.getVal());
@@ -75,6 +73,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(2, idTwo.getBit());
         assertEquals(2, idTwo.getSize());
         assertEquals(false, idTwo.getReadOnly());
+        assertNotNull(idTwo.getDescription());
 
         //test changes in the converter behind the seens to make sure it still matches
         converterOne =idOne.getData(rawData);
@@ -93,26 +92,27 @@ public class TestBitFieldId extends TestCase {
 
         BitFieldId idOne;
         BitfieldDataConverter converter;
-        ByteBuffer buff = ByteBuffer.allocate(2);
+        ByteBuffer buff;
+
+        //test Byte Converter with int inputs
+        idOne = BitFieldId.TARGET_FAN_SPEED;
+        buff = ByteBuffer.allocate(1);
         buff.order(ByteOrder.LITTLE_ENDIAN);
 
-        //test Speed Converter
-        idOne = BitFieldId.TARGET_MPH;
-
-        // Test all unsigned short values
-        for(int i = 0; i < 65536; i++)
+        // Test all unsigned Byte values
+        for(int i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; i++)
         {
-            double expectResult;
             buff.clear();
-            buff.putShort((short)i);
-            expectResult = (i + 0.0) / 10;
+            buff.put((byte) i);
             converter = idOne.getData(buff);
-            assertEquals(SpeedConverter.class, converter.getClass());//should be the same class
-            assertEquals(expectResult, ((SpeedConverter)converter).getSpeed());
+            assertEquals(ByteConverter.class, converter.getClass());//should be the same class
+            assertEquals(((byte)i & 0xFF), ((ByteConverter)converter).getValue());
         }
 
         //test Incline Converter
         idOne = BitFieldId.TARGET_INCLINE;
+        buff = ByteBuffer.allocate(2);
+        buff.order(ByteOrder.LITTLE_ENDIAN);
 
         // Test all unsigned short values
         for(int i = Short.MIN_VALUE; i < Short.MAX_VALUE; i++)
@@ -126,23 +126,71 @@ public class TestBitFieldId extends TestCase {
             assertEquals(expectResult, ((InclineConverter)converter).getIncline());
         }
 
-        //test Byte Converter with int inputs
-        idOne = BitFieldId.TARGET_FAN_SPEED;
-        buff = ByteBuffer.allocate(1);
+        //test Key object converter
+        idOne = BitFieldId.KEY_OBJECT;
+        buff = ByteBuffer.allocate(10);
+        buff.order(ByteOrder.LITTLE_ENDIAN);
 
+        //Test all the keycodes
+        for(KeyCodes code : KeyCodes.values())
+        {
+            buff.clear();
+            buff.putShort((short) code.getVal());
+            buff.putInt(0xFFFFFFFC);
+            buff.putShort((short) 1234);
+            buff.putShort((short) 4321);
+            converter = idOne.getData(buff);
+            assertEquals(KeyObjectConverter.class, converter.getClass());//should be the same class
+            assertEquals(code, ((KeyObjectConverter)converter).getKeyObject().getCookedKeyCode());
+            assertEquals(0xFFFFFFFC, ((KeyObjectConverter)converter).getKeyObject().getRawKeyCode());
+            assertEquals(1234, ((KeyObjectConverter)converter).getKeyObject().getTimePressed());
+            assertEquals(4321, ((KeyObjectConverter)converter).getKeyObject().getTimeHeld());
+        }
+        //test Long Converter
+        idOne = BitFieldId.LED_MASK;
+        buff = ByteBuffer.allocate(4);
+        buff.order(ByteOrder.LITTLE_ENDIAN);
+
+        //test limits only, anything above short is to big.
+        //min
+        buff.clear();
+        buff.putInt(Integer.MIN_VALUE);
+        converter = idOne.getData(buff);
+        assertEquals(LongConverter.class, converter.getClass());//should be the same class
+        assertEquals(Integer.MIN_VALUE , ((LongConverter)converter).getValue());
+
+        //0
+        buff.clear();
+        buff.putInt(0);
+        converter = idOne.getData(buff);
+        assertEquals(LongConverter.class, converter.getClass());//should be the same class
+        assertEquals(0, ((LongConverter)converter).getValue());
+
+        //max
+        buff.clear();
+        buff.putInt(Integer.MAX_VALUE);
+        converter = idOne.getData(buff);
+        assertEquals(LongConverter.class, converter.getClass());//should be the same class
+        assertEquals(Integer.MAX_VALUE, ((LongConverter)converter).getValue());
+
+        //test Resistance Converter
+        idOne = BitFieldId.TARGET_RESISTANCE;
+        buff = ByteBuffer.allocate(2);
         buff.order(ByteOrder.LITTLE_ENDIAN);
 
         // Test all unsigned short values
-        for(int i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; i++)
+        for(int i = Short.MIN_VALUE; i < Short.MAX_VALUE; i++)
         {
+            double expectResult;
             buff.clear();
-            buff.put((byte) i);
+            buff.putShort((short) i);
+            expectResult = (((short)i & 0xFFFF) + 0.0) / 100;
             converter = idOne.getData(buff);
-            assertEquals(ByteConverter.class, converter.getClass());//should be the same class
-            assertEquals((int)((byte)i & 0xFF), ((ByteConverter)converter).getValue());
+            assertEquals(ResistanceConverter.class, converter.getClass());//should be the same class
+            assertEquals(expectResult, ((ResistanceConverter)converter).getResistance());
         }
 
-        //test Byte Converter with int inputs we want this to be unsigned
+        //test Short Converter with int inputs we want this to be unsigned
         idOne = BitFieldId.TARGET_WATTS;
         buff = ByteBuffer.allocate(2);
         buff.order(ByteOrder.LITTLE_ENDIAN);
@@ -154,23 +202,25 @@ public class TestBitFieldId extends TestCase {
             buff.putShort((short) i);
             converter = idOne.getData(buff);
             assertEquals(ShortConverter.class, converter.getClass());//should be the same class
-            assertEquals((int)((short)i & 0xFFFF), ((ShortConverter)converter).getValue());
+            assertEquals(((short)i & 0xFFFF), ((ShortConverter)converter).getValue());
         }
-        //test Byte Converter with int inputs
-        idOne = BitFieldId.KEY_OBJECT;
-        buff = ByteBuffer.allocate(10);
+
+        //test Speed Converter
+        buff = ByteBuffer.allocate(2);
         buff.order(ByteOrder.LITTLE_ENDIAN);
+        idOne = BitFieldId.TARGET_MPH;
 
-//        // Test all unsigned short values
-//        for(long i = Integer.MIN_VALUE; i < Integer.MAX_VALUE; i++)
-//        {
-//            buff.clear();
-//            buff.putInt((int)i);
-//            converter = idOne.getData(buff);
-//            assertEquals(LongConverter.class, converter.getClass());//should be the same class
-//            assertEquals((int)((int)i & 0xFFFFFFFF), ((LongConverter)converter).getValue());
-//        }
-
+        // Test all unsigned short values
+        for(int i = 0; i < 65536; i++)
+        {
+            double expectResult;
+            buff.clear();
+            buff.putShort((short)i);
+            expectResult = (i + 0.0) / 10;
+            converter = idOne.getData(buff);
+            assertEquals(SpeedConverter.class, converter.getClass());//should be the same class
+            assertEquals(expectResult, ((SpeedConverter)converter).getSpeed());
+        }
     }
 
     /**
@@ -189,7 +239,6 @@ public class TestBitFieldId extends TestCase {
         ByteBuffer resultBuff4;
         KeyObject key;
         int intValue = 5;
-        double doubleValue = 5.0;
         buff1 = ByteBuffer.allocate(1);
         buff1.order(ByteOrder.LITTLE_ENDIAN);
         buff2 = ByteBuffer.allocate(2);
@@ -759,7 +808,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(true, bit.getReadOnly());
         assertEquals(5, ((LongConverter)bit.getData(buff4)).getValue());
         resultBuff4.clear();
-        resultBuff4.putInt((int) 5);
+        resultBuff4.putInt(5);
         assertEquals(resultBuff4, bit.getRawFromData(5.0));//double test
         assertEquals(resultBuff4, bit.getRawFromData(5));//int test
 

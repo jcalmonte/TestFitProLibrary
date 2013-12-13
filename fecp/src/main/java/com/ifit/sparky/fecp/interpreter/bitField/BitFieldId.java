@@ -8,10 +8,8 @@
 package com.ifit.sparky.fecp.interpreter.bitField;
 
 import com.ifit.sparky.fecp.interpreter.bitField.converter.*;
-import com.ifit.sparky.fecp.interpreter.command.CommandId;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 
 public enum BitFieldId {
     TARGET_MPH(0, 2, false, new SpeedConverter(), "Target Speed"),
@@ -36,7 +34,7 @@ public enum BitFieldId {
     STATUS(19, 1, true, new ByteConverter(), "Status"),
     CURRENT_BV_FREQUENCY(20, 2, true, new ShortConverter(), "Current BroadCast Vision Frequency"),
     CURRENT_BV_VOLUME(21, 1, true, new ByteConverter(), "Current BroadCast Vision Volume"),
-    CURRENT_AUDIO_SOURCE(22, 1, true, new ByteConverter(), "Current Audio Source"),//TODO create enum for this
+    CURRENT_AUDIO_SOURCE(22, 1, true, new ByteConverter(), "Current Audio Source"),
     TARGET_GEARS(23, 1, false, new ByteConverter(), "Target Gears"),
     SAFETY_FENCE(24, 2, true, new ShortConverter(), "Safety Fence"),
     UP_RIGHTS(25, 2, true, new ShortConverter(), "Up Right Post Adjusters"),
@@ -168,17 +166,6 @@ public enum BitFieldId {
      * @throws InvalidBitFieldException if the types don't match up
      */
     public ByteBuffer getRawFromData(double data)throws InvalidBitFieldException
-    {
-        return this.mConverter.convertData(data);
-    }
-
-    /**
-     * Converts the data into a formatted array of bytes.
-     * @param data data that is to be formatted.
-     * @return Array of bytes that are ready to be sent
-     * @throws InvalidBitFieldException if the types don't match up
-     */
-    public ByteBuffer getRawFromData(String data)throws InvalidBitFieldException
     {
         return this.mConverter.convertData(data);
     }

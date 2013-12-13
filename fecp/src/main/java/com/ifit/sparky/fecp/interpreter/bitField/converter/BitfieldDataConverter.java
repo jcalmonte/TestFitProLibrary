@@ -69,7 +69,7 @@ public abstract class BitfieldDataConverter {
         }
         else if(this.mDataSize == 4)
         {
-            rawLong = (this.mRawData.getInt(0) & 0xFFFFFFFF);
+            rawLong = this.mRawData.getInt(0);// & 0xFFFFFFFF;
         }
         else
         {
@@ -109,11 +109,8 @@ public abstract class BitfieldDataConverter {
         }
         else if(this.mDataSize == 4)
         {
-            if(data > Integer.MAX_VALUE)
-            {
-                throw new InvalidBitFieldException(data, Integer.TYPE);
-            }
-            tempBuff.putInt((int)data);
+            //input always in, no need for checking
+            tempBuff.putInt(data);
         }
 
         return tempBuff;

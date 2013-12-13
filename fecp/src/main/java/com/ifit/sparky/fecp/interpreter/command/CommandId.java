@@ -53,7 +53,7 @@ public enum CommandId {
      * Gets the CommandId based on the idNumber.
      * @param id The Command id Value
      * @return the Command Id
-     * @throws Exception if it doesn't exist
+     * @throws InvalidCommandException if it doesn't exist
      */
     public static CommandId getCommandId(int id) throws InvalidCommandException
     {

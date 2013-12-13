@@ -204,7 +204,7 @@ public class Device {
         HashSet<BitFieldId> writeBitfields = new HashSet<BitFieldId>();
         for(BitFieldId bit : this.mSupportedBitFields)
         {
-            if(bit.getReadOnly() == false)
+            if(!bit.getReadOnly())
             {
                 writeBitfields.add(bit);
             }
@@ -221,7 +221,7 @@ public class Device {
         HashSet<BitFieldId> readBitfields = new HashSet<BitFieldId>();
         for(BitFieldId bit : this.mSupportedBitFields)
         {
-            if(bit.getReadOnly() == true)
+            if(bit.getReadOnly())
             {
                 readBitfields.add(bit);
             }

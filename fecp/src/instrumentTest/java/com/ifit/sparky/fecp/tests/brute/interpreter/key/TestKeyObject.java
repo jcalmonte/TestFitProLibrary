@@ -129,4 +129,14 @@ public class TestKeyObject extends TestCase {
             assertTrue(true);
         }
     }
+
+    public void testEnum_KeyCodes() throws Exception
+    {
+        KeyCodes code;
+        code = KeyCodes.START;
+
+        assertEquals(KeyCodes.START, code);
+        assertEquals(2, code.getVal());
+        assertEquals("Basic", code.getCategory());
+    }
 }
