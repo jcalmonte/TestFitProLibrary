@@ -109,11 +109,11 @@ public abstract class BitfieldDataConverter {
         }
         else if(this.mDataSize == 4)
         {
-            if(data > Long.MAX_VALUE)
+            if(data > Integer.MAX_VALUE)
             {
-                throw new InvalidBitFieldException(data, Long.TYPE);
+                throw new InvalidBitFieldException(data, Integer.TYPE);
             }
-            tempBuff.putLong((long)data);
+            tempBuff.putInt((int)data);
         }
 
         return tempBuff;

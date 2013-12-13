@@ -31,8 +31,21 @@ public class LongConverter extends BitfieldDataConverter{
     @Override
     public ByteBuffer convertData(Object obj) throws InvalidBitFieldException {
 
-        this.mRawData.putShort((Short)obj);
-        return this.mRawData;
+        double temp;
+        //object needs to be a double
+        if(obj.getClass() == Double.class)
+        {
+            temp = (Double)obj;
+        }
+        else if(obj.getClass() == Integer.class)
+        {
+            temp = (Integer)obj + 0.0;
+        }
+        else
+        {
+            throw new InvalidBitFieldException( double.class, obj );
+        }
+        return this.getRawFromData((int)temp);
     }
 
     /**
