@@ -1,9 +1,10 @@
 /**
- * BriefDiscription.
+ * This object handles all the items dealing with the key.
  * @author Levi.Balling
  * @date 12/12/13
  * @version 1
- * Details.
+ * Handle the Keycode, the RawKey data( the 0xFFFFFFFC ), the time the key was pressed,
+ * and how long the key was press in milliseconds.
  */
 package com.ifit.sparky.fecp.interpreter.key;
 
