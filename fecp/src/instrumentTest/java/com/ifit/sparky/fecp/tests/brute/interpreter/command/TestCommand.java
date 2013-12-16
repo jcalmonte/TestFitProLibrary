@@ -7,7 +7,7 @@
  * @date 12/10/13
  * Tests the Command constructors, getters and setters, for any abnormal values.
  */
-package com.ifit.sparky.fecp.tests.interpreter.command;
+package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;

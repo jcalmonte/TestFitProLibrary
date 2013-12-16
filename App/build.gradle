@@ -6,13 +6,11 @@ buildscript {
         classpath 'com.android.tools.build:gradle:0.6.+'
     }
 }
-apply plugin: 'android-library'
+apply plugin: 'android'
 
 repositories {
     mavenCentral()
 }
-
-
 
 android {
     compileSdkVersion 19
@@ -21,12 +19,17 @@ android {
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 17
-        testPackageName "com.ifit.sparky.fecp.tests"
     }
-    release {
-        runProguard false
-        proguardFile 'proguard-rules.txt'
-        proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
+    buildTypes {
+        release {
+            runProguard true
+            proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
+        }
+    }
+    productFlavors {
+        defaultFlavor {
+            proguardFile 'proguard-rules.txt'
+        }
     }
 }
 

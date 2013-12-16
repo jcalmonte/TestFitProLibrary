@@ -7,8 +7,11 @@
  * @date 12/10/13
  * Tests the Device constructors, getters and setters, for any abnormal values.
  */
-package com.ifit.sparky.fecp.tests.interpreter.device;
+package com.ifit.sparky.fecp.tests.quick.interpreter.device;
 
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import  com.ifit.sparky.fecp.interpreter.device.Device;
@@ -16,6 +19,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import junit.framework.TestCase;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -48,52 +52,80 @@ public class TestDevice extends TestCase {
         Device deviceObjOne;
         HashSet<Command> cmdSet = new HashSet<Command>();
         ArrayList<Device> deviceList = new ArrayList<Device>();
+        HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
+        ByteBuffer byteList = ByteBuffer.allocate(2);
+        BitfieldDataConverter converter;
 
         deviceObjOne = new Device();
 
         assertEquals(DeviceId.NONE,deviceObjOne.getDevId());
         assertEquals(0, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
+        assertEquals(0, deviceObjOne.getSupportedBitfields().size());
 
         deviceObjOne = new Device(0x04);
 
         assertEquals(DeviceId.TREADMILL,deviceObjOne.getDevId());
         assertEquals(0, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
+        assertEquals(0, deviceObjOne.getSupportedBitfields().size());
 
         deviceObjOne = new Device(0x04);
 
         assertEquals(DeviceId.TREADMILL,deviceObjOne.getDevId());
         assertEquals(0, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
+        assertEquals(0, deviceObjOne.getSupportedBitfields().size());
 
         deviceObjOne = new Device(DeviceId.INCLINE_TRAINER);
 
         assertEquals(DeviceId.INCLINE_TRAINER,deviceObjOne.getDevId());
         assertEquals(0, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
+        assertEquals(0, deviceObjOne.getSupportedBitfields().size());
 
-        //add command
+        //add commands
         cmdSet.add(new Command(1, CommandId.CONNECT, DeviceId.TREADMILL));
         cmdSet.add(new Command(2, CommandId.DISCONNECT, DeviceId.TREADMILL));
 
+        //add subDevices
         deviceList.add(new Device());
         deviceList.add(new Device());
 
-        deviceObjOne = new Device(cmdSet, deviceList,DeviceId.TREADMILL);
+        //add bitfields
+        bitSet.add(BitFieldId.TARGET_MPH);
+        bitSet.add(BitFieldId.CURRENT_MPH);
+
+        byteList.put((byte)0x0B);
+        byteList.put((byte)0x01);
+
+        deviceObjOne = new Device(cmdSet, deviceList, bitSet, DeviceId.TREADMILL);
 
         assertEquals(DeviceId.TREADMILL,deviceObjOne.getDevId());
         assertEquals(2, deviceObjOne.getCommandSet().size());
         assertEquals(2, deviceObjOne.getSubDeviceList().size());
-
+        assertEquals(2, deviceObjOne.getSupportedBitfields().size());
+        assertEquals(1, deviceObjOne.getSupportedReadBitfields().size());
+        assertEquals(1, deviceObjOne.getSupportedWriteBitfields().size());
+        for(BitFieldId id : bitSet)
+        {
+            converter =id.getData(byteList);
+            if(converter.getClass() == SpeedConverter.class)
+            {
+                assertEquals(26.7, ((SpeedConverter)converter).getSpeed());
+            }
+        }
         deviceList.add(new Device());
         cmdSet.add(new Command(3, CommandId.CALIBRATE, DeviceId.INCLINE_TRAINER));
 
-        deviceObjOne = new Device(cmdSet, deviceList, 0x05);
+        deviceObjOne = new Device(cmdSet, deviceList, bitSet, 0x05);
 
         assertEquals(DeviceId.INCLINE_TRAINER,deviceObjOne.getDevId());
         assertEquals(3, deviceObjOne.getCommandSet().size());
         assertEquals(3, deviceObjOne.getSubDeviceList().size());
+        assertEquals(2, deviceObjOne.getSupportedBitfields().size());
+        assertEquals(1, deviceObjOne.getSupportedReadBitfields().size());
+        assertEquals(1, deviceObjOne.getSupportedWriteBitfields().size());
     }
 
     /** Tests the getters and Setters.
@@ -152,6 +184,14 @@ public class TestDevice extends TestCase {
         assertEquals(3, deviceObjOne.getSubDeviceList().size());
     }
 
+    /** Tests the Bitfield related getters and setters
+     *
+     * @throws Exception
+     */
+    public void testBitfieldGetSet_device()throws Exception
+    {
+
+    }
 
 
     /** Tests the getters and Setters.

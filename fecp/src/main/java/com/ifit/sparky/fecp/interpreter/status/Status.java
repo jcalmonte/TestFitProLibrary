@@ -37,7 +37,7 @@ public class Status {
      * sets the values of the status
      * @param stsId the status Id
      * @param length the Length of the message
-     * @param cmdId the ommand Id
+     * @param cmdId the command Id
      * @param devId the Device Id
      */
     public Status(StatusId stsId, int length, CommandId cmdId, DeviceId devId) throws Exception

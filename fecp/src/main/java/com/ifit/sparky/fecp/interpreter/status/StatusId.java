@@ -14,8 +14,8 @@ public enum StatusId {
     CMD_NOT_SUPPORTED(0x01, "Command is not supported"),
     DONE(0x02, "Command was successful send and received");
 
-    private int id;
-    private String description;
+    private int mId;
+    private String mDescription;
 
     /**
      * Constructor for the StatusId
@@ -24,8 +24,8 @@ public enum StatusId {
      */
     StatusId(int id, String description)
     {
-        this.id = id;
-        this.description = description;
+        this.mId = id;
+        this.mDescription = description;
     }
 
     /**
@@ -34,7 +34,7 @@ public enum StatusId {
      */
     public int getVal()
     {
-        return this.id;
+        return this.mId;
     }
 
     /**
@@ -43,7 +43,7 @@ public enum StatusId {
      */
     public String getDescription()
     {
-        return  this.description;
+        return  this.mDescription;
     }
 
     /**

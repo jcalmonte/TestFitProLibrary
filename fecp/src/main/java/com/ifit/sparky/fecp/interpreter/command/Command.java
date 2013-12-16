@@ -37,7 +37,7 @@ public class Command {
      * Constructor for the Command Object.
      * @param length of the message being sent
      * @param cmdId Command id for the message being sent
-     * @param devId Devic id for the message being sent.
+     * @param devId Device id for the message being sent.
      * @throws Exception if the length is out of bounds
      */
     public Command(int length, CommandId cmdId, DeviceId devId) throws Exception

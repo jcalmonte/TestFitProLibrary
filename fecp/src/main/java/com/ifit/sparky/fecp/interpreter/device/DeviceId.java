@@ -17,8 +17,8 @@ public enum DeviceId {
     TREADMILL(0x04, "Treadmill system"),
     INCLINE_TRAINER(0x05, "Incline Trainer");
 
-    private int id;
-    private String description;
+    private int mId;
+    private String mDescription;
 
     /** constructor for the DeviceId enum.
      *
@@ -27,8 +27,8 @@ public enum DeviceId {
      */
     DeviceId(int id, String description)
     {
-        this.id = id;
-        this.description = description;
+        this.mId = id;
+        this.mDescription = description;
     }
 
     /**
@@ -37,7 +37,7 @@ public enum DeviceId {
      */
     public int getVal()
     {
-        return this.id;
+        return this.mId;
     }
     /**
      * gets the description of the device.
@@ -45,7 +45,7 @@ public enum DeviceId {
      */
     public String getDescription()
     {
-        return  this.description;
+        return  this.mDescription;
     }
 
     /**
