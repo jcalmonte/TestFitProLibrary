@@ -96,6 +96,7 @@ public class TestDevice extends TestCase {
         Device deviceObjOne;
         DeviceInfo info;
         ArrayList<Device> deviceList = new ArrayList<Device>();
+        HashSet<Command> cmdSet = new HashSet<Command>();
 
         //setup default
         deviceObjOne = new Device();
@@ -119,13 +120,19 @@ public class TestDevice extends TestCase {
         assertNotNull(deviceObjOne.getSubDevice(0x05));//incline trainer
         assertEquals(3, deviceObjOne.getSubDeviceList().size());
 
-        //Test set commands
-        //cmdSet.add(new InfoCmd(DeviceId.TREADMILL));//currently the only supported command
+        //Test set command
+        deviceObjOne.addCommand(new Command());
+        assertEquals(1,deviceObjOne.getCommandSet().size());
+        //Test set Commands and get command and command by idVal
+        cmdSet.add(new InfoCmd(DeviceId.INCLINE_TRAINER));
+        deviceObjOne.addCommands(cmdSet);
+        assertEquals(2, deviceObjOne.getCommandSet().size());
+        assertEquals(CommandId.GET_INFO,deviceObjOne.getCommand(CommandId.GET_INFO).getCmdId());
+        assertEquals(CommandId.NONE,deviceObjOne.getCommand(0).getCmdId());
 
-        deviceObjOne = new Device();
-
-        deviceObjOne.addCommand(new InfoCmd(DeviceId.TREADMILL));
-        assertNotNull(deviceObjOne.getCommand(CommandId.GET_INFO));
+        //test the getInfo
+        deviceObjOne.setDeviceInfo(info);
+        assertEquals(DeviceId.NONE, deviceObjOne.getInfo().getDevId());
     }
 
     /** Tests the getters and Setters.

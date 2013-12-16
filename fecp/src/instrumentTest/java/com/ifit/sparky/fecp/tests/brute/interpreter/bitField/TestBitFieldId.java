@@ -75,7 +75,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(false, idTwo.getReadOnly());
         assertNotNull(idTwo.getDescription());
 
-        //test changes in the converter behind the seens to make sure it still matches
+        //test changes in the converter behind the seen to make sure it still matches
         converterOne =idOne.getData(rawData);
 
         assertEquals(26.7, ((SpeedConverter)converterOne).getSpeed());

@@ -12,9 +12,9 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.device.*;
 import com.ifit.sparky.fecp.interpreter.status.Status;
 
-import java.nio.ByteBuffer;
+import java.nio.*;
 
-public class Command {
+public class Command implements CommandInterface{
 
     public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
@@ -223,5 +223,27 @@ public class Command {
             checkSum += buff.get();
         }
         return checkSum;
+    }
+
+    /**
+     * This will only setup the first part of the byte buffer that is the same for all
+     * buffers. the DeviceId, length, and the Command id
+     *
+     * @return the Command structured to be ready to send over the usb.
+     */
+    @Override
+    public ByteBuffer getCmdMsg() {
+
+        ByteBuffer buff;
+        buff = ByteBuffer.allocate(this.mLength);
+        buff.order(ByteOrder.LITTLE_ENDIAN);
+        buff.position(0);
+        buff.put((byte)this.mDevId.getVal());
+        buff.put((byte)this.mLength);
+        buff.put((byte)this.mCmdId.getVal());
+        //get the checksum value
+        buff.put(Command.getCheckSum(buff));
+
+        return buff;
     }
 }

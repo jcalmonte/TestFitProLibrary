@@ -161,8 +161,8 @@ public class Status implements StatusInterface{
     @Override
     public void handleStsMsg(ByteBuffer buff) throws Exception {
         //goes through all the major items, but doesn't handle the specifics
-        byte checkSum = 0;
-        byte actualByte = 0;
+        byte checkSum;
+        byte actualByte;
         buff.position(0);
         //first check if the checksum is good
         checkSum = Command.getCheckSum(buff);

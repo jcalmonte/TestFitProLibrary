@@ -1,9 +1,10 @@
 /**
- * BriefDiscription.
+ * This is the command for Get Device Info.
  * @author Levi.Balling
  * @date 12/16/13
  * @version 1
- * Details.
+ * creates the command for getting the device info from the device.
+ * All the devices must support this.
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
@@ -17,9 +18,11 @@ public class InfoCmd extends Command implements CommandInterface{
     /**
      * default constructor
      */
-    public InfoCmd()
+    public InfoCmd() throws Exception
     {
         super();
+        this.setLength(4);
+        this.setCmdId(CommandId.GET_INFO);
     }
 
     /**
@@ -38,12 +41,11 @@ public class InfoCmd extends Command implements CommandInterface{
      */
     @Override
     public ByteBuffer getCmdMsg() {
-        ByteBuffer buff = ByteBuffer.allocate(4);
-        buff.order(ByteOrder.LITTLE_ENDIAN);
-        buff.position(0);
-        buff.put((byte)this.mDevId.getVal());
-        buff.put((byte)this.mLength);
-        buff.put((byte)this.mCmdId.getVal());
+
+        ByteBuffer buff;
+
+        buff = super.getCmdMsg();
+
         //get the checksum value
         buff.put(Command.getCheckSum(buff));
 

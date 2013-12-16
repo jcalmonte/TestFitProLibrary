@@ -7,7 +7,6 @@
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
-import com.ifit.sparky.fecp.R;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 
 import java.nio.ByteBuffer;
@@ -222,8 +221,8 @@ public class DeviceInfo {
      */
     public void interpretInfo(ByteBuffer buff) throws Exception
     {
-        int sections = 0;
-        byte bits = 0;
+        int sections;
+        byte bits;
         //read Sw Version
         this.setSWVersion(buff.get());// read 1 byte
 

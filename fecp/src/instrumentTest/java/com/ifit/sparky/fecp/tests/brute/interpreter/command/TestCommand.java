@@ -11,6 +11,7 @@ package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.Status;
@@ -211,6 +212,19 @@ public class TestCommand extends TestCase {
         //test set Device by id
         commandObjOne.setDevId(0x05);
         assertEquals(DeviceId.INCLINE_TRAINER, commandObjOne.getDevId());
+    }
+
+    public void testCommandTypeCasting_command() throws Exception
+    {
+        Command commandObjOne;
+        commandObjOne = new InfoCmd();
+
+        //assert Info Command defaults
+        assertEquals(4, commandObjOne.getLength());
+        assertEquals(CommandId.GET_INFO, commandObjOne.getCmdId());
+        assertEquals(StatusId.DEV_NOT_SUPPORTED, commandObjOne.getStatus().getStsId());
+        assertEquals(InfoCmd.class, commandObjOne.getClass());
+        //no values to get with the get info command. no variables
     }
 
 }
