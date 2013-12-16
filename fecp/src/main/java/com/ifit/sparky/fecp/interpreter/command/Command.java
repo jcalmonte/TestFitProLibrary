@@ -12,14 +12,16 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.device.*;
 import com.ifit.sparky.fecp.interpreter.status.Status;
 
+import java.nio.ByteBuffer;
+
 public class Command {
 
     public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
-    private Status mStatus;
-    private int mLength;
-    private CommandId mCmdId;
-    private DeviceId mDevId;
+    protected Status mStatus;
+    protected int mLength;
+    protected CommandId mCmdId;
+    protected DeviceId mDevId;
 
     /**
      * Constructor for the command object. This will handle all the things dealing with
@@ -43,7 +45,6 @@ public class Command {
     public Command(int length, CommandId cmdId, DeviceId devId) throws Exception
     {
         this.mStatus = new Status();
-
         if(length <= MAX_MSG_LENGTH && length >= 0)
         {
             this.mLength = length;
@@ -67,6 +68,7 @@ public class Command {
      */
     public Command(Status sts, int length, CommandId cmdId, DeviceId devId) throws Exception
     {
+        this.mStatus = new Status();
         // if the sts command id doesn't match there is a mistake, there may be a few exceptions.
         if(sts.getCmdId() != cmdId)
         {
@@ -199,5 +201,27 @@ public class Command {
         this.mDevId = DeviceId.getDeviceId(idVal); // if invalid int
     }
 
+    /**
+     * Gets the command message for all commands that extend this class.
+     * When they want to get the command they have to get the command.
+     * @return the Command structured to be ready to send over the usb.
+     */
+   // public abstract ByteBuffer getCmdMsg();
 
+    /**
+     * gets the checksum byte from the bytebuffer. Excludes the last byte in the buffer
+     * @param buff the Buffer with the command or status in it.
+     * @return the checksum byte
+     */
+    public static byte getCheckSum(ByteBuffer buff)
+    {
+        byte checkSum = 0;
+        buff.position(0);
+        // loop through all but the last byte.
+        for(int i = 0; i < buff.capacity()-1; i++)
+        {
+            checkSum += buff.get();
+        }
+        return checkSum;
+    }
 }

@@ -12,6 +12,7 @@ package com.ifit.sparky.fecp.tests.brute.interpreter.status;
 
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 import com.ifit.sparky.fecp.interpreter.status.Status;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
@@ -117,5 +118,14 @@ public class TestStatus extends TestCase{
         assertEquals(DeviceId.TREADMILL, statusObjOne.getDevId());
     }
 
+    /**
+     * Checks to make sure we can cast the objects correctly
+     * @throws Exception
+     */
+    public void testSubStatus_status() throws Exception
+    {
+        Status blankSts = new Status();
 
+
+    }
 }

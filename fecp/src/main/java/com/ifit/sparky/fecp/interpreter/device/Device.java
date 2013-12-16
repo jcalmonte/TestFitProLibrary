@@ -10,7 +10,6 @@
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
-import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.*;
 
 import java.util.*;
@@ -18,9 +17,8 @@ import java.util.*;
 public class Device {
 
     private Map<CommandId, Command> mCommandMap;//list of all the available commands.
-    private DeviceId    mDevId;
     private ArrayList<Device> mSubDevArrayList;//list of all the subDevices.
-    private Set<BitFieldId> mSupportedBitFields; //list of available items
+    protected DeviceInfo mInfo;// all the major information about a system.
 
     /**
      * Default constructor for devices.
@@ -29,76 +27,38 @@ public class Device {
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
-        this.mDevId = DeviceId.NONE;
-        this.mSupportedBitFields = new HashSet<BitFieldId>();
+        this.mInfo = new DeviceInfo();
     }
 
     /**
      * constructor for single device.
-     */
-    public Device(int idVal) throws Exception
-    {
-        this.mCommandMap = new LinkedHashMap<CommandId, Command>();
-        this.mSubDevArrayList = new ArrayList<Device>();
-        this.mDevId = DeviceId.getDeviceId(idVal);
-        this.mSupportedBitFields = new HashSet<BitFieldId>();
-    }
-
-    /**
-     * constructor for single device.
+     * @param id the deviceId
      */
     public Device(DeviceId id)
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
-        this.mDevId = id;
-        this.mSupportedBitFields = new HashSet<BitFieldId>();
+        this.mInfo = new DeviceInfo();
+        this.mInfo.setDevId(id);
     }
 
     /**
      * Constructor for adding lists of commands and sub-devices.
      * @param commands List of commands to add
      * @param devices the List of Sub devices
-     * @param bitFields the BitFields that the device supports
-     * @param id The Device Id
+     * @param info the info about the device.
      */
     public Device(
             Collection<Command> commands,
             Collection<Device> devices,
-            Collection<BitFieldId> bitFields,
-            DeviceId id) throws Exception
+            DeviceInfo info) throws Exception
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
 
         this.addCommands(commands);
         this.mSubDevArrayList.addAll(devices);
-        this.mSupportedBitFields = new HashSet<BitFieldId>();
-        this.addAllBitfield(bitFields);
-        this.mDevId = id;
-    }
-
-    /**
-     * Constructor for adding lists of commands and sub-devices, with int device Id value
-     * @param commands List of commands to add
-     * @param devices the List of Sub devices
-     * @param bitFields the BitFields that the device supports
-     * @param idVal The Device Id value
-     */
-    public Device(
-            Collection<Command> commands,
-            Collection<Device> devices,
-            Collection<BitFieldId> bitFields,
-            int idVal) throws Exception
-    {
-        this.mCommandMap = new LinkedHashMap<CommandId, Command>();
-        this.mSubDevArrayList = new ArrayList<Device>();
-
-        this.addCommands(commands);
-        this.mSubDevArrayList.addAll(devices);
-        this.mSupportedBitFields = new HashSet<BitFieldId>();
-        this.addAllBitfield(bitFields);
-        this.mDevId = DeviceId.getDeviceId(idVal);
+        this.mInfo = info;
     }
 
     /*******************************
@@ -122,7 +82,7 @@ public class Device {
     {
         for(Device dev : this.mSubDevArrayList)
         {
-            if(dev.getDevId().getVal() == idVal)
+            if(dev.mInfo.getDevId().getVal() == idVal)
             {
                 return dev;/* returns the Device that matches */
             }
@@ -139,7 +99,7 @@ public class Device {
     {
         for(Device dev : this.mSubDevArrayList)
         {
-            if(dev.getDevId() == id)
+            if(dev.mInfo.getDevId() == id)
             {
                 return dev;/* returns the Device that matches */
             }
@@ -187,73 +147,12 @@ public class Device {
     }
 
     /**
-     * gets the set of Supported Bitfields
-     * @return set of BitfieldIds
+     * Gets the info about the device
+     * @return the device info
      */
-    public Set<BitFieldId> getSupportedBitfields()
+    public DeviceInfo getInfo()
     {
-        return this.mSupportedBitFields; /* list of commands */
-    }
-
-    /**
-     * gets the set of Supported Write enabled Bitfields
-     * @return set of Writable BitfieldIds
-     */
-    public Set<BitFieldId> getSupportedWriteBitfields()
-    {
-        HashSet<BitFieldId> writeBitfields = new HashSet<BitFieldId>();
-        for(BitFieldId bit : this.mSupportedBitFields)
-        {
-            if(!bit.getReadOnly())
-            {
-                writeBitfields.add(bit);
-            }
-        }
-        return writeBitfields; /* set of Write Bitfields for the device */
-    }
-
-    /**
-     * gets the set of Supported Read Only Bitfields
-     * @return set of Read only BitfieldIds
-     */
-    public Set<BitFieldId> getSupportedReadBitfields()
-    {
-        HashSet<BitFieldId> readBitfields = new HashSet<BitFieldId>();
-        for(BitFieldId bit : this.mSupportedBitFields)
-        {
-            if(bit.getReadOnly())
-            {
-                readBitfields.add(bit);
-            }
-        }
-        return readBitfields; /* set of Write Bitfields for the device */
-    }
-
-    /**
-     * gets the Device Id.
-     * @return The Device Id
-     */
-    public DeviceId getDevId()
-    {
-        return this.mDevId; /* The Device Id */
-    }
-
-    /**
-     * Sets the device Id.
-     * @param id the Device ID
-     */
-    public void setDevId(DeviceId id)
-    {
-        this.mDevId = id;
-    }
-
-    /**
-     * Sets the device Id, by the id Value.
-     * @param idVal the Device Id Value
-     */
-    public void setDevId(int idVal) throws Exception
-    {
-        this.mDevId = DeviceId.getDeviceId(idVal);
+        return this.mInfo;
     }
 
     /**
@@ -307,25 +206,13 @@ public class Device {
     }
 
     /**
-     * Adds a bitfield item to the device, or what the device supports.
-     * @param bitfield the bitfield
+     * Sets the device's info.
+     * @param info the Device Info
      */
-    public void addBitfield(BitFieldId bitfield)
-    {
-        this.mSupportedBitFields.add(bitfield);
-    }
-
-    /**
-     * Adds a collection of bitfields to the device.
-     * @param bitfields to add to the device.
-     */
-    public void addAllBitfield(Collection<BitFieldId> bitfields)
-    {
-        for(BitFieldId singleBit : bitfields)
-        {
-            this.addBitfield(singleBit);
-        }
-    }
+   public void setDeviceInfo(DeviceInfo info)
+   {
+       this.mInfo = info;
+   }
 
 
 }

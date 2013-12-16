@@ -17,4 +17,16 @@ public class InvalidDeviceException extends Exception {
     {
         super("Invalid Device id ("+badId+").");
     }
+
+    /**
+     * Handles an exception if there the device Id doesn't match the received device id byte
+     * @param actualDev the received byte from the buffer
+     * @param id the device id it should have been.
+     */
+    public InvalidDeviceException(byte actualDev, DeviceId id)
+    {
+        super("Invalid Device ID, Expected("+id.getDescription()+
+                ": "+id.getVal() +") Actual("+actualDev+")");
+
+    }
 }
