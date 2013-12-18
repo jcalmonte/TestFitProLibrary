@@ -19,6 +19,7 @@ public class DeviceInfo {
     protected int mHWVersion;
     protected int mSerialNumber;
     protected int mManufactureNumber;
+    protected int mSections;
     protected Set<BitFieldId> mSupportedBitFields; //list of available items
 
     /**
@@ -31,6 +32,7 @@ public class DeviceInfo {
         this.mHWVersion = 0;
         this.mSerialNumber = 0;
         this.mManufactureNumber = 0;
+        this.mSections = 0;
         this.mSupportedBitFields = new HashSet<BitFieldId>();
     }
 
@@ -104,6 +106,15 @@ public class DeviceInfo {
     public int getManufactureNumber()
     {
         return this.mManufactureNumber;
+    }
+
+    /**
+     * Gets the Number sections
+     * @return the Number of sections
+     */
+    public int getSections()
+    {
+        return this.mSections;
     }
 
     /**
@@ -195,11 +206,25 @@ public class DeviceInfo {
     }
 
     /**
+     * Sets the Number of sections
+     * @param sections the Number of sections
+     */
+    public void setSections(int sections)
+    {
+        this.mSections = sections;
+    }
+
+    /**
      * Adds a bitfield item to the device, or what the device supports.
      * @param bitfield the bitfield
      */
     public void addBitfield(BitFieldId bitfield)
     {
+        if(bitfield.getSection() > this.mSections)
+        {
+            this.mSections = bitfield.getSection();
+        }
+
         this.mSupportedBitFields.add(bitfield);
     }
 
@@ -221,7 +246,6 @@ public class DeviceInfo {
      */
     public void interpretInfo(ByteBuffer buff) throws Exception
     {
-        int sections;
         byte bits;
         //read Sw Version
         this.setSWVersion(buff.get());// read 1 byte
@@ -236,11 +260,11 @@ public class DeviceInfo {
         this.setManufactureNumber(buff.getShort());//read 2 bytes
 
         //Read the number of Section bytes
-        sections = buff.get();
+        this.mSections = buff.get();
 
         //Read the data bits
 
-        for(int i= 0; i < sections; i++)
+        for(int i= 0; i < this.mSections; i++)
         {
             bits = buff.get();
             //loop through each bit and check if it 1 or not

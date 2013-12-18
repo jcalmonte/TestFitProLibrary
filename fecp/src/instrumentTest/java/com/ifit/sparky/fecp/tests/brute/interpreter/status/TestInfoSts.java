@@ -7,6 +7,7 @@
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.status;
 
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
@@ -14,6 +15,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
+import com.ifit.sparky.fecp.tests.brute.interpreter.command.TestCommandBuilder;
 
 import junit.framework.TestCase;
 
@@ -66,37 +68,42 @@ public class TestInfoSts extends TestCase {
 
         InfoSts sts;
         ByteBuffer buff;
+        TestCommandBuilder builder = new TestCommandBuilder();
 
-        sts = new InfoSts(DeviceId.TREADMILL);
-        buff = ByteBuffer.allocate(15);//needs to be precise
-        buff.order(ByteOrder.LITTLE_ENDIAN);
+        sts = new InfoSts(DeviceId.INCLINE_TRAINER);
 
         //initialize buffer command
-        buff.put((byte)DeviceId.INCLINE_TRAINER.getVal());//device ID
-        buff.put((byte)15);//Length
-        buff.put((byte)sts.getCmdId().getVal());// Command ID
-        buff.put((byte)StatusId.DONE.getVal());//Status ID
+        buff = builder.buildBuffer(sts.getDevId(), 15,sts.getCmdId(),StatusId.DONE);
         //SW version
         buff.put((byte)1);
         //HW version
         buff.put((byte)2);
         //Serial Number
         buff.putInt(3);
-
         //Manufacture ID
         buff.putShort((short) 4);
-
         //number of supported bitfields
         buff.put((byte)1);
 
         //bitfield bytes
-        buff.put((byte)1);//just the target MPH 
+        buff.put((byte) 1);//just the target MP 
         buff.put(Command.getCheckSum(buff));
         sts.handleStsMsg(buff);
 
         // assert default values
         assertEquals(DeviceId.INCLINE_TRAINER, sts.getDevId());
         assertEquals(StatusId.DONE, sts.getStsId());
+        assertEquals(CommandId.GET_INFO, sts.getCmdId());
+        assertEquals(15, sts.getLength());
+        assertEquals(1, sts.getInfo().getSWVersion());
+        assertEquals(2, sts.getInfo().getHWVersion());
+        assertEquals(3, sts.getInfo().getSerialNumber());
+        assertEquals(4, sts.getInfo().getManufactureNumber());
+        assertEquals(1, sts.getInfo().getSections());
+        assertEquals(1, sts.getInfo().getSupportedBitfields().size());
+        assertEquals(0, sts.getInfo().getSupportedReadBitfields().size());
+        assertEquals(1, sts.getInfo().getSupportedWriteBitfields().size());
+        assertTrue(sts.getInfo().getSupportedWriteBitfields().contains(BitFieldId.TARGET_MPH));
 
     }
 }
