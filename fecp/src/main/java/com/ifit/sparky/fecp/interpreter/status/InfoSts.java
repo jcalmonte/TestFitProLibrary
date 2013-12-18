@@ -1,0 +1,57 @@
+/**
+ * This status handles the device's info, and everything about the device.
+ * @author Levi.Balling
+ * @date 12/16/13
+ * @version 1
+ * this status must receive the Device Info.
+ */
+package com.ifit.sparky.fecp.interpreter.status;
+
+import com.ifit.sparky.fecp.interpreter.command.*;
+import com.ifit.sparky.fecp.interpreter.device.*;
+
+import java.nio.ByteBuffer;
+
+public class InfoSts extends Status implements StatusInterface {
+
+    DeviceInfo mInfo;
+
+    /**
+     * Main constructor for the Info Status response
+     * @param devId the device Id of the expected Status
+     * @throws Exception if things don't match up.
+     */
+    public InfoSts(DeviceId devId) throws Exception
+    {
+        //Min length is 14 bytes
+        super(StatusId.DEV_NOT_SUPPORTED, 14, CommandId.GET_INFO, devId);
+        this.mInfo = new DeviceInfo();
+    }
+
+    /**
+     * Handles the message that is coming across the usb. It handles raw data, and it
+     * must be handled by the correct status.
+     *
+     * @param buff the msg that came from the usb. only str
+     */
+    @Override
+    public void handleStsMsg(ByteBuffer buff) throws Exception
+    {
+        super.handleStsMsg(buff);
+
+        //now parse the data
+        if(this.mStsId == StatusId.DONE)
+        {
+            this.mInfo.interpretInfo(buff);
+        }
+    }
+
+    /**
+     * Gets the device info
+     * @return the device info
+     */
+    public DeviceInfo getInfo()
+    {
+        return this.mInfo;
+    }
+}

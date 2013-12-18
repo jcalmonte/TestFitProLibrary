@@ -38,4 +38,16 @@ public class InvalidCommandException extends Exception {
         super("Can't add command("+ duplicate.getCmdId().name()
                 + ") It already is in the list.");
     }
+
+    /**
+     * Handles an exception if there the Command Id doesn't match the received Command id byte
+     * @param actualCmdId the received byte from the buffer
+     * @param id the Command id it should have been.
+     */
+    public InvalidCommandException(CommandId id, byte actualCmdId)
+    {
+        super("Invalid Command ID, Expected("+id.getDescription()+
+                ": "+id.getVal() +") Actual("+actualCmdId+")");
+
+    }
 }

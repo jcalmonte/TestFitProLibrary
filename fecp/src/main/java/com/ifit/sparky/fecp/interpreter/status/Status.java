@@ -10,17 +10,23 @@
 
 package com.ifit.sparky.fecp.interpreter.status;
 
+import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.InvalidDeviceException;
 
-public class Status {
+import java.nio.ByteBuffer;
+
+
+public class Status implements StatusInterface{
 
     public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
-    private StatusId mStsId;
-    private int mLength;
-    private CommandId mCmdId;
-    private DeviceId mDevId;
+    protected StatusId mStsId;
+    protected int mLength;
+    protected CommandId mCmdId;
+    protected DeviceId mDevId;
 
     /**
      * Default Constructor for the Status object.
@@ -146,5 +152,42 @@ public class Status {
     }
 
 
+    /**
+     * Handles the message that is coming across the usb. It handles raw data, and it
+     * must be handled by the correct status.
+     *
+     * @param buff the msg that came from the usb. only str
+     */
+    @Override
+    public void handleStsMsg(ByteBuffer buff) throws Exception {
+        //goes through all the major items, but doesn't handle the specifics
+        byte checkSum;
+        byte actualByte;
+        buff.position(0);
+        //first check if the checksum is good
+        checkSum = Command.getCheckSum(buff);
+        actualByte = buff.get();
+        if(actualByte != checkSum)
+        {
+            throw new InvalidStatusException(checkSum, actualByte);
+        }
+        //check if the device id matches
+        buff.position(0);
+        actualByte = buff.get();
+        if(actualByte != (byte)this.mDevId.getVal())
+        {
+            throw new InvalidDeviceException(actualByte, this.mDevId);
+        }
+        //get the length
+        this.setLength(buff.get());
 
+        //check if the command id matches
+        actualByte = buff.get();
+        if(actualByte != (byte)this.mCmdId.getVal())
+        {
+            throw new InvalidCommandException(this.mCmdId, actualByte);
+        }
+        //get the status ID
+        this.mStsId = StatusId.getStatusId(buff.get());
+    }
 }

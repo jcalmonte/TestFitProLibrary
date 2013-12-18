@@ -9,17 +9,15 @@
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.device;
 
-import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import  com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 
 import junit.framework.TestCase;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -50,82 +48,43 @@ public class TestDevice extends TestCase {
     public void testConstructor_device() throws Exception{
 
         Device deviceObjOne;
+        DeviceInfo info;
         HashSet<Command> cmdSet = new HashSet<Command>();
         ArrayList<Device> deviceList = new ArrayList<Device>();
-        HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
-        ByteBuffer byteList = ByteBuffer.allocate(2);
-        BitfieldDataConverter converter;
 
+        //test default
         deviceObjOne = new Device();
+        info = new DeviceInfo();
 
-        assertEquals(DeviceId.NONE,deviceObjOne.getDevId());
+        assertEquals(DeviceId.NONE,deviceObjOne.getInfo().getDevId());
         assertEquals(0, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
-        assertEquals(0, deviceObjOne.getSupportedBitfields().size());
+        assertEquals(0, deviceObjOne.getInfo().getSupportedBitfields().size());
+        assertNotNull(deviceObjOne.getInfo());//should match up
 
-        deviceObjOne = new Device(0x04);
-
-        assertEquals(DeviceId.TREADMILL,deviceObjOne.getDevId());
-        assertEquals(0, deviceObjOne.getCommandSet().size());
-        assertEquals(0, deviceObjOne.getSubDeviceList().size());
-        assertEquals(0, deviceObjOne.getSupportedBitfields().size());
-
-        deviceObjOne = new Device(0x04);
-
-        assertEquals(DeviceId.TREADMILL,deviceObjOne.getDevId());
-        assertEquals(0, deviceObjOne.getCommandSet().size());
-        assertEquals(0, deviceObjOne.getSubDeviceList().size());
-        assertEquals(0, deviceObjOne.getSupportedBitfields().size());
-
+        //test second constructor
         deviceObjOne = new Device(DeviceId.INCLINE_TRAINER);
+        info.setDevId(DeviceId.INCLINE_TRAINER);
 
-        assertEquals(DeviceId.INCLINE_TRAINER,deviceObjOne.getDevId());
+        assertEquals(DeviceId.INCLINE_TRAINER,deviceObjOne.getInfo().getDevId());
         assertEquals(0, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
-        assertEquals(0, deviceObjOne.getSupportedBitfields().size());
+        assertEquals(0, deviceObjOne.getInfo().getSupportedBitfields().size());
+        assertNotNull(deviceObjOne.getInfo());//should match up
 
+        //test Third constructor
         //add commands
-        cmdSet.add(new Command(1, CommandId.CONNECT, DeviceId.TREADMILL));
-        cmdSet.add(new Command(2, CommandId.DISCONNECT, DeviceId.TREADMILL));
-
+        cmdSet.add(new InfoCmd(DeviceId.TREADMILL));
         //add subDevices
         deviceList.add(new Device());
         deviceList.add(new Device());
 
-        //add bitfields
-        bitSet.add(BitFieldId.TARGET_MPH);
-        bitSet.add(BitFieldId.CURRENT_MPH);
+        deviceObjOne = new Device(cmdSet, deviceList, info);
 
-        byteList.put((byte)0x0B);
-        byteList.put((byte)0x01);
-
-        deviceObjOne = new Device(cmdSet, deviceList, bitSet, DeviceId.TREADMILL);
-
-        assertEquals(DeviceId.TREADMILL,deviceObjOne.getDevId());
-        assertEquals(2, deviceObjOne.getCommandSet().size());
+        assertEquals(DeviceId.INCLINE_TRAINER,deviceObjOne.getInfo().getDevId());
+        assertEquals(1, deviceObjOne.getCommandSet().size());
         assertEquals(2, deviceObjOne.getSubDeviceList().size());
-        assertEquals(2, deviceObjOne.getSupportedBitfields().size());
-        assertEquals(1, deviceObjOne.getSupportedReadBitfields().size());
-        assertEquals(1, deviceObjOne.getSupportedWriteBitfields().size());
-        for(BitFieldId id : bitSet)
-        {
-            converter =id.getData(byteList);
-            if(converter.getClass() == SpeedConverter.class)
-            {
-                assertEquals(26.7, ((SpeedConverter)converter).getSpeed());
-            }
-        }
-        deviceList.add(new Device());
-        cmdSet.add(new Command(3, CommandId.CALIBRATE, DeviceId.INCLINE_TRAINER));
-
-        deviceObjOne = new Device(cmdSet, deviceList, bitSet, 0x05);
-
-        assertEquals(DeviceId.INCLINE_TRAINER,deviceObjOne.getDevId());
-        assertEquals(3, deviceObjOne.getCommandSet().size());
-        assertEquals(3, deviceObjOne.getSubDeviceList().size());
-        assertEquals(2, deviceObjOne.getSupportedBitfields().size());
-        assertEquals(1, deviceObjOne.getSupportedReadBitfields().size());
-        assertEquals(1, deviceObjOne.getSupportedWriteBitfields().size());
+        assertNotNull(deviceObjOne.getInfo());//should match up
     }
 
     /** Tests the getters and Setters.
@@ -135,64 +94,46 @@ public class TestDevice extends TestCase {
     public void testGettersSetters_device() throws Exception{
 
         Device deviceObjOne;
-        Command cmdObjOne;
-        ArrayList<Command> cmdList = new ArrayList<Command>();
+        DeviceInfo info;
         ArrayList<Device> deviceList = new ArrayList<Device>();
+        HashSet<Command> cmdSet = new HashSet<Command>();
 
+        //setup default
         deviceObjOne = new Device();
+        info = new DeviceInfo();
 
-        //test Set Device ID
-        deviceObjOne.setDevId(DeviceId.TREADMILL);
+        assertEquals(DeviceId.NONE,deviceObjOne.getInfo().getDevId());
+        assertEquals(0, deviceObjOne.getCommandSet().size());
+        assertEquals(0, deviceObjOne.getSubDeviceList().size());
+        assertEquals(0, deviceObjOne.getInfo().getSupportedBitfields().size());
+        assertNotNull(deviceObjOne.getInfo());//should match up
 
-        assertEquals(DeviceId.TREADMILL, deviceObjOne.getDevId());
-
-        deviceObjOne.setDevId(0x05);
-
-        assertEquals(DeviceId.INCLINE_TRAINER, deviceObjOne.getDevId());
-
-        //test Add Command
-        cmdObjOne = new Command(2, CommandId.CONNECT, DeviceId.INCLINE_TRAINER);
-
-        deviceObjOne.addCommand(cmdObjOne);
-        assertEquals(1,deviceObjOne.getCommandSet().size());
-        assertEquals(CommandId.CONNECT, deviceObjOne.getCommandSet().get(CommandId.CONNECT).getCmdId());
-        //test getCommand
-        assertEquals(CommandId.CONNECT, deviceObjOne.getCommand(0x04).getCmdId());
-        assertEquals(CommandId.CONNECT, deviceObjOne.getCommand(CommandId.CONNECT).getCmdId());
-
-        //test add Commands
-        cmdList.add(new Command(3, CommandId.CALIBRATE, DeviceId.INCLINE_TRAINER));
-        cmdList.add(new Command(4, CommandId.DISCONNECT, DeviceId.INCLINE_TRAINER));
-        deviceObjOne.addCommands(cmdList);
-
-        assertEquals(3,deviceObjOne.getCommandSet().size());
-        assertEquals(4, deviceObjOne.getCommandSet().get(CommandId.DISCONNECT).getLength());
-        assertEquals(3, deviceObjOne.getCommandSet().get(CommandId.CALIBRATE).getLength());
-
-        //test add SubDevices
-        deviceObjOne.addSubDevice(new Device(DeviceId.TREADMILL));//added a treadmill
-        assertEquals(1, deviceObjOne.getSubDeviceList().size());
-        //test get subDevice
-        assertEquals(DeviceId.TREADMILL, deviceObjOne.getSubDevice(0x04).getDevId());
-        assertEquals(DeviceId.TREADMILL, deviceObjOne.getSubDevice(DeviceId.TREADMILL).getDevId());
-
-        //test addAllSubDevices
-        deviceList.add(new Device(DeviceId.MAIN));
-        deviceList.add(new Device(DeviceId.NONE));
-
+        //test set Sub device list
+        deviceList.add(new Device());
+        deviceList.add(new Device(DeviceId.TREADMILL));
         deviceObjOne.addAllSubDevice(deviceList);
+        deviceObjOne.addSubDevice(new Device(DeviceId.INCLINE_TRAINER));
+
+        assertEquals(DeviceId.NONE, deviceObjOne.getInfo().getDevId());
+        assertEquals(0, deviceObjOne.getCommandSet().size());
+        assertNotNull(deviceObjOne.getSubDevice(DeviceId.TREADMILL));
+        assertNotNull(deviceObjOne.getSubDevice(0x05));//incline trainer
         assertEquals(3, deviceObjOne.getSubDeviceList().size());
+
+        //Test set command
+        deviceObjOne.addCommand(new Command());
+        assertEquals(1,deviceObjOne.getCommandSet().size());
+        //Test set Commands and get command and command by idVal
+        cmdSet.add(new InfoCmd(DeviceId.INCLINE_TRAINER));
+        deviceObjOne.addCommands(cmdSet);
+        assertEquals(2, deviceObjOne.getCommandSet().size());
+        assertEquals(CommandId.GET_INFO,deviceObjOne.getCommand(CommandId.GET_INFO).getCmdId());
+        assertEquals(CommandId.NONE,deviceObjOne.getCommand(0).getCmdId());
+
+        //test the getInfo
+        deviceObjOne.setDeviceInfo(info);
+        assertEquals(DeviceId.NONE, deviceObjOne.getInfo().getDevId());
     }
-
-    /** Tests the Bitfield related getters and setters
-     *
-     * @throws Exception
-     */
-    public void testBitfieldGetSet_device()throws Exception
-    {
-
-    }
-
 
     /** Tests the getters and Setters.
      *
@@ -200,21 +141,6 @@ public class TestDevice extends TestCase {
      */
     public void testExceptions_device() throws Exception{
 
-        Device deviceObjOne;
-        //just need to test that if you add a command that already is in the list.
-        //It throws an exception
-        try
-        {
-            //test
-            deviceObjOne = new Device();
-            deviceObjOne.addCommand(new Command(2,CommandId.CONNECT, DeviceId.INCLINE_TRAINER));
-            assertTrue(true);
-            deviceObjOne.addCommand(new Command(2,CommandId.CONNECT, DeviceId.INCLINE_TRAINER));
-            fail();
-        }
-        catch (Exception ex)
-        {
-            assertTrue(true);
-        }
+        //currently there are no exceptions to be tested
     }
 }

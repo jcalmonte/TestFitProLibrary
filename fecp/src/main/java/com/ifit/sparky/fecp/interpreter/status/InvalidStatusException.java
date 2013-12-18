@@ -17,4 +17,16 @@ public class InvalidStatusException extends Exception {
     {
         super("Invalid Status id ("+badId+").");
     }
+
+    /**
+     * If the checksums don't match throw an error.
+     * @param expectedCheckSum The expected byte value
+     * @param actualCheckSum the invalid byte value received
+     */
+    public InvalidStatusException(byte expectedCheckSum, byte actualCheckSum)
+    {
+        super("Invalid Status Checksum Expected("+ expectedCheckSum +") Actual("+actualCheckSum+")");
+
+    }
+
 }
