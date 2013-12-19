@@ -1,3 +1,14 @@
+/**
+ * Interface for all communication types (e.g. usb, uart, blue tooth).
+ * @author Ryan.Tensmeyer
+ * @date 12/10/13
+ * @version 1
+ * Release Date
+ * @date 12/10/13
+ **/
+/**
+ */
+
 package com.ifit.sparky.fecp.communication;
 
 import java.nio.ByteBuffer;
@@ -18,16 +29,8 @@ import android.os.Handler;
 import android.content.IntentFilter;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-/**
- * Interface for all communication types (e.g. usb, uart, blue tooth).
- * @author Ryan.Tensmeyer
- * @date 12/10/13
- * @version 1
- * Release Date
- * @date 12/10/13
- **/
-/**
- */
+
+
 public class UsbComm implements CommInterface {
     private static final String TAG = "USB Host";
 
@@ -77,12 +80,13 @@ public class UsbComm implements CommInterface {
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
     private enum ConnectionState {
-        NOT_CONNECTED, CONNECTED, CONNECTION_DROPPED1, CONNECTION_DROPPED2
+        NOT_CONNECTED, CONNECTED, CONNECTION_JUST_DROPPED, CONNECTION_DROPPED
     }
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
 
     /**
-     * Constructor
+     * UsbComm - constructor
+     * @param c - the Context from the main activity
      */
     public UsbComm(Context c) {
         context = c;
@@ -115,10 +119,10 @@ public class UsbComm implements CommInterface {
 
     /**
      * onResumeUSB
-     * @param intent - the intent for the main activity
+     * @param intent - the Intent from the main activity
      * This should be called from the Main Activity's onResume method.
      */
-    public void onResumeUSB(Intent intent){	//this should be called from the Main Activity's onResume method
+    public void onResumeUSB(Intent intent){
         Log.d(TAG, "onResumeUSB");
         if(!isInitialized){
             isInitialized = false;
@@ -218,8 +222,8 @@ public class UsbComm implements CommInterface {
             request_ep1_RX();
             request_ep3_RX();
 
-        }else if(connectionState == ConnectionState.CONNECTION_DROPPED1){
-            connectionState = ConnectionState.CONNECTION_DROPPED2;
+        }else if(connectionState == ConnectionState.CONNECTION_JUST_DROPPED){
+            connectionState = ConnectionState.CONNECTION_DROPPED;
         }
 
         if(connectionState == ConnectionState.CONNECTED && delayCount == 0){	//if there hasn't been communication in COMM_ERROR_CONST ms, try to reestablish
@@ -384,10 +388,11 @@ public class UsbComm implements CommInterface {
      * @param device pass in the device to be configured
      */
     private void setDevice(UsbDevice device) {
-        Log.d(TAG, "setDevice " + device);
 
         UsbEndpoint mEndpointIntrRead1;
         UsbEndpoint mEndpointIntrRead3;
+
+        Log.d(TAG, "setDevice " + device);
 
         isInitialized = false;
         if (device.getInterfaceCount() != 1) {
@@ -523,10 +528,11 @@ public class UsbComm implements CommInterface {
      * Look for the desired device and try to connect to it
      */
     private void check_for_device() {
+        HashMap<String, UsbDevice> deviceList;
+
         Log.d(TAG, "check_for_device");
         mUsbManager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
-
-        HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
+        deviceList = mUsbManager.getDeviceList();
         try{
             Iterator<UsbDevice> deviceIterator = null;
             if(deviceList != null)
@@ -553,7 +559,7 @@ public class UsbComm implements CommInterface {
     public void detach(){
 
         Log.d(TAG, "Device Detached" );
-        connectionState = ConnectionState.CONNECTION_DROPPED2;
+        connectionState = ConnectionState.CONNECTION_DROPPED;
         //Toast.makeText(context, "Device Detached", Toast.LENGTH_SHORT).show();
         //if (mDevice != null && mDevice.equals(device)) {
         mDevice = null; //setDevice(null);
