@@ -153,4 +153,28 @@ public class TestFecpCommand extends TestCase {
         fecpCmd.setCmdReceivedCounter(212);
         assertEquals(212, fecpCmd.getCmdReceivedCounter());
     }
+
+    /**
+     * Test the command callback
+     * @throws Exception
+     */
+    public void testCallback_fecpCommand() throws Exception
+    {
+        FecpCommand fecpCmd;
+        Device dev;
+        Command cmd;
+
+        TempFecpCallbacker callbacker = new TempFecpCallbacker();
+        assertEquals(false, callbacker.getWorksStatus());
+        callbacker.setCmdId(CommandId.GET_INFO);
+
+        dev = new Device(DeviceId.INCLINE_TRAINER);
+        cmd = new InfoCmd(DeviceId.INCLINE_TRAINER);
+        dev.addCommand(cmd);
+        fecpCmd = new FecpCommand(dev, cmd, callbacker);
+        assertEquals(false, callbacker.getWorksStatus());
+        //call callback
+        fecpCmd.getCallback().msgHandler(cmd);
+        assertEquals(true, callbacker.getWorksStatus());
+    }
 }
