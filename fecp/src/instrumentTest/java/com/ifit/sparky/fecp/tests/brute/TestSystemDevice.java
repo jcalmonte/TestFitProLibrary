@@ -43,17 +43,17 @@ public class TestSystemDevice  extends TestCase {
         //test default constructor
         device = new SystemDevice();
 
-        assertEquals(DeviceId.NONE, device.getDevId());//just to test the super constructor
+        assertEquals(DeviceId.NONE, device.getInfo().getDevId());//just to test the super constructor
         assertEquals(SystemConfiguration.SLAVE, device.getConfig());
 
         //test 2nd constructor
         device = new SystemDevice(DeviceId.INCLINE_TRAINER);
-        assertEquals(DeviceId.INCLINE_TRAINER, device.getDevId());//just to test the super constructor
+        assertEquals(DeviceId.INCLINE_TRAINER, device.getInfo().getDevId());//just to test the super constructor
         assertEquals(SystemConfiguration.SLAVE, device.getConfig());
 
         //test 3rd constructor
         device = new SystemDevice(DeviceId.TREADMILL, SystemConfiguration.MASTER);
-        assertEquals(DeviceId.TREADMILL, device.getDevId());//just to test the super constructor
+        assertEquals(DeviceId.TREADMILL, device.getInfo().getDevId());//just to test the super constructor
         assertEquals(SystemConfiguration.MASTER, device.getConfig());
     }
 
