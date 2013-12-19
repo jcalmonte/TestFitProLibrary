@@ -23,23 +23,25 @@ public class Device {
     /**
      * Default constructor for devices.
      */
-    public Device()
+    public Device() throws Exception
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
         this.mInfo = new DeviceInfo();
+        populateDefaultCommands();
     }
 
     /**
      * constructor for single device.
      * @param id the deviceId
      */
-    public Device(DeviceId id)
+    public Device(DeviceId id) throws Exception
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
         this.mInfo = new DeviceInfo();
         this.mInfo.setDevId(id);
+        populateDefaultCommands();
     }
 
     /**
@@ -215,4 +217,18 @@ public class Device {
    }
 
 
+    /**
+     * This populates the command map with all the default commands that all devices will support.
+     */
+    private void populateDefaultCommands() throws Exception
+    {
+        //default commands
+        // get info
+        this.addCommand(new InfoCmd(this.mInfo.getDevId()));
+        // write data
+        // read data
+        // write read data
+        // get supported commands
+        // get sub devices
+    }
 }

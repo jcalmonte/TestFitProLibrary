@@ -18,7 +18,7 @@ public class SystemDevice extends Device{
     /**
      * the default constructor for the System Device
      */
-    public SystemDevice()
+    public SystemDevice() throws Exception
     {
         super();
         this.mConfig = SystemConfiguration.SLAVE;
@@ -27,7 +27,7 @@ public class SystemDevice extends Device{
     /**
      * the default constructor for the System Device
      */
-    public SystemDevice(DeviceId id)
+    public SystemDevice(DeviceId id) throws Exception
     {
         super(id);
         this.mConfig = SystemConfiguration.SLAVE;
@@ -36,7 +36,7 @@ public class SystemDevice extends Device{
     /**
      * the default constructor for the System Device
      */
-    public SystemDevice(DeviceId id, SystemConfiguration config)
+    public SystemDevice(DeviceId id, SystemConfiguration config) throws Exception
     {
         super(id);
         this.mConfig = config;
