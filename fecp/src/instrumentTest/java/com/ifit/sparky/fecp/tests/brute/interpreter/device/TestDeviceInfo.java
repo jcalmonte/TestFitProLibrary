@@ -104,11 +104,4 @@ public class TestDeviceInfo extends TestCase {
         assertEquals(2,info.getSupportedReadBitfields().size());
     }
 
-    /** Tests the Exception throwing
-     *
-     * @throws Exception
-     */
-    public void testExceptions_device() throws Exception{
-        //currently there are no exceptions
-    }
 }

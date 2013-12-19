@@ -12,7 +12,7 @@ package com.ifit.sparky.fecp.tests.brute.interpreter.device;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
-import  com.ifit.sparky.fecp.interpreter.device.Device;
+import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 
@@ -133,14 +133,5 @@ public class TestDevice extends TestCase {
         //test the getInfo
         deviceObjOne.setDeviceInfo(info);
         assertEquals(DeviceId.NONE, deviceObjOne.getInfo().getDevId());
-    }
-
-    /** Tests the getters and Setters.
-     *
-     * @throws Exception
-     */
-    public void testExceptions_device() throws Exception{
-
-        //currently there are no exceptions to be tested
     }
 }
