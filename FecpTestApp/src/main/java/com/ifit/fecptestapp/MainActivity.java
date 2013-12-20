@@ -1,19 +1,24 @@
 package com.ifit.fecptestapp;
 
 import android.app.Activity;
-import android.app.ActionBar;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 
-import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.communication.UsbComm;
+
+import java.nio.ByteBuffer;
 
 public class MainActivity extends Activity {
+
+    UsbComm usbComm;
+
+    private Handler m_handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,8 +30,18 @@ public class MainActivity extends Activity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+        usbComm = new UsbComm(MainActivity.this);
+
+        m_handler = new Handler();
+        m_statusChecker.run();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        usbComm.onResumeUSB(getIntent());
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -42,10 +57,7 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
     }
 
     /**
@@ -59,9 +71,22 @@ public class MainActivity extends Activity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
+            return inflater.inflate(R.layout.fragment_main, container, false);
         }
     }
+    Runnable m_statusChecker = new Runnable()
+    {
+        private int m_interval = 1; // ms of delay
+
+        @Override
+        public void run() {
+            ByteBuffer buff = ByteBuffer.allocate(64);
+            for(int i = 20; i < 64; i++)
+                buff.put(i, (byte)i);
+            usbComm.sendCmdBuffer(buff);
+
+            m_handler.postDelayed(m_statusChecker, m_interval);
+        }
+    };
 
 }
