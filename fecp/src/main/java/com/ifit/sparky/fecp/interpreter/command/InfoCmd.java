@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 
 public class InfoCmd extends Command implements CommandInterface{
 
+    private static final int CMD_LENGTH = 4;
     /**
      * default constructor
      */
@@ -23,7 +24,7 @@ public class InfoCmd extends Command implements CommandInterface{
         super();
         this.setCmdId(CommandId.GET_INFO);
         this.setStatus(new InfoSts(this.mDevId));
-        this.setLength(4);
+        this.setLength(this.CMD_LENGTH);
     }
 
     /**
@@ -31,7 +32,7 @@ public class InfoCmd extends Command implements CommandInterface{
      */
     public InfoCmd(DeviceId devId) throws Exception
     {
-        super(new InfoSts(devId),4,CommandId.GET_INFO,devId);
+        super(new InfoSts(devId),this.CMD_LENGTH,CommandId.GET_INFO,devId);
     }
 
     /**
