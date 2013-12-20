@@ -32,7 +32,7 @@ public class InfoCmd extends Command implements CommandInterface{
      */
     public InfoCmd(DeviceId devId) throws Exception
     {
-        super(new InfoSts(devId),this.CMD_LENGTH,CommandId.GET_INFO,devId);
+        super(new InfoSts(devId),CMD_LENGTH,CommandId.GET_INFO,devId);
     }
 
     /**

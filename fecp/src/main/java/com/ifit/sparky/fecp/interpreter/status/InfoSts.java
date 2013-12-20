@@ -25,7 +25,7 @@ public class InfoSts extends Status implements StatusInterface {
     public InfoSts(DeviceId devId) throws Exception
     {
         //Min length is 14 bytes
-        super(StatusId.DEV_NOT_SUPPORTED, this.STS_LENGTH, CommandId.GET_INFO, devId);
+        super(StatusId.DEV_NOT_SUPPORTED, STS_LENGTH, CommandId.GET_INFO, devId);
         this.mInfo = new DeviceInfo();
     }
 
