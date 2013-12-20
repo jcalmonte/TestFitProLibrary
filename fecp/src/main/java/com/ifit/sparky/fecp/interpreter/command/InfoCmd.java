@@ -9,9 +9,9 @@
 package com.ifit.sparky.fecp.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class InfoCmd extends Command implements CommandInterface{
 
@@ -21,8 +21,9 @@ public class InfoCmd extends Command implements CommandInterface{
     public InfoCmd() throws Exception
     {
         super();
-        this.setLength(4);
         this.setCmdId(CommandId.GET_INFO);
+        this.setStatus(new InfoSts(this.mDevId));
+        this.setLength(4);
     }
 
     /**
@@ -30,7 +31,7 @@ public class InfoCmd extends Command implements CommandInterface{
      */
     public InfoCmd(DeviceId devId) throws Exception
     {
-        super(4,CommandId.GET_INFO,devId);
+        super(new InfoSts(devId),4,CommandId.GET_INFO,devId);
     }
 
     /**

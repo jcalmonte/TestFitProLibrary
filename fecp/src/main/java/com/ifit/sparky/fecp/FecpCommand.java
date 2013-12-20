@@ -24,7 +24,7 @@ public class FecpCommand {
     /**
      * default constructor
      */
-    public FecpCommand()
+    public FecpCommand() throws Exception
     {
         this.fecpInitializer(new Device(), new Command(), null, 0,0);
     }

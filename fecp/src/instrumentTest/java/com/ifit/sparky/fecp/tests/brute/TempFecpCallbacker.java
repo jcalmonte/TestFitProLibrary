@@ -8,20 +8,22 @@
 package com.ifit.sparky.fecp.tests.brute;
 
 import com.ifit.sparky.fecp.CommandCallback;
+import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 
-public class TempFecpCallbacker implements CommandCallback {
+public class TempFecpCallbacker implements CommandCallback, SystemStatusCallback {
 
     private boolean itWorks;
     private CommandId id;//temp id to make sure the command was sent
-
+    private boolean isConnected;//just to test if connection works
     /**
      * simple constructor for the callback.
      */
     public TempFecpCallbacker()
     {
         this.itWorks = false;
+        this.isConnected = false;
     }
 
     /**
@@ -51,5 +53,31 @@ public class TempFecpCallbacker implements CommandCallback {
     public boolean getWorksStatus()
     {
         return this.itWorks;
+    }
+
+    /**
+     * Gets the connection status
+     * @return the connection status
+     */
+    public boolean getIsConnectedStatus()
+    {
+        return this.isConnected;
+    }
+
+    /**
+     * this method is called when the system is connected.
+     */
+    @Override
+    public void systemConnected() {
+        this.isConnected = true;
+
+    }
+
+    /**
+     * this method is called when the system is disconnected.
+     */
+    @Override
+    public void systemDisconnected() {
+        this.isConnected = false;
     }
 }

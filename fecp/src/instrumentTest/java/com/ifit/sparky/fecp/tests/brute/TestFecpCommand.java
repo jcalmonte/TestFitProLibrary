@@ -44,7 +44,6 @@ public class TestFecpCommand extends TestCase {
     {
         FecpCommand fecpCmd;
         Device dev;
-        Command cmd;
 
         //test default constructor
         fecpCmd = new FecpCommand();
@@ -59,9 +58,7 @@ public class TestFecpCommand extends TestCase {
 
         //test 2nd constructor
         dev = new Device(DeviceId.INCLINE_TRAINER);
-        cmd = new InfoCmd(DeviceId.INCLINE_TRAINER);
-        dev.addCommand(cmd);
-        fecpCmd = new FecpCommand(dev, cmd, null);
+        fecpCmd = new FecpCommand(dev, dev.getCommand(CommandId.GET_INFO), null);
 
         assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getDevice().getInfo().getDevId());
         assertEquals(CommandId.GET_INFO, fecpCmd.getCommand().getCmdId());
@@ -72,7 +69,7 @@ public class TestFecpCommand extends TestCase {
         assertEquals(0, fecpCmd.getCmdReceivedCounter());
 
         //test the 3rd constructor
-        fecpCmd = new FecpCommand(dev, cmd, null, 1);
+        fecpCmd = new FecpCommand(dev, dev.getCommand(CommandId.GET_INFO), null, 1);
 
         assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getDevice().getInfo().getDevId());
         assertEquals(CommandId.GET_INFO, fecpCmd.getCommand().getCmdId());
@@ -83,7 +80,7 @@ public class TestFecpCommand extends TestCase {
         assertEquals(0, fecpCmd.getCmdReceivedCounter());
 
         //test the 4th constructor
-        fecpCmd = new FecpCommand(dev, cmd, null, 1, 2);
+        fecpCmd = new FecpCommand(dev, dev.getCommand(CommandId.GET_INFO), null, 1, 2);
 
         assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getDevice().getInfo().getDevId());
         assertEquals(CommandId.GET_INFO, fecpCmd.getCommand().getCmdId());
@@ -102,7 +99,6 @@ public class TestFecpCommand extends TestCase {
     {
         FecpCommand fecpCmd;
         Device dev;
-        Command cmd;
 
         //setup default values
         fecpCmd = new FecpCommand();
@@ -116,8 +112,6 @@ public class TestFecpCommand extends TestCase {
         assertEquals(0, fecpCmd.getCmdReceivedCounter());
 
         dev = new Device(DeviceId.INCLINE_TRAINER);
-        cmd = new InfoCmd(DeviceId.INCLINE_TRAINER);
-        dev.addCommand(cmd);
 
         //test setDevice
         fecpCmd.setDevice(dev);
@@ -125,7 +119,7 @@ public class TestFecpCommand extends TestCase {
         assertEquals(CommandId.NONE, fecpCmd.getCommand().getCmdId());
 
         //test setCommand
-        fecpCmd.setCommand(cmd);
+        fecpCmd.setCommand(dev.getCommand(CommandId.GET_INFO));
         assertEquals(CommandId.GET_INFO, fecpCmd.getCommand().getCmdId());
 
         //test SetCallback
@@ -170,7 +164,6 @@ public class TestFecpCommand extends TestCase {
 
         dev = new Device(DeviceId.INCLINE_TRAINER);
         cmd = new InfoCmd(DeviceId.INCLINE_TRAINER);
-        dev.addCommand(cmd);
         fecpCmd = new FecpCommand(dev, cmd, callbacker);
         assertEquals(false, callbacker.getWorksStatus());
         //call callback
