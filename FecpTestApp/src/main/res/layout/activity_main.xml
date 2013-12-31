@@ -1,7 +1,117 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/container"
+    android:id="@+id/seekBarIncline"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.ifit.fecptestapp.MainActivity"
-    tools:ignore="MergeRootFrame" />
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Large Text"
+        android:id="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="TX Period: 1000 ms"
+        android:id="@+id/textViewPeriodMs"
+        android:layout_marginTop="31dp"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-1 ms"
+        android:id="@+id/buttonDec1ms"
+        android:layout_alignTop="@+id/buttonDec10ms"
+        android:layout_toRightOf="@+id/buttonDec10ms" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-10 ms"
+        android:id="@+id/buttonDec10ms"
+        android:layout_alignBottom="@+id/textViewPeriodMs"
+        android:layout_toRightOf="@+id/buttonDec100ms" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+1 ms"
+        android:id="@+id/buttonInc1ms"
+        android:layout_alignTop="@+id/buttonDec1ms"
+        android:layout_toRightOf="@+id/buttonDec1ms" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+10 ms"
+        android:id="@+id/buttonInc10ms"
+        android:layout_alignTop="@+id/buttonInc1ms"
+        android:layout_toRightOf="@+id/buttonInc1ms" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="TX count"
+        android:id="@+id/textViewTxCount"
+        android:layout_below="@+id/buttonDec10ms"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-100 ms"
+        android:id="@+id/buttonDec100ms"
+        android:layout_alignTop="@+id/buttonDec10ms"
+        android:layout_toRightOf="@+id/textViewPeriodMs"
+        android:layout_marginLeft="50dp" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+100 ms"
+        android:id="@+id/buttonInc100ms"
+        android:layout_alignTop="@+id/buttonInc10ms"
+        android:layout_toRightOf="@+id/buttonInc10ms" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear TX Count"
+        android:id="@+id/buttonClearTxCount"
+        android:layout_below="@+id/textViewTxCount"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="RX Count"
+        android:id="@+id/textViewRxCount"
+        android:layout_below="@+id/buttonDec100ms"
+        android:layout_alignStart="@+id/buttonDec100ms" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="TX/RX per second"
+        android:id="@+id/textViewPerSecond"
+        android:layout_below="@+id/buttonInc1ms"
+        android:layout_alignStart="@+id/buttonInc1ms" />
+</RelativeLayout>

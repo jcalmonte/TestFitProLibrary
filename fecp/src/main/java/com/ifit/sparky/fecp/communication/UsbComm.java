@@ -6,8 +6,6 @@
  * Release Date
  * @date 12/10/13
  **/
-/**
- */
 
 package com.ifit.sparky.fecp.communication;
 
@@ -64,13 +62,16 @@ public class UsbComm implements CommInterface {
 
     ArrayList<ByteBuffer> buffList_ep1 = new ArrayList<ByteBuffer>();
 
+    boolean waitingForEp1Data = false;
+    boolean waitingForEp3Data = false;
+
     // Counters
     private long ep1_RX_Count = 0;
     private long ep3_RX_Count = 0;
     private long drop_Count = 0;
     private long delayCount = 10000;	//this timer decrements, set to 10000 initially to give about 10 seconds for things to settle on start up
     private long delayMin = 10000;		//the lowest delayCount has gotten
-    private final int COMM_ERROR_CONST = 100;	//if the communication fails for 100 ms, we will assume it is broken
+    private final int COMM_ERROR_CONST = 2000;	//if the communication fails for 2000 ms, we will assume it is broken
 
     private Handler m_handler;
     private Handler m_handler_local_run;
@@ -162,6 +163,7 @@ public class UsbComm implements CommInterface {
     @Override
     public void sendCmdBuffer(ByteBuffer buff) {
         sendCommand(ENDPOINT_2, buff);
+        waitingForEp1Data = true;
     }
 
     /**
@@ -219,8 +221,12 @@ public class UsbComm implements CommInterface {
         if(mConnection != null){    /* normal operation */
 
             /* check to see if data has been received */
-            request_ep1_RX();
-            request_ep3_RX();
+            if(waitingForEp1Data){
+                request_ep1_RX();
+            }
+            if(waitingForEp3Data){
+                request_ep3_RX();
+            }
 
         }else if(connectionState == ConnectionState.CONNECTION_JUST_DROPPED){
             connectionState = ConnectionState.CONNECTION_DROPPED;
@@ -260,9 +266,12 @@ public class UsbComm implements CommInterface {
      */
     private void ep1_RX() {
         if (mConnection.requestWait() == request_ep1) {
+            waitingForEp1Data = false;
             delayCount = COMM_ERROR_CONST;
             ep1_RX_Count++;
             buffList_ep1.add(buffer_ep1);
+            while(buffList_ep1.size() > 100)
+                buffList_ep1.remove(0);
         }
     }
 
@@ -283,6 +292,7 @@ public class UsbComm implements CommInterface {
      */
     private void ep3_RX() {
         if (mConnection.requestWait() == request_ep3) {
+            waitingForEp3Data = false;
             ep3_RX_Count++;
         }
     }
