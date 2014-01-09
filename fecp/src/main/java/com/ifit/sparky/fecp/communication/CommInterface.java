@@ -15,4 +15,6 @@ public interface CommInterface {
 
     void sendCmdBuffer(ByteBuffer buff);
     ByteBuffer getStsBuffer();
+    void setStsHandler(CommReply handler);
+
 }

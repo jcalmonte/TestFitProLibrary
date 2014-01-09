@@ -48,9 +48,6 @@ public class InfoCmd extends Command implements CommandInterface{
 
         buff = super.getCmdMsg();
 
-        //get the checksum value
-        buff.put(Command.getCheckSum(buff));
-
         return buff;
     }
 }

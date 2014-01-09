@@ -27,9 +27,10 @@ import android.os.Handler;
 import android.content.IntentFilter;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.app.Activity;
 
 
-public class UsbComm implements CommInterface {
+public class UsbComm extends Activity implements CommInterface {
     private static final String TAG = "USB Host";
 
     private boolean isInitialized = false;
@@ -43,7 +44,8 @@ public class UsbComm implements CommInterface {
     public final int ENDPOINT_2 = 2;
     public final int ENDPOINT_4 = 4;
 
-    private Context context;
+    private Context mContext;
+    private Intent mIntent;
 
     private UsbManager mUsbManager;
     private UsbInterface mInterface;
@@ -77,6 +79,7 @@ public class UsbComm implements CommInterface {
     private Handler m_handler_local_run;
     private int m_interval_local_run = 0; // ms of delay
     private Handler m_handler_1ms;
+    private CommReply replyHandler;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -89,9 +92,11 @@ public class UsbComm implements CommInterface {
      * UsbComm - constructor
      * @param c - the Context from the main activity
      */
-    public UsbComm(Context c) {
-        context = c;
+    public UsbComm(Context c, Intent i) {
+        mContext = c;
+        mIntent = i;
         onCreateUSB();
+        onResumeUSB(mIntent);
     }
 
     /**
@@ -100,7 +105,7 @@ public class UsbComm implements CommInterface {
      */
     private void onCreateUSB(){
         isInitialized = false;
-        mUsbManager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
+        mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
 
         //thread_LocalRun.start();
 
@@ -115,7 +120,13 @@ public class UsbComm implements CommInterface {
 
         IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
 
-        context.registerReceiver(mUsbDisconnect, filter);
+        mContext.registerReceiver(mUsbDisconnect, filter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        onResumeUSB(mIntent);
     }
 
     /**
@@ -128,7 +139,7 @@ public class UsbComm implements CommInterface {
         if(!isInitialized){
             isInitialized = false;
             attachFailed = false;
-            mUsbManager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
+            mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
 
             //Intent intent = getIntent();
             Log.d(TAG, "intent: " + intent);
@@ -177,6 +188,11 @@ public class UsbComm implements CommInterface {
         return tempBuff;
     }
 
+    @Override
+    public void setStsHandler(CommReply handler) {
+        replyHandler = handler;
+    }
+
     /**
      * m_statusChecker
      * Used to check for the device periodically
@@ -186,7 +202,7 @@ public class UsbComm implements CommInterface {
         int m_interval = 1000; // ms of delay
         @Override
         public void run() {
-            if(!isInitialized && context != null){
+            if(!isInitialized && mContext != null){
                 //if(mDevice == null && context != null){
                 check_for_device();
             }
@@ -272,6 +288,9 @@ public class UsbComm implements CommInterface {
             buffList_ep1.add(buffer_ep1);
             while(buffList_ep1.size() > 100)
                 buffList_ep1.remove(0);
+            ByteBuffer tempBuff = buffList_ep1.get(0);
+            buffList_ep1.remove(0);
+            replyHandler.stsMsgHandler(tempBuff);
         }
     }
 
@@ -307,7 +326,7 @@ public class UsbComm implements CommInterface {
             if (mConnection != null) {
 
                 byte[] message = new byte[TX_SIZE];
-                for(int i = 0; i < TX_SIZE; i++){
+                for(int i = 0; i < buff.capacity(); i++){
                     message[i] = buff.get(i);
                 }
 
@@ -519,11 +538,11 @@ public class UsbComm implements CommInterface {
             PendingIntent mPermissionIntent = null;
             if(!mUsbManager.hasPermission(device)){
                 //mUsbManager = (UsbManager) context.getSystemService(ACTION_USB_PERMISSION);
-                mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), 0);
+                mPermissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
                 IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-                context.registerReceiver(mUsbReceiver, filter);
+                mContext.registerReceiver(mUsbReceiver, filter);
 
-                mUsbManager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
+                mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
             }
 
             if(mUsbManager.hasPermission(device))
@@ -541,7 +560,7 @@ public class UsbComm implements CommInterface {
         HashMap<String, UsbDevice> deviceList;
 
         Log.d(TAG, "check_for_device");
-        mUsbManager = (UsbManager)context.getSystemService(Context.USB_SERVICE);
+        mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
         deviceList = mUsbManager.getDeviceList();
         try{
             Iterator<UsbDevice> deviceIterator = null;
@@ -602,5 +621,13 @@ public class UsbComm implements CommInterface {
      */
     public long getDrop_Count() {
         return drop_Count;
+    }
+
+    /**
+     * getWaitingForEp1Data
+     * @return waitingForEp1Data
+     */
+    public boolean getWaitingForEp1Data() {
+        return waitingForEp1Data;
     }
 }
