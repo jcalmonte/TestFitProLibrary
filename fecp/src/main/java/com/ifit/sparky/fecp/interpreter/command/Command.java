@@ -216,9 +216,12 @@ public class Command implements CommandInterface{
     public static byte getCheckSum(ByteBuffer buff)
     {
         byte checkSum = 0;
+        byte msgLength = 0;
+        buff.position(1);
+        msgLength = buff.get();
         buff.position(0);
         // loop through all but the last byte.
-        for(int i = 0; i < buff.capacity()-1; i++)
+        for(int i = 0; i < msgLength-1; i++)
         {
             checkSum += buff.get();
         }

@@ -8,8 +8,10 @@
 package com.ifit.sparky.fecp;
 
 import android.content.Context;
+import android.content.Intent;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
+import com.ifit.sparky.fecp.communication.CommReply;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
@@ -18,7 +20,9 @@ import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
-public class FecpController {
+import java.nio.ByteBuffer;
+
+public class FecpController implements CommReply{
     //Fecp System Version number
     private final int VERSION = 1;
     private CommType mCommType;
@@ -26,6 +30,7 @@ public class FecpController {
     private SystemDevice mSysDev;
     private boolean mIsConnected;
     private Context mContext;
+    private Intent mIntent;
     private CommInterface mCommController;
 
     /**
@@ -35,14 +40,14 @@ public class FecpController {
      * @param callback the callback for connection and disconnections
      * @throws Exception if the device is invalid
      */
-    public FecpController(Context context, CommType type, SystemStatusCallback callback) throws Exception
+    public FecpController(Context context, Intent intent, CommType type, SystemStatusCallback callback) throws Exception
     {
         this.mCommType = type;
         this.statusCallback = callback;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
         this.mIsConnected = false;
         this.mContext = context;
-
+        this.mIntent = intent;
     }
 
     /**
@@ -55,22 +60,13 @@ public class FecpController {
         //add as we add support for these
         if(this.mCommType == CommType.USB_COMMUNICATION)
         {
-            this.mCommController = new UsbComm(this.mContext);
+            this.mCommController = new UsbComm(this.mContext, this.mIntent);
+            this.mCommController.setStsHandler(this);
         }
 
         //send command to get the system's info
         this.mCommController.sendCmdBuffer(this.mSysDev.getCommand(CommandId.GET_INFO).getCmdMsg());
         //only after it is complete handle the data back
-        try
-        {
-            this.mSysDev.getCommand(CommandId.GET_INFO).getStatus().handleStsMsg(this.mCommController.getStsBuffer());
-            // get communication configuration
-            //todo add get supported commands, bitfields, etc...
-        }
-        catch (Exception ex)
-        {
-            this.mIsConnected = false;//can't send a single message
-        }
 
         return this.mSysDev;
     }
@@ -108,5 +104,13 @@ public class FecpController {
     }
 
 
+    @Override
+    public void stsMsgHandler(ByteBuffer buff) {
 
+        try {
+            this.mSysDev.getCommand(CommandId.GET_INFO).getStatus().handleStsMsg(buff);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

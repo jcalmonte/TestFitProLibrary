@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,14 +22,17 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.UsbComm;
+import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 
 import java.nio.ByteBuffer;
 import java.util.Calendar;
 
 public class MainActivity extends Activity implements View.OnClickListener{
 
-    UsbComm usbComm;
+    //UsbComm usbComm;
 
     private Handler m_handler, m_handlerUi;
     private int m_interval = 1000; // ms of delay
@@ -50,6 +54,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     private Calendar timeWhenCleared;
 
+    private FecpController fecpController;
+    //private SystemStatusCallback systemStatusCallback;
+
     /**
      * onCreate
      * Called when the app is created.
@@ -60,7 +67,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        usbComm = new UsbComm(MainActivity.this);
+        //usbComm = new UsbComm(MainActivity.this);
 
         initLayout();
 
@@ -69,16 +76,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         m_handlerUi = new Handler();
         m_updateUi.run();
-    }
 
-    /**
-     * onResume
-     * Called when the app resumes
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        usbComm.onResumeUSB(getIntent());
+        //systemStatusCallback =
+        try{
+            fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
+            fecpController.initializeConnection();
+        }catch (Exception ex){
+            Log.e("Device Info fail", ex.getMessage());
+        }
     }
 
     /**
@@ -128,7 +133,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
             m_interval += 100;
         }else if(view == buttonClearTxCount){
             txCount = 0;
-            usbComm.clear_usb_counters();
+            //usbComm.clear_usb_counters();
             timeWhenCleared = Calendar.getInstance();
         }
 
@@ -167,7 +172,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
             ByteBuffer buff = ByteBuffer.allocate(64);
             for(int i = 20; i < 64; i++)
                 buff.put(i, (byte)i);
-            usbComm.sendCmdBuffer(buff);
+            //usbComm.sendCmdBuffer(buff);
             txCount++;
 
             m_handler.postDelayed(m_sendUsbData, m_interval);
@@ -189,7 +194,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         @Override
         public void run() {
             textViewTxCount.setText("TX Count: " + txCount);
-            textViewRxCount.setText("RX Count: " + usbComm.getEp1_RX_Count());
+            //textViewRxCount.setText("RX Count: " + usbComm.getEp1_RX_Count());
 
             timeNow = Calendar.getInstance();
             now = timeNow.getTimeInMillis();
