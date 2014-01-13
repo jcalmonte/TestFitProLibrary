@@ -9,6 +9,7 @@
 package com.ifit.sparky.fecp.tests.brute;
 
 import android.content.Context;
+import android.content.Intent;
 import android.test.ServiceTestCase;
 
 import com.ifit.sparky.fecp.FecpController;
@@ -35,7 +36,7 @@ public class TestFecpController extends TestCase {
         callback = new TempFecpCallbacker();
 
 
-        controller = new FecpController(c, CommType.USB_COMMUNICATION, callback);
+        controller = new FecpController(c, null, CommType.USB_COMMUNICATION, callback);
 
         assertEquals(CommType.USB_COMMUNICATION, controller.getCommType());
         assertEquals(DeviceId.MAIN, controller.getSysDev().getInfo().getDevId());
@@ -50,7 +51,7 @@ public class TestFecpController extends TestCase {
 
         c = getTestContext();
         callback = new TempFecpCallbacker();
-        controller = new FecpController(c, CommType.USB_COMMUNICATION, callback);
+        controller = new FecpController(c, null, CommType.USB_COMMUNICATION, callback);
 
         assertEquals(CommType.USB_COMMUNICATION, controller.getCommType());
         assertEquals(DeviceId.MAIN, controller.getSysDev().getInfo().getDevId());
