@@ -75,6 +75,11 @@ public class ReadDataCmd extends Command implements CommandInterface{
         }
     }
 
+    /**
+     * Checks if the bitfield is already set to be read from
+     * @param bitId thi bitfield to check
+     * @return boolean value of whether it is in the list to read.
+     */
     public boolean containsBitField(BitFieldId bitId)
     {
         DataBaseCmd data = ((ReadDataSts)this.getStatus()).getBitFieldData();
@@ -106,10 +111,9 @@ public class ReadDataCmd extends Command implements CommandInterface{
     }
 
     /**
-     * This will only setup the first part of the byte buffer that is the same for all
-     * buffers. the DeviceId, length, and the Command id
-     *
-     * @return the Command structured to be ready to send over the usb.
+     * This will setup the command to be ready to be sent.
+     * It adds the number of section bytes, the bits in the sections.
+     * @return the Command structured to be ready to sent.
      */
     @Override
     public ByteBuffer getCmdMsg() throws Exception{

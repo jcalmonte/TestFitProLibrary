@@ -1,23 +1,24 @@
 /**
- * Testing tool for handling the read data command.
+ * Tests the Write Data command.
  * @author Levi.Balling
- * @date 12/16/13
+ * @date 1/14/14
  * @version 1
- * Tests the different methods that are apart of the Read Data Command class.
+ * Tests the constructors, adding and removal of data.
+ * Confirms the command buffer is formatted correctly
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.ReadDataCmd;
+import com.ifit.sparky.fecp.interpreter.command.WriteDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import junit.framework.TestCase;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.TreeMap;
 
-public class TestReadDataCmd extends TestCase {
+public class TestWriteDataCmd extends TestCase {
 
     /**
      * Setups the TestRunner for Status.
@@ -41,102 +42,96 @@ public class TestReadDataCmd extends TestCase {
      *
      * @throws Exception
      */
-    public void testReadDataCmd_Constructor() throws Exception{
+    public void testWriteDataCmd_constructor() throws Exception{
 
+        WriteDataCmd cmd;
+        TreeMap<BitFieldId, Object> map = new TreeMap<BitFieldId, Object>();
+        cmd = new WriteDataCmd();
 
-        //default constructor
-        ReadDataCmd cmd = new ReadDataCmd();
-        ArrayList<BitFieldId> idList = new ArrayList<BitFieldId>();
-
-        assertEquals(CommandId.READ_DATA, cmd.getCmdId());
+        // assert default values
         assertEquals(DeviceId.NONE, cmd.getDevId());
-        assertEquals(5, cmd.getLength());//default min length
+        assertEquals(5, cmd.getLength());//min length
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
 
-        //test second constructor
-        cmd = new ReadDataCmd(DeviceId.TREADMILL);
+        //test 2nd Constructor
+        cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
-        assertEquals(CommandId.READ_DATA, cmd.getCmdId());
+        // assert default values
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
-        assertEquals(5, cmd.getLength());//default min length
+        assertEquals(5, cmd.getLength());//min length
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
 
-        //test third constructor with an empty list
-        cmd = new ReadDataCmd(DeviceId.TREADMILL, idList);
+        //test 3rd constructor
+        map.put(BitFieldId.TARGET_MPH, 10.5);//10.5 mph
 
-        assertEquals(CommandId.READ_DATA, cmd.getCmdId());
+        cmd = new WriteDataCmd(DeviceId.TREADMILL, map);
+
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
-        assertEquals(5, cmd.getLength());//default min length
-
-        //test third constructor with an populated list
-        idList.add(BitFieldId.TARGET_MPH);
-        idList.add(BitFieldId.TARGET_INCLINE);
-        cmd = new ReadDataCmd(DeviceId.TREADMILL, idList);
-
-        assertEquals(CommandId.READ_DATA, cmd.getCmdId());
-        assertEquals(DeviceId.TREADMILL, cmd.getDevId());
-        assertEquals(6, cmd.getLength());//default min length + 1 section
-
+        assertEquals(8, cmd.getLength());
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
+        assertTrue(cmd.containsBitField(BitFieldId.TARGET_MPH));
     }
 
-    /** Tests the adding Bitfield ids.
+    /** Tests adding a bitfield and a value to the command.
      *
      * @throws Exception
      */
-    public void testReadDataCmd_addingBitfields() throws Exception{
+    public void testWriteDataCmd_addBitField() throws Exception{
 
-        //default constructor
-        ReadDataCmd cmd;
-        ArrayList<BitFieldId> idList = new ArrayList<BitFieldId>();
+        WriteDataCmd cmd;
+        TreeMap<BitFieldId, Object> map = new TreeMap<BitFieldId, Object>();
+        cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
-        cmd = new ReadDataCmd(DeviceId.TREADMILL);
-
-        assertEquals(CommandId.READ_DATA, cmd.getCmdId());
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
         assertEquals(5, cmd.getLength());//default min length
         assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
 
         //add a single bitfield
-        cmd.addBitField(BitFieldId.TARGET_MPH);
+        cmd.addBitField(BitFieldId.TARGET_MPH, 10.5);
 
-        assertEquals(CommandId.READ_DATA, cmd.getCmdId());
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
-        assertEquals(6, cmd.getLength());//default min length
+        assertEquals(8, cmd.getLength());
         assertTrue(cmd.containsBitField(BitFieldId.TARGET_MPH));
 
-        //test
-        idList.add(BitFieldId.TARGET_MPH);
-        idList.add(BitFieldId.TARGET_INCLINE);
-        cmd = new ReadDataCmd(DeviceId.TREADMILL);
+        //test adding multiple in different sections
+        map.put(BitFieldId.TARGET_MPH, 11.5);
+        map.put(BitFieldId.TARGET_INCLINE, 11.50);
+        cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
-        cmd.addBitField(idList);
-        assertEquals(CommandId.READ_DATA, cmd.getCmdId());
+        cmd.addBitField(map);//overwrites the Target mph
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
-        assertEquals(6, cmd.getLength());//default min length + 1 section
+        assertEquals(10, cmd.getLength());//default min length + 1 section
         assertTrue(cmd.containsBitField(BitFieldId.TARGET_MPH));
         assertTrue(cmd.containsBitField(BitFieldId.TARGET_INCLINE));
 
         //add duplicates
 
-        idList.add(BitFieldId.TARGET_MPH);
-        idList.add(BitFieldId.TARGET_INCLINE);
-        cmd.addBitField(idList);
-        assertEquals(CommandId.READ_DATA, cmd.getCmdId());
+        map.put(BitFieldId.TARGET_MPH, 12.5);
+        map.put(BitFieldId.TARGET_INCLINE, 12.50);//%12.5
+        map.put(BitFieldId.TARGET_RESISTANCE, 10.50);//%10.5
+        cmd.removeDataField(BitFieldId.TARGET_MPH);
+        cmd.addBitField(map);
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
-        assertEquals(6, cmd.getLength());//default min length + 1 section
+        assertEquals(13, cmd.getLength());//2 sections, 3 short values
         assertTrue(cmd.containsBitField(BitFieldId.TARGET_MPH));
         assertTrue(cmd.containsBitField(BitFieldId.TARGET_INCLINE));
+        assertTrue(cmd.containsBitField(BitFieldId.TARGET_RESISTANCE));
     }
 
     /** Tests the removal of bitfield ids.
      *
      * @throws Exception
      */
-    public void testReadDataCmd_removeBitfields() throws Exception{
+    public void testWriteDataCmd_removeBitfields() throws Exception{
 
         //default constructor
-        ReadDataCmd cmd;
-        ArrayList<BitFieldId> idList = new ArrayList<BitFieldId>();
-
-        cmd = new ReadDataCmd(DeviceId.TREADMILL);
+        WriteDataCmd cmd;
+        TreeMap<BitFieldId, Object> map = new TreeMap<BitFieldId, Object>();
+        cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
         assertEquals(5, cmd.getLength());//default min length
         assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
@@ -149,22 +144,22 @@ public class TestReadDataCmd extends TestCase {
 
 
         //test removing 1 of 2
-        idList.add(BitFieldId.TARGET_MPH);
-        idList.add(BitFieldId.TARGET_INCLINE);
-        cmd = new ReadDataCmd(DeviceId.TREADMILL);
+        map.put(BitFieldId.TARGET_MPH, 5.5);
+        map.put(BitFieldId.TARGET_INCLINE, 10.1);
+        cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
-        cmd.addBitField(idList);
+        cmd.addBitField(map);
         cmd.removeDataField(BitFieldId.TARGET_MPH);
 
-        assertEquals(6, cmd.getLength());//default min length + 1 section
+        assertEquals(8, cmd.getLength());//default min length + 1 section
         assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
         assertTrue(cmd.containsBitField(BitFieldId.TARGET_INCLINE));
 
         //removing duplicates and from a list
-        idList.add(BitFieldId.TARGET_MPH);
-        idList.add(BitFieldId.TARGET_INCLINE);
+        map.put(BitFieldId.TARGET_MPH, 11.5);
+        map.put(BitFieldId.TARGET_INCLINE, 12.5);
 
-        cmd.removeDataField(idList);
+        cmd.removeDataField(map.keySet());
         assertEquals(5, cmd.getLength());//default min length + 1 section
         assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
         assertFalse(cmd.containsBitField(BitFieldId.TARGET_INCLINE));
@@ -174,14 +169,14 @@ public class TestReadDataCmd extends TestCase {
      *
      * @throws Exception
      */
-    public void testReadDataCmd_getCmdMsg() throws Exception{
+    public void testWriteDataCmd_getCmdMsg() throws Exception{
 
         //default constructor
-        ReadDataCmd cmd;
+        WriteDataCmd cmd;
         ByteBuffer buffer;
 
         //test empty command
-        cmd = new ReadDataCmd(DeviceId.TREADMILL);
+        cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
         assertEquals(5, cmd.getLength());//default min length
         buffer = cmd.getCmdMsg();
@@ -190,12 +185,12 @@ public class TestReadDataCmd extends TestCase {
         assertEquals(DeviceId.TREADMILL.getVal(), buffer.get());
         assertEquals(cmd.getLength(), buffer.get());
         assertEquals(cmd.getCmdId().getVal(), (buffer.get() & 0xFF));
-        assertEquals(0, buffer.get());
+        assertEquals(0, buffer.get());//number of section bytes
         assertEquals(cmd.getLength(), buffer.capacity());
         //assume checksum is good
 
         //add bitfield
-        cmd.addBitField(BitFieldId.TARGET_MPH);
+        cmd.addBitField(BitFieldId.TARGET_MPH, 10.5);//105 in byte format
         buffer = cmd.getCmdMsg();
 
         buffer.position(0);
@@ -204,6 +199,7 @@ public class TestReadDataCmd extends TestCase {
         assertEquals(cmd.getCmdId().getVal(), (buffer.get() & 0xFF));
         assertEquals(1, buffer.get());
         assertEquals(1, buffer.get());//Section 0
+        assertEquals(105, (buffer.getShort() & 0xFFFF));//targetMPH speed
         assertEquals(cmd.getLength(), buffer.capacity());
     }
 }
