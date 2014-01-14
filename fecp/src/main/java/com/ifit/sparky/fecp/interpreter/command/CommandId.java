@@ -16,7 +16,8 @@ public enum CommandId {
     CONNECT(0x04, "Connects to the device."),
     DISCONNECT(0x05, "Disconnects from the device."),
     CALIBRATE(0x06, "Calibrates the device."),
-    GET_INFO(0x81, "Get Device Info.");
+    GET_INFO(0x81, "Get Device Info."),
+    READ_DATA(0x90, "Read Data.");
 
     private int mId;
     private String mDescription;

@@ -9,6 +9,7 @@ package com.ifit.sparky.fecp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Message;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommReply;
@@ -65,7 +66,14 @@ public class FecpController implements CommReply{
         }
 
         //send command to get the system's info
-        this.mCommController.sendCmdBuffer(this.mSysDev.getCommand(CommandId.GET_INFO).getCmdMsg());
+        try
+        {
+            this.mCommController.sendCmdBuffer(this.mSysDev.getCommand(CommandId.GET_INFO).getCmdMsg());
+        }
+        catch (Exception ex)
+        {
+
+        }
         //only after it is complete handle the data back
 
         return this.mSysDev;

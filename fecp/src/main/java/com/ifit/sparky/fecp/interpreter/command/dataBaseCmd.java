@@ -173,6 +173,15 @@ public class DataBaseCmd{
     }
 
     /**
+     * Gets the total number data bytes, not the header number of bytes
+     * @return  number of data bytes
+     */
+    public boolean cmdContainsBitfield(BitFieldId id)
+    {
+        return  this.mMsgData.containsKey(id);
+    }
+
+    /**
      * This will populate all the objects from the byte buffer, assumes position is set correctly
      * @param buffer that holds all the raw data.
      * @return Map(specifically a TreeMap) of all the BitfieldIds and BitfieldDataConverters received.

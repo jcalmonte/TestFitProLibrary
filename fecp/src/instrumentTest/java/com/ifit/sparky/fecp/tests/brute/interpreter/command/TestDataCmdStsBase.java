@@ -358,4 +358,25 @@ public class TestDataCmdStsBase extends TestCase {
         assertEquals(231, ((ByteConverter)map.get(BitFieldId.CURRENT_PULSE)).getValue());
 
     }
+
+    /** Tests if the command or status has the Specific bitfield
+     *
+     * @throws Exception
+     */
+    public void testDataCmdSts_containsBitfield() throws Exception{
+        DataBaseCmd dataBase;
+        dataBase = new DataBaseCmd();
+
+        assertFalse(dataBase.cmdContainsBitfield(BitFieldId.TARGET_MPH));
+
+        dataBase.addBitfieldData(BitFieldId.TARGET_MPH, 0);
+        assertTrue(dataBase.cmdContainsBitfield(BitFieldId.TARGET_MPH));
+
+        //remove and test that it is gone
+        dataBase.removeBitfieldData(BitFieldId.TARGET_MPH);
+
+        assertFalse(dataBase.cmdContainsBitfield(BitFieldId.TARGET_MPH));
+
+
+    }
 }

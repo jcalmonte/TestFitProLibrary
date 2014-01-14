@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * Tests the different command messages.
  * @author Levi.Balling
  * @date 12/16/13
  * @version 1
- * Details.
+ * Handles the Get info command.
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 
