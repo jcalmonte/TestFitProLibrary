@@ -1,26 +1,19 @@
 /**
- * BriefDiscription.
+ * This is the base file that will handle all of the bitfield data structuring.
  * @author Levi.Balling
  * @date 1/13/14
  * @version 1
- * Details.
+ * This will handle a list of data objects and bitfield data with them.
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
-import com.ifit.sparky.fecp.interpreter.device.DeviceId;
-import com.ifit.sparky.fecp.interpreter.status.Status;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 
@@ -47,6 +40,12 @@ public class DataBaseCmd{
         });
     }
 
+    /**
+     * Adds a bitfield and the data that you want to send with it.
+     * it assumes that the data you want to send is in the correct data format(e.g. double, int, etc)
+     * @param id the bitfield that you want to send.
+     * @param obj the data that you want to send.
+     */
     public void addBitfieldData(BitFieldId id, Object obj)
     {
         if(this.mNumOfDataBytes < id.getSection()+1)
@@ -58,6 +57,11 @@ public class DataBaseCmd{
 
     }
 
+    /**
+     * Removes the bitfield from the list of bitfields.
+     * also changes the number of section bytes accordingly
+     * @param id the bitfield that you want to remove.
+     */
     public void removeBitfieldData(BitFieldId id)
     {
         if(this.mMsgData.containsKey(id))
@@ -65,11 +69,11 @@ public class DataBaseCmd{
             //check if the number of bytes is the same
             this.mMsgData.remove(id);
             this.mNumOfDataBytes = 0;//recalculate
-            for(int i = 0; i < this.mMsgData.size(); i++)
+            for(BitFieldId newId : this.mMsgData.keySet())
             {
-                if(this.mNumOfDataBytes < id.getSection()+1)
+                if(this.mNumOfDataBytes < newId.getSection()+1)
                 {
-                    this.mNumOfDataBytes = id.getSection()+1;
+                    this.mNumOfDataBytes = newId.getSection()+1;
                 }
             }
         }
@@ -116,7 +120,7 @@ public class DataBaseCmd{
         //add headerSize
         buffSize += this.mNumOfDataBytes +1;
         //add total Data size
-        buffSize += this.getMsgTotalBytes();
+        buffSize += this.getMsgDataBytesCount();
 
         //plus one for the number of bytes
         ByteBuffer buffer = ByteBuffer.allocate(buffSize);
@@ -133,12 +137,15 @@ public class DataBaseCmd{
      * @return buffer formatted for the Write data portion of the command
      */
     public void getWriteMsgData(ByteBuffer buffer) throws Exception{
+        ByteBuffer tempBuff;
         //populate the header
         getMsgDataHeader(buffer);
         //add the data from the objects to the buffer
         for(BitFieldId id : this.mMsgData.keySet())
         {
-            buffer.put(id.getRawFromData(this.mMsgData.get(id)));
+            tempBuff =id.getRawFromData(this.mMsgData.get(id));
+            tempBuff.position(0);
+            buffer.put(tempBuff);
         }
     }
 
@@ -154,7 +161,7 @@ public class DataBaseCmd{
      * Gets the total number data bytes, not the header number of bytes
      * @return  number of data bytes
      */
-    public int getMsgTotalBytes()
+    public int getMsgDataBytesCount()
     {
         int result = 0;
         //go through all the keys and sum the number of bytes it takes
@@ -168,16 +175,32 @@ public class DataBaseCmd{
     /**
      * This will populate all the objects from the byte buffer, assumes position is set correctly
      * @param buffer that holds all the raw data.
+     * @return Map(specifically a TreeMap) of all the BitfieldIds and BitfieldDataConverters received.
      */
-    public void handleReadData(ByteBuffer buffer) throws Exception
+    public Map<BitFieldId, BitfieldDataConverter> handleReadData(ByteBuffer buffer) throws Exception
     {
+        //todo change coparator to be in a different location.
+        TreeMap<BitFieldId, BitfieldDataConverter> map =  new TreeMap<BitFieldId, BitfieldDataConverter>(new Comparator<BitFieldId>() {
+            @Override
+            public int compare(BitFieldId bitFieldId, BitFieldId bitFieldId2) {
+                return bitFieldId.compareTo(bitFieldId2);
+            }
+        });
 
         //get the objects from the bytebuffer
         for(Map.Entry<BitFieldId, Object> entry : this.mMsgData.entrySet())
         {
+
+            ByteBuffer tempBuffer = ByteBuffer.allocate(entry.getKey().getSize());
+            for(int i = 0; i < entry.getKey().getSize(); i++)
+            {
+                tempBuffer.put(buffer.get());
+            }
             //sets bitfield converter as an object
-            entry.setValue(entry.getKey().getData(buffer));
+            entry.setValue(entry.getKey().getData(tempBuffer));//the get data is always data converters
+            map.put(entry.getKey(), (BitfieldDataConverter)entry.getValue());
         }
+        return map;
     }
 
     /**
@@ -192,7 +215,7 @@ public class DataBaseCmd{
         {
             if(id.getSection() == section)
             {
-                result |= (byte)id.getBit();
+                result |= (byte)(1 << id.getBit());
             }
         }
         return result;

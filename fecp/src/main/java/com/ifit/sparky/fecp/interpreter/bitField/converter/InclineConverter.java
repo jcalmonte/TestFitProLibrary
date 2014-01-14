@@ -35,7 +35,6 @@ public class InclineConverter extends BitfieldDataConverter {
     @Override
     public ByteBuffer convertData(Object obj) throws InvalidBitFieldException {
 
-        short rawData;
         double temp;
         //data coming in as a double
         if(obj.getClass() == Double.class)
@@ -52,13 +51,7 @@ public class InclineConverter extends BitfieldDataConverter {
         }
 
         temp *= 100;
-        //get a short from it
-        rawData = (short)temp;
-
-        this.mRawData = ByteBuffer.allocate(2);
-        this.mRawData.putShort(rawData);
-
-        return this.mRawData;
+        return this.getRawFromData((int)temp);
     }
 
     /**
