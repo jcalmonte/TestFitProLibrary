@@ -9,7 +9,7 @@ package com.ifit.sparky.fecp;
 
 public enum SystemConfiguration {
     SLAVE("Ifit has complete control, if communication is lost system stops."),
-    MASTER("Ifit only has access to getData commands only, " +
+    MASTER("Ifit only has access to getBitFieldData commands only, " +
             "if communication is lost system continues."),
     MULTI_MASTER("Both the systems need to play nice, if communication is lost, system continues");
 

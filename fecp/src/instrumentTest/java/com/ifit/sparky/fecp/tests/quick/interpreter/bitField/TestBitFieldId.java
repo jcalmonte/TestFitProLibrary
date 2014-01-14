@@ -163,7 +163,7 @@ public class TestBitFieldId extends TestCase {
 //        {
 //            buff.clear();
 //            buff.putInt((int)i);
-//            converter = idOne.getData(buff);
+//            converter = idOne.getBitFieldData(buff);
 //            assertEquals(LongConverter.class, converter.getClass());//should be the same class
 //            assertEquals((int)((int)i & 0xFFFFFFFF), ((LongConverter)converter).getValue());
 //        }

@@ -42,11 +42,13 @@ public class InfoCmd extends Command implements CommandInterface{
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() {
+    public ByteBuffer getCmdMsg() throws Exception{
 
         ByteBuffer buff;
 
         buff = super.getCmdMsg();
+        //get the checksum value
+        buff.put(Command.getCheckSum(buff));
 
         return buff;
     }

@@ -170,6 +170,7 @@ public class Command implements CommandInterface{
     public void setCmdId(CommandId id)
     {
         this.mCmdId = id;
+        this.mStatus.setCmdId(this.mCmdId);
     }
 
     /**
@@ -180,6 +181,7 @@ public class Command implements CommandInterface{
     public void setCmdId(int idVal) throws InvalidCommandException
     {
         this.mCmdId = CommandId.getCommandId(idVal);// if invalid int it will throw exception.
+        this.mStatus.setCmdId(this.mCmdId);
     }
 
     /**
@@ -189,6 +191,7 @@ public class Command implements CommandInterface{
     public void setDevId(DeviceId id)
     {
         this.mDevId = id;
+        this.mStatus.setDevId(id);//set so the match
     }
 
     /**
@@ -235,7 +238,7 @@ public class Command implements CommandInterface{
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() {
+    public ByteBuffer getCmdMsg() throws Exception{
 
         ByteBuffer buff;
         buff = ByteBuffer.allocate(this.mLength);
@@ -244,9 +247,20 @@ public class Command implements CommandInterface{
         buff.put((byte)this.mDevId.getVal());
         buff.put((byte)this.mLength);
         buff.put((byte)this.mCmdId.getVal());
-        //get the checksum value
-        buff.put(Command.getCheckSum(buff));
 
         return buff;
+    }
+
+    /**
+     * Helper function to check if the length of the message is to large
+     * @throws Exception if the message is to large
+     */
+    protected void checkMsgSize() throws Exception
+    {
+        if(this.mLength > this.MAX_MSG_LENGTH)
+        {
+            throw new Exception("Message is to large. Max=("
+                    + this.MAX_MSG_LENGTH + ") your message size=(" + this.mLength + ")");
+        }
     }
 }

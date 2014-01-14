@@ -15,5 +15,5 @@ public interface CommandInterface {
      * When they want to get the command they have to get the command.
      * @return the Command structured to be ready to send over the usb.
      */
-     ByteBuffer getCmdMsg();
+     ByteBuffer getCmdMsg() throws Exception;
 }
