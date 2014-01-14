@@ -43,7 +43,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      */
     public WriteReadDataCmd(DeviceId devId) throws Exception
     {
-        super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_DATA, devId);
+        super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_READ_DATA, devId);
         this.mData = new DataBaseCmd();
     }
 
@@ -55,7 +55,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      */
     public WriteReadDataCmd(DeviceId devId, Map<BitFieldId, Object> writeData) throws Exception
     {
-        super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_DATA, devId);
+        super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_READ_DATA, devId);
         this.mData = new DataBaseCmd();
         this.addWriteData(writeData);
     }
@@ -72,7 +72,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
                             Object> writeData,
                             Collection<BitFieldId> readBitIds) throws Exception
     {
-        super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_DATA, devId);
+        super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_READ_DATA, devId);
         this.mData = new DataBaseCmd();
         this.addWriteData(writeData);
         this.addReadBitField(readBitIds);

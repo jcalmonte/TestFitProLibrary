@@ -49,7 +49,7 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         // assert default values
         assertEquals(DeviceId.NONE, cmd.getDevId());
-        assertEquals(5, cmd.getLength());//min length
+        assertEquals(6, cmd.getLength());//min length
         assertEquals(CommandId.WRITE_READ_DATA, cmd.getCmdId());
 
         //test 2nd Constructor
@@ -57,7 +57,7 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         // assert default values
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
-        assertEquals(5, cmd.getLength());//min length
+        assertEquals(6, cmd.getLength());//min length
         assertEquals(CommandId.WRITE_READ_DATA, cmd.getCmdId());
 
         //test 3rd constructor
