@@ -134,7 +134,6 @@ public class DataBaseCmd{
 
     /**
      * Gets the buffer from the start of the Number of bytes to the end of the last data object.
-     * @return buffer formatted for the Write data portion of the command
      */
     public void getWriteMsgData(ByteBuffer buffer) throws Exception{
         ByteBuffer tempBuff;
@@ -188,8 +187,9 @@ public class DataBaseCmd{
      */
     public Map<BitFieldId, BitfieldDataConverter> handleReadData(ByteBuffer buffer) throws Exception
     {
-        //todo change coparator to be in a different location.
-        TreeMap<BitFieldId, BitfieldDataConverter> map =  new TreeMap<BitFieldId, BitfieldDataConverter>(new Comparator<BitFieldId>() {
+        //todo change comparator to be in a different location.
+        TreeMap<BitFieldId, BitfieldDataConverter> map;
+        map =  new TreeMap<BitFieldId, BitfieldDataConverter>(new Comparator<BitFieldId>() {
             @Override
             public int compare(BitFieldId bitFieldId, BitFieldId bitFieldId2) {
                 return bitFieldId.compareTo(bitFieldId2);
