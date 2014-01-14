@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * Testing tool for handling the read data command.
  * @author Levi.Balling
  * @date 12/16/13
  * @version 1
- * Details.
+ * Tests the different methods that are apart of the Read Data Command class.
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 

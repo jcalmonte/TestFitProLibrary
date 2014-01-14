@@ -48,10 +48,7 @@ public class ReadDataCmd extends Command implements CommandInterface{
     public ReadDataCmd(DeviceId devId, Collection<BitFieldId> bitFieldList) throws Exception
     {
         super(new ReadDataSts(devId), MIN_CMD_LENGTH,CommandId.READ_DATA, devId);
-        for(BitFieldId tempId : bitFieldList)
-        {
-            this.addBitField(tempId);
-        }
+        this.addBitField(bitFieldList);
     }
 
     /**

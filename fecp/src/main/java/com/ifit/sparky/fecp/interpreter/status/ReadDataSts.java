@@ -25,6 +25,11 @@ public class ReadDataSts extends Status implements StatusInterface  {
     private DataBaseCmd mData;
     private TreeMap<BitFieldId, BitfieldDataConverter> mResultData;
 
+    /**
+     * Default constructor for handling the reply and generating the cmd data.
+     * @param devId the device id
+     * @throws Exception
+     */
     public ReadDataSts(DeviceId devId) throws Exception
     {
         //Min length is 5 bytes
@@ -38,10 +43,18 @@ public class ReadDataSts extends Status implements StatusInterface  {
         });
     }
 
+    /**
+     * Gets the controller for handling bitfields for sending and receiving
+     * @return the DataBaseCmd. ifit shouldn't need to touch this.
+     */
     public DataBaseCmd getBitFieldData() {
         return mData;
     }
 
+    /**
+     * Gets the data from the message received
+     * @return a Treemap of all the data base on BitfieldIds(mph,incline,etc..)
+     */
     public TreeMap<BitFieldId, BitfieldDataConverter> getResultData() {
         return mResultData;
     }

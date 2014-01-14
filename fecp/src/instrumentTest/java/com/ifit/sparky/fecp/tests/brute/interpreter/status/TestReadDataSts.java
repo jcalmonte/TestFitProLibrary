@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * Tests the Read Data Status.
  * @author Levi.Balling
  * @date 12/16/13
  * @version 1
- * Details.
+ * Tests all the different function that are apart of the ReadDataSts.
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.status;
 
