@@ -10,6 +10,7 @@ package com.ifit.sparky.fecp.interpreter.bitField;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.*;
 
 import java.nio.ByteBuffer;
+import java.util.Comparator;
 
 public enum BitFieldId {
     TARGET_MPH(0, 2, false, new SpeedConverter(), "Target Speed"),
@@ -142,11 +143,18 @@ public enum BitFieldId {
         return  this.mDescription;
     }
 
+    /**
+     * Gets a Bitfield data Converter for converting the data correctly
+     * @param rawData the raw buffer data at the correct location in the buffer
+     * @return the data as an Bitfield data converter
+     * @throws Exception
+     */
     public BitfieldDataConverter getData(ByteBuffer rawData) throws Exception
     {
         this.mConverter.setRawData(rawData, this.mByteSize);
         return this.mConverter.getData();
     }
+
 
     /**
      * Converts the data into a formatted array of bytes.
@@ -166,6 +174,17 @@ public enum BitFieldId {
      * @throws InvalidBitFieldException if the types don't match up
      */
     public ByteBuffer getRawFromData(double data)throws InvalidBitFieldException
+    {
+        return this.mConverter.convertData(data);
+    }
+
+    /**
+     * Converts the data into a formatted array of bytes.
+     * @param data data that is to be formatted.
+     * @return Array of bytes that are ready to be sent
+     * @throws InvalidBitFieldException if the types don't match up
+     */
+    public ByteBuffer getRawFromData(Object data)throws InvalidBitFieldException
     {
         return this.mConverter.convertData(data);
     }
@@ -212,4 +231,5 @@ public enum BitFieldId {
         //error throw exception
         throw new InvalidBitFieldException(section, bit);
     }
+
 }

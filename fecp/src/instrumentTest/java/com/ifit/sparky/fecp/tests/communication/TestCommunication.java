@@ -47,7 +47,7 @@ public class TestCommunication extends TestCase {
     public void testConstructor_communicationUsb() throws Exception{
         UsbComm usbCommObject;
         Context c = getTestContext();
-        usbCommObject = new UsbComm(c);
+        usbCommObject = new UsbComm(c, null);
 
         //assert the object was created
         assertNotNull(usbCommObject);
