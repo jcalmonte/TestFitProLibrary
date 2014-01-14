@@ -70,6 +70,10 @@ public class WriteDataCmd extends Command implements CommandInterface{
      */
     public void addBitField(BitFieldId id, Object data) throws Exception
     {
+        if(id.getReadOnly())
+        {
+            throw new Exception("Invalid BitfieldId "+ id.getDescription()+" This bitfield is read only");
+        }
         this.mData.addBitfieldData(id, data);
         this.mLength = this.mData.getNumOfDataBytes();
         this.mLength += MIN_CMD_LENGTH;
