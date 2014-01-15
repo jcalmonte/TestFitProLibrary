@@ -142,7 +142,6 @@ public class TestWriteDataCmd extends TestCase {
         assertEquals(5, cmd.getLength());//default min length
         assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
 
-
         //test removing 1 of 2
         map.put(BitFieldId.TARGET_MPH, 5.5);
         map.put(BitFieldId.TARGET_INCLINE, 10.1);
