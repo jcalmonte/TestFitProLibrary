@@ -1,15 +1,15 @@
 /**
- * Tests the Get Supported commands command.
+ * Tests the Command Get Sub Devices.
  * @author Levi.Balling
  * @date 1/16/14
  * @version 1
- * This will test the constructor and all the formatting of the message to send.
+ * Tests the constructor and the message formatting of the Command.
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
+import com.ifit.sparky.fecp.interpreter.command.GetSubDevicesCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
@@ -17,10 +17,10 @@ import junit.framework.TestCase;
 
 import java.nio.ByteBuffer;
 
-public class TestGetCmdsCmd extends TestCase {
+public class testGetSubDevicesCmd extends TestCase {
 
     /**
-     * Setups the TestRunner for Status.
+     * Setups the TestRunner for Command.
      * @throws Exception
      */
     @Override
@@ -29,7 +29,7 @@ public class TestGetCmdsCmd extends TestCase {
     }
 
     /**
-     * Closes the TestRunner for Status.
+     * Closes the TestRunner for Command.
      * @throws Exception
      */
     @Override
@@ -44,43 +44,42 @@ public class TestGetCmdsCmd extends TestCase {
     public void testGetCmdsCmd_Constructor() throws Exception{
 
         //check all the different options for generating the buffer
-        GetCmdsCmd cmd;
+        GetSubDevicesCmd cmd;
 
-        cmd = new GetCmdsCmd();
+        cmd = new GetSubDevicesCmd();
         //check default constructor
         assertEquals(4, cmd.getLength());
         assertEquals(DeviceId.NONE, cmd.getDevId());//a little redundant
-        assertEquals(CommandId.GET_SUPPORTED_COMMANDS, cmd.getCmdId());
+        assertEquals(CommandId.GET_SUPPORTED_DEVICES, cmd.getCmdId());
         assertEquals(StatusId.DEV_NOT_SUPPORTED, cmd.getStatus().getStsId());//default
 
         //check second constructor
-        cmd = new GetCmdsCmd(DeviceId.INCLINE_TRAINER);
-        assertEquals(CommandId.GET_SUPPORTED_COMMANDS, cmd.getCmdId());
+        cmd = new GetSubDevicesCmd(DeviceId.INCLINE_TRAINER);
+        assertEquals(CommandId.GET_SUPPORTED_DEVICES, cmd.getCmdId());
         assertEquals(StatusId.DEV_NOT_SUPPORTED, cmd.getStatus().getStsId());//default
         assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());//a little redundant
     }
 
     /**
-     * Test the Get command Message function.
+     * Test the Get Sub Devices Message function.
      * @throws Exception
      */
     public void testGetCmdsCmd_getCmdMsg() throws Exception
     {
-        GetCmdsCmd cmd;
+        GetSubDevicesCmd cmd;
         ByteBuffer buff;
         byte checkSum;
 
-        cmd = new GetCmdsCmd(DeviceId.INCLINE_TRAINER);
+        cmd = new GetSubDevicesCmd(DeviceId.INCLINE_TRAINER);
         buff = cmd.getCmdMsg();
         buff.position(0);
         assertEquals((byte)DeviceId.INCLINE_TRAINER.getVal(), buff.get());//check the device id
         assertEquals(4,buff.get());// check the length of the message
-        assertEquals(CommandId.GET_SUPPORTED_COMMANDS, CommandId.getCommandId((buff.get() & 0xFF)));
+        assertEquals(CommandId.GET_SUPPORTED_DEVICES, CommandId.getCommandId((buff.get() & 0xFF)));
 
         //get the checkSum value
         checkSum = buff.get();
         assertEquals(checkSum, Command.getCheckSum(buff));
     }
-
 
 }

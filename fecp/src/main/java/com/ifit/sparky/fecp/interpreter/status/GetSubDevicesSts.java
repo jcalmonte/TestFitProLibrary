@@ -1,9 +1,9 @@
 /**
- * This status handles the Get Supported Commands status
+ * This status handles the Get Sub Devices Command
  * @author Levi.Balling
  * @date 12/16/13
  * @version 1
- * This status must receive the reply from the Get Supported Commands command
+ * This status must receive the reply from the Get Sub Devices command
  */
 package com.ifit.sparky.fecp.interpreter.status;
 
@@ -14,19 +14,20 @@ import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GetCmdsSts extends Status implements StatusInterface {
+public class GetSubDevicesSts extends Status implements StatusInterface {
 
-    private static final int MIN_STS_LENGTH = 5;
-    private HashSet<CommandId> mCmdList;
+    private static final int MIN_STS_LENGTH = 6;
+    private HashSet<DeviceId> mDeviceList;
+
     /**
-     * Main constructor for the Get supported commands
+     * Main constructor for the Get Sub Devices
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public GetCmdsSts(DeviceId devId) throws Exception
+    public GetSubDevicesSts(DeviceId devId) throws Exception
     {
-        super(StatusId.DEV_NOT_SUPPORTED, MIN_STS_LENGTH, CommandId.GET_SUPPORTED_COMMANDS, devId);
-        this.mCmdList = new HashSet<CommandId>();
+        super(StatusId.DEV_NOT_SUPPORTED, MIN_STS_LENGTH, CommandId.GET_SUPPORTED_DEVICES, devId);
+        this.mDeviceList = new HashSet<DeviceId>();
     }
 
     /**
@@ -43,20 +44,22 @@ public class GetCmdsSts extends Status implements StatusInterface {
         //now parse the data
         if(this.mStsId == StatusId.DONE)
         {
+            int numberOfDevices = buff.get();
+
             //check get the size of the data
-            for(int i = MIN_STS_LENGTH; i < this.mLength; i++)
+            for(int i = 0; i < numberOfDevices; i++)
             {
-                this.mCmdList.add(CommandId.getCommandId(buff.get()));
+                this.mDeviceList.add(DeviceId.getDeviceId(buff.get()));
             }
         }
     }
 
     /**
-     * Gets the set of supported Commands
-     * @return the Command Ids that are supported
+     * Gets the set of sub device list
+     * @return the device ids from the command
      */
-    public Set<CommandId> getSupportedCommands()
+    public Set<DeviceId> getSubDevices()
     {
-        return this.mCmdList;
+        return this.mDeviceList;
     }
 }
