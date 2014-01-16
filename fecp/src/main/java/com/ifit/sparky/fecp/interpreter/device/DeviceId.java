@@ -15,7 +15,8 @@ public enum DeviceId {
             " in single message."),
     MAIN(0x02, "Main, or Parent, device that contains all the sub devices"),
     TREADMILL(0x04, "Treadmill system"),
-    INCLINE_TRAINER(0x05, "Incline Trainer");
+    INCLINE_TRAINER(0x05, "Incline Trainer"),
+    AUDIO(0x40, "Audio Controller");
 
     private int mId;
     private String mDescription;
