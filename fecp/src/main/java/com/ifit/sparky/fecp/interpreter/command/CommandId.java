@@ -18,6 +18,7 @@ public enum CommandId {
     CALIBRATE(0x06, "Calibrates the device."),
     WRITE_DATA(0x0B, "Write Data."),
     GET_INFO(0x81, "Get Device Info."),
+    GET_SUPPORTED_COMMANDS(0x88, "Get Supported Commands."),
     READ_DATA(0x90, "Read Data.");
 
     private int mId;
