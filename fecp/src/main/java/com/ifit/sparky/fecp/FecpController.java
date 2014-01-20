@@ -68,7 +68,7 @@ public class FecpController implements CommReply{
         //send command to get the system's info
         try
         {
-            this.mCommController.sendCmdBuffer(this.mSysDev.getCommand(CommandId.GET_INFO).getCmdMsg());
+            //this.mCommController.sendCmdBuffer(this.mSysDev.getCommand(CommandId.GET_INFO).getCmdMsg());
         }
         catch (Exception ex)
         {
@@ -109,6 +109,16 @@ public class FecpController implements CommReply{
      */
     public boolean getIsConnected() {
         return this.mIsConnected;
+    }
+
+    /**
+     * TODO CHANGE
+     * @param cmd command to send
+     * @throws Exception
+     */
+    public void sendCommand(FecpCommand cmd) throws Exception
+    {
+        this.mCommController.sendCmdBuffer(cmd.getCommand().getCmdMsg());
     }
 
 
