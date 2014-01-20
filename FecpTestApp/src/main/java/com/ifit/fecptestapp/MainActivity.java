@@ -22,10 +22,18 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.command.Command;
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.WriteDataCmd;
+import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
+import com.ifit.sparky.fecp.interpreter.device.Device;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import java.nio.ByteBuffer;
 import java.util.Calendar;
@@ -37,6 +45,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private Handler m_handler, m_handlerUi;
     private int m_interval = 1000; // ms of delay
     private int txCount = 0;
+    private double mSpeedMph = 0;
+    private double mSpeedMphPrev = 0;
+    private final double mMaxSpeed = 12.0f;
 
     //Layout variables
     private Button buttonDecPeriod100;
@@ -47,6 +58,23 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private Button buttonIncPeriod100;
     private Button buttonClearTxCount;
 
+    private Button buttonSpeedDec;
+    private Button buttonSpeed1;
+    private Button buttonSpeed2;
+    private Button buttonSpeed3;
+    private Button buttonSpeed4;
+    private Button buttonSpeed5;
+    private Button buttonSpeed6;
+    private Button buttonSpeed7;
+    private Button buttonSpeed8;
+    private Button buttonSpeed9;
+    private Button buttonSpeed10;
+    private Button buttonSpeed11;
+    private Button buttonSpeed12;
+    private Button buttonSpeedInc;
+
+    private TextView textViewSpeed;
+
     private TextView textViewPeriod;
     private TextView textViewTxCount;
     private TextView textViewRxCount;
@@ -55,6 +83,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private Calendar timeWhenCleared;
 
     private FecpController fecpController;
+    private FecpCommand tempCommand;
+    private Device tempDevice;
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -81,6 +111,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
         try{
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
             fecpController.initializeConnection();
+            tempDevice = new Device(DeviceId.SPEED);
+            tempDevice.addCommand(new WriteReadDataCmd(DeviceId.SPEED));
+            ((WriteReadDataCmd)tempDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.TARGET_MPH, 0);
+            tempCommand = new FecpCommand(tempDevice, tempDevice.getCommand(CommandId.WRITE_READ_DATA), null);
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }
@@ -135,6 +169,41 @@ public class MainActivity extends Activity implements View.OnClickListener{
             txCount = 0;
             //usbComm.clear_usb_counters();
             timeWhenCleared = Calendar.getInstance();
+        }else if(view == buttonSpeedDec){
+            if(mSpeedMph > .6){
+                mSpeedMph -= .1;
+            }else{
+                mSpeedMph = 0;
+            }
+        }else if(view == buttonSpeed1){
+            mSpeedMph = 1.0f;
+        }else if(view == buttonSpeed2){
+            mSpeedMph = 2.0f;
+        }else if(view == buttonSpeed3){
+            mSpeedMph = 3.0f;
+        }else if(view == buttonSpeed4){
+            mSpeedMph = 4.0f;
+        }else if(view == buttonSpeed5){
+            mSpeedMph = 5.0f;
+        }else if(view == buttonSpeed6){
+            mSpeedMph = 6.0f;
+        }else if(view == buttonSpeed7){
+            mSpeedMph = 7.0f;
+        }else if(view == buttonSpeed8){
+            mSpeedMph = 8.0f;
+        }else if(view == buttonSpeed9){
+            mSpeedMph = 9.0f;
+        }else if(view == buttonSpeed10){
+            mSpeedMph = 10.0f;
+        }else if(view == buttonSpeed11){
+            mSpeedMph = 11.0f;
+        }else if(view == buttonSpeed12){
+            mSpeedMph = 12.0f;
+        }else if(view == buttonSpeedInc){
+            mSpeedMph += .1;
+            if(mSpeedMph > mMaxSpeed){
+                mSpeedMph = mMaxSpeed;
+            }
         }
 
         if(m_interval < 0)
@@ -174,6 +243,18 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 buff.put(i, (byte)i);
             //usbComm.sendCmdBuffer(buff);
             txCount++;
+
+            if(mSpeedMph != mSpeedMphPrev){
+                textViewSpeed.setText("Speed: " + String.format("%.2f", mSpeedMph) + " MPH");
+                try {
+                    ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.TARGET_MPH, mSpeedMph);
+
+                    fecpController.sendCommand(tempCommand);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            mSpeedMphPrev = mSpeedMph;
 
             m_handler.postDelayed(m_sendUsbData, m_interval);
         }
@@ -233,6 +314,37 @@ public class MainActivity extends Activity implements View.OnClickListener{
         textViewTxCount = (TextView) findViewById(R.id.textViewTxCount);
         textViewRxCount = (TextView) findViewById(R.id.textViewRxCount);
         textViewPerSecond = (TextView) findViewById(R.id.textViewPerSecond);
+
+        buttonSpeedDec = (Button) findViewById(R.id.buttonSpeedDec);
+        buttonSpeedDec.setOnClickListener(this);
+        buttonSpeed1 = (Button) findViewById(R.id.buttonSpeed1);
+        buttonSpeed1.setOnClickListener(this);
+        buttonSpeed2 = (Button) findViewById(R.id.buttonSpeed2);
+        buttonSpeed2.setOnClickListener(this);
+        buttonSpeed3 = (Button) findViewById(R.id.buttonSpeed3);
+        buttonSpeed3.setOnClickListener(this);
+        buttonSpeed4 = (Button) findViewById(R.id.buttonSpeed4);
+        buttonSpeed4.setOnClickListener(this);
+        buttonSpeed5 = (Button) findViewById(R.id.buttonSpeed5);
+        buttonSpeed5.setOnClickListener(this);
+        buttonSpeed6 = (Button) findViewById(R.id.buttonSpeed6);
+        buttonSpeed6.setOnClickListener(this);
+        buttonSpeed7 = (Button) findViewById(R.id.buttonSpeed7);
+        buttonSpeed7.setOnClickListener(this);
+        buttonSpeed8 = (Button) findViewById(R.id.buttonSpeed8);
+        buttonSpeed8.setOnClickListener(this);
+        buttonSpeed9 = (Button) findViewById(R.id.buttonSpeed9);
+        buttonSpeed9.setOnClickListener(this);
+        buttonSpeed10 = (Button) findViewById(R.id.buttonSpeed10);
+        buttonSpeed10.setOnClickListener(this);
+        buttonSpeed11 = (Button) findViewById(R.id.buttonSpeed11);
+        buttonSpeed11.setOnClickListener(this);
+        buttonSpeed12 = (Button) findViewById(R.id.buttonSpeed12);
+        buttonSpeed12.setOnClickListener(this);
+        buttonSpeedInc = (Button) findViewById(R.id.buttonSpeedInc);
+        buttonSpeedInc.setOnClickListener(this);
+
+        textViewSpeed = (TextView) findViewById(R.id.textViewSpeed);
     }
 
 }

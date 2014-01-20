@@ -16,7 +16,8 @@ public enum DeviceId {
     MAIN(0x02, "Main, or Parent, device that contains all the sub devices"),
     TREADMILL(0x04, "Treadmill system"),
     INCLINE_TRAINER(0x05, "Incline Trainer"),
-    AUDIO(0x40, "Audio Controller");
+    AUDIO(0x40, "Audio Controller"),
+    SPEED(0x41, "Speed Controller");
 
     private int mId;
     private String mDescription;
