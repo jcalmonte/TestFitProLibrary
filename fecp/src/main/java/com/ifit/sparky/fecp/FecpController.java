@@ -33,6 +33,9 @@ public class FecpController implements CommReply{
     private Context mContext;
     private Intent mIntent;
     private CommInterface mCommController;
+    private Thread mCommunicationThread;//this thread is to handle all the communications
+    private FecpCmdList mCmdList;//list of all the commands to send and receive
+    private FecpCmdHandleInterface mCmdHandleInterface;
 
     /**
      * Sets up the controller, and all the facets dealing with the controller
@@ -49,20 +52,32 @@ public class FecpController implements CommReply{
         this.mIsConnected = false;
         this.mContext = context;
         this.mIntent = intent;
+        this.mCmdList = new FecpCmdList();
+
     }
 
     /**
      * Initializes the connection and sets up the communication
+     * @param type the type of handling the system should have
      * @return the system device
      */
-    public SystemDevice initializeConnection()
+    public SystemDevice initializeConnection(CmdHandlerType type)
     {
-
         //add as we add support for these
         if(this.mCommType == CommType.USB_COMMUNICATION)
         {
             this.mCommController = new UsbComm(this.mContext, this.mIntent);
-            this.mCommController.setStsHandler(this);
+            if(type == CmdHandlerType.FIFO_PRIORITY)
+            {
+                //two references to the same object with different responsibilities
+                this.mCmdHandleInterface = new FecpFifoCmdHandler(this.mCommController, this.mCmdList);
+                this.mCommunicationThread = (FecpFifoCmdHandler)this.mCmdHandleInterface;
+            }
+            else if(type == CmdHandlerType.CMD_TYPE_PRIORITY)
+            {
+                //todo make the CmdTypeCommand handler
+            }
+            this.mCommunicationThread.start();//start running the system
         }
 
         //send command to get the system's info

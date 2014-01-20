@@ -13,9 +13,9 @@ import com.ifit.sparky.fecp.communication.CommReply;
 
 public class FecpFifoCmdHandler extends FecpCmdHandler implements FecpCmdHandleInterface, CommReply {
 
-    public FecpFifoCmdHandler(CommInterface commController)
+    public FecpFifoCmdHandler(CommInterface commController, FecpCmdList cmds)
     {
-        super(commController);
+        super(commController, cmds);
     }
 
 }

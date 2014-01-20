@@ -15,17 +15,24 @@ import com.ifit.sparky.fecp.interpreter.status.Status;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 
-public class FecpCmdHandler implements FecpCmdHandleInterface, CommReply, Runnable {
+public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, CommReply {
 
     private CommInterface mCommController;
-    private ArrayList<FecpCommand> mCmdList;
     private FecpCommand mLastestSentCmd;
+    private FecpCmdList mCmds;
 
-    public FecpCmdHandler(CommInterface commController)
+    public FecpCmdHandler(CommInterface commController, FecpCmdList cmds)
     {
+        super();//initializes the thread
         this.mCommController = commController;
+        this.mCmds = cmds;
+    }
+
+    @Override
+    public void run() {
+        super.run();
+        //start my own process handling
     }
 
     /**
@@ -57,7 +64,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, CommReply, Runnab
     @Override
     public void addFecpCommand(FecpCommand cmd)
     {
-        this.mCmdList.add(cmd);
+        this.mCmds.add(cmd);
     }
 
     /**
@@ -72,11 +79,11 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, CommReply, Runnab
     public boolean removeFecpCommand(DeviceId devId, CommandId cmdId) {
 
         boolean result = false;
-        for(FecpCommand cmd : this.mCmdList)
+        for(FecpCommand cmd : this.mCmds)
         {
             if(cmd.getCommand().getCmdId() == cmdId && cmd.getCommand().getDevId() == devId)
             {
-                this.mCmdList.remove(cmd);
+                this.mCmds.remove(cmd);
                 result = true;
             }
         }
@@ -118,14 +125,26 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, CommReply, Runnab
         {
             //check the exception and determine whether to throw it or hold it
         }
+        this.run();//call the next command
 
     }
-
-    /**
-     * implements runnable
-     */
-    @Override
-    public void run() {
-
-    }
+//
+//    /**
+//     * implements runnable
+//     */
+//    @Override
+//    public void run() {
+//
+//        //go through the list of commands and make the function calls to them.
+//        //yes this is an infinite loop.
+//        try
+//        {
+//            this.sendCommand(this.mCmds.get(0));
+//        }
+//        catch (Exception ex)
+//        {
+//
+//        }
+//
+//    }
 }
