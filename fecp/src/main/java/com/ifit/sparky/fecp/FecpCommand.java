@@ -211,4 +211,18 @@ public class FecpCommand {
     public void setCmdReceivedCounter(int mCmdReceivedCounter) {
         this.mCmdReceivedCounter = mCmdReceivedCounter;
     }
+
+    /**
+     * increments the number of times the command was sent.
+     */
+    public void incrementCmdSentCounter() {
+        this.mCmdSentCounter++;
+    }
+
+    /**
+     * increments the number of times the command was received.
+     */
+    public void incrementCmdReceivedCounter() {
+        this.mCmdReceivedCounter++;
+    }
 }
