@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.ifit.sparky.fecp.CmdHandlerType;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.FecpController;
@@ -80,7 +81,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         //systemStatusCallback =
         try{
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
-            fecpController.initializeConnection();
+            fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }

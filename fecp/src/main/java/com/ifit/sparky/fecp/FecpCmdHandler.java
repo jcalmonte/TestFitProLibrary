@@ -22,11 +22,11 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, Co
     private FecpCommand mLastestSentCmd;
     private FecpCmdList mCmds;
 
-    public FecpCmdHandler(CommInterface commController, FecpCmdList cmds)
+    public FecpCmdHandler(CommInterface commController)
     {
         super();//initializes the thread
         this.mCommController = commController;
-        this.mCmds = cmds;
+        this.mCmds = new FecpCmdList();
     }
 
     @Override

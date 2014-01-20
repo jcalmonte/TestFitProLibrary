@@ -59,7 +59,7 @@ public class TestFecpController extends TestCase {
 
         try
         {
-            controller.initializeConnection();
+            //controller.initializeConnection();
         }
         catch (Exception ex)
         {
