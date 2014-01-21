@@ -376,6 +376,8 @@ public class UsbComm extends Activity implements CommInterface {
 
                 try
                 {
+
+                    Thread.sleep(500);
                     this.mConnection.bulkTransfer(this.mEndpointIntrRead1, message, message.length, 500);
 
                     replyBuffer = ByteBuffer.allocate(message.length);
