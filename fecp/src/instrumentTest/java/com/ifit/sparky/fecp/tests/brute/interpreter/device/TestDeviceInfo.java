@@ -42,10 +42,8 @@ public class TestDeviceInfo extends TestCase {
 
         DeviceInfo info;
         HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
-        bitSet.add(BitFieldId.TARGET_MPH);
-        bitSet.add(BitFieldId.CURRENT_MPH);
-        bitSet.add(BitFieldId.TARGET_INCLINE);
-        bitSet.add(BitFieldId.CURRENT_INCLINE);
+        bitSet.add(BitFieldId.KPH);
+        bitSet.add(BitFieldId.INCLINE);
 
         info = new DeviceInfo();
 
@@ -63,9 +61,8 @@ public class TestDeviceInfo extends TestCase {
         assertEquals(2,info.getHWVersion());
         assertEquals(3,info.getSerialNumber());
         assertEquals(4,info.getManufactureNumber());
-        assertEquals(4,info.getSupportedBitfields().size());
         assertEquals(2,info.getSupportedWriteBitfields().size());
-        assertEquals(2,info.getSupportedReadBitfields().size());
+        assertEquals(0,info.getSupportedReadOnlyBitfields().size());
 
     }
 
@@ -76,8 +73,7 @@ public class TestDeviceInfo extends TestCase {
     public void testGettersSetters_device() throws Exception{
         DeviceInfo info;
         HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
-        bitSet.add(BitFieldId.TARGET_INCLINE);
-        bitSet.add(BitFieldId.CURRENT_INCLINE);
+        bitSet.add(BitFieldId.INCLINE);
 
 
         info = new DeviceInfo();
@@ -89,8 +85,7 @@ public class TestDeviceInfo extends TestCase {
         info.setHWVersion(2);
         info.setSerialNumber(3);
         info.setManufactureNumber(4);
-        info.addBitfield(BitFieldId.TARGET_MPH);
-        info.addBitfield(BitFieldId.CURRENT_MPH);
+        info.addBitfield(BitFieldId.KPH);
         info.addAllBitfield(bitSet);
 
         //get and check
@@ -99,9 +94,9 @@ public class TestDeviceInfo extends TestCase {
         assertEquals(2,info.getHWVersion());
         assertEquals(3,info.getSerialNumber());
         assertEquals(4,info.getManufactureNumber());
-        assertEquals(4,info.getSupportedBitfields().size());
+        assertEquals(2,info.getSupportedBitfields().size());
         assertEquals(2,info.getSupportedWriteBitfields().size());
-        assertEquals(2,info.getSupportedReadBitfields().size());
+        assertEquals(0,info.getSupportedReadOnlyBitfields().size());
     }
 
 }

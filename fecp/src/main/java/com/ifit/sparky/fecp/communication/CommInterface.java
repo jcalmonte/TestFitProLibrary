@@ -15,6 +15,13 @@ public interface CommInterface {
 
     void sendCmdBuffer(ByteBuffer buff);
     ByteBuffer getStsBuffer();
+
+    /**
+     * sends the command and waits for the reply to handle the buffer
+     * @param buff the command buffer to send
+     * @return
+     */
+    ByteBuffer sendAndRecieveCmd(ByteBuffer buff);
     void setStsHandler(CommReply handler);
 
 }

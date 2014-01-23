@@ -10,6 +10,7 @@
 package com.ifit.sparky.fecp.communication;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Iterator;
 import android.content.Context;
@@ -51,6 +52,7 @@ public class UsbComm extends Activity implements CommInterface {
     private UsbInterface mInterface;
     private UsbDevice mDevice;
     private UsbDeviceConnection mConnection;
+    private UsbEndpoint mEndpointIntrRead1;
     private UsbEndpoint mEndpointIntrWrite2;
     private UsbEndpoint mEndpointIntrWrite4;
 
@@ -191,6 +193,18 @@ public class UsbComm extends Activity implements CommInterface {
     @Override
     public void setStsHandler(CommReply handler) {
         replyHandler = handler;
+    }
+
+    /**
+     * sends the command and waits for the reply to handle the buffer
+     *
+     * @param buff the command buffer to send
+     * @return
+     */
+    @Override
+    public ByteBuffer sendAndRecieveCmd(ByteBuffer buff) {
+
+        return sendAndReceiveCommand(ENDPOINT_2, buff);
     }
 
     /**
@@ -340,6 +354,52 @@ public class UsbComm extends Activity implements CommInterface {
     }
 
     /**
+     * sendCommand
+     * @param endpoint which endpoint to send data on ENDPOINT2 or ENDPOINT4
+     * @param buff the data to send, not to exceed 64 bytes
+     */
+    private ByteBuffer sendAndReceiveCommand(int endpoint, ByteBuffer buff) {
+        synchronized (this) {
+            if (mConnection != null) {
+                ByteBuffer replyBuffer;
+
+                byte[] message = new byte[TX_SIZE];
+                for(int i = 0; i < buff.capacity(); i++){
+                    message[i] = buff.get(i);
+                }
+
+                if(ENDPOINT_2 == endpoint){
+                    mConnection.bulkTransfer(mEndpointIntrWrite2, message, message.length, 500);
+                }else if(ENDPOINT_4 == endpoint){
+                    mConnection.bulkTransfer(mEndpointIntrWrite4, message, message.length, 0);
+                }
+
+                try
+                {
+
+                    Thread.sleep(500);
+                    this.mConnection.bulkTransfer(this.mEndpointIntrRead1, message, message.length, 500);
+
+                    replyBuffer = ByteBuffer.allocate(message.length);
+                    replyBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                    replyBuffer.position(0);
+                    replyBuffer.put(message);
+                    return replyBuffer;
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+
+                //after the data is send
+                // read the data back
+            }
+        }
+        return null;
+    }
+
+    /**
      * m_1ms
      * decrement delay count every millisecond
      */
@@ -420,6 +480,7 @@ public class UsbComm extends Activity implements CommInterface {
 
         UsbEndpoint mEndpointIntrRead1;
         UsbEndpoint mEndpointIntrRead3;
+        UsbEndpoint ep;
 
         Log.d(TAG, "setDevice " + device);
 
@@ -437,12 +498,13 @@ public class UsbComm extends Activity implements CommInterface {
             return;
         }
         // endpoint should be of type interrupt
-        UsbEndpoint ep = mInterface.getEndpoint(0);
+        ep = mInterface.getEndpoint(0);
         if (ep.getType() != UsbConstants.USB_ENDPOINT_XFER_INT) {
             Log.e(TAG, "Read endpoint 1 is not interrupt type");
             return;
         }
-        mEndpointIntrRead1 = ep;
+
+        this.mEndpointIntrRead1 = ep;
 
         ep = mInterface.getEndpoint(1);
         if (ep.getType() != UsbConstants.USB_ENDPOINT_XFER_INT) {
@@ -471,7 +533,7 @@ public class UsbComm extends Activity implements CommInterface {
             if (connection != null && connection.claimInterface(mInterface, true)) {
                 Log.d(TAG, "open SUCCESS");
                 mConnection = connection;
-                request_ep1.initialize(mConnection, mEndpointIntrRead1);
+                request_ep1.initialize(mConnection, this.mEndpointIntrRead1);
                 request_ep3.initialize(mConnection, mEndpointIntrRead3);
 
                 isInitialized = true;

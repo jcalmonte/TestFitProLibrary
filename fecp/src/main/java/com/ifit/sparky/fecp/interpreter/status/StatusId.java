@@ -12,7 +12,9 @@ package com.ifit.sparky.fecp.interpreter.status;
 public enum StatusId {
     DEV_NOT_SUPPORTED(0, "Device is not supported"),
     CMD_NOT_SUPPORTED(0x01, "Command is not supported"),
-    DONE(0x02, "Command was successful send and received");
+    DONE(0x02, "Command was successful send and received"),
+    IN_PROGRESS(0x03, "Command is in progress"),
+    FAILED(0x04, "Command Failed");
 
     private int mId;
     private String mDescription;

@@ -13,7 +13,7 @@ public class InvalidKeyCodeException extends Exception {
      * Handles an exception if there is a bad int used.
      * @param badValue bad int used
      */
-    public InvalidKeyCodeException(int badValue)
+    public InvalidKeyCodeException(long badValue)
     {
         super("Invalid KeyCode ("+badValue+").");
     }

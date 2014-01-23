@@ -23,7 +23,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import java.nio.ByteBuffer;
 
-public class FecpController implements CommReply{
+public class FecpController{
     //Fecp System Version number
     private final int VERSION = 1;
     private CommType mCommType;
@@ -33,6 +33,8 @@ public class FecpController implements CommReply{
     private Context mContext;
     private Intent mIntent;
     private CommInterface mCommController;
+    private Thread mCommunicationThread;//this thread is to handle all the communications
+    private FecpCmdHandleInterface mCmdHandleInterface;
 
     /**
      * Sets up the controller, and all the facets dealing with the controller
@@ -49,26 +51,38 @@ public class FecpController implements CommReply{
         this.mIsConnected = false;
         this.mContext = context;
         this.mIntent = intent;
+
     }
 
     /**
      * Initializes the connection and sets up the communication
+     * @param type the type of handling the system should have
      * @return the system device
      */
-    public SystemDevice initializeConnection()
+    public SystemDevice initializeConnection(CmdHandlerType type) throws Exception
     {
-
         //add as we add support for these
         if(this.mCommType == CommType.USB_COMMUNICATION)
         {
             this.mCommController = new UsbComm(this.mContext, this.mIntent);
-            this.mCommController.setStsHandler(this);
+            this.initializeSystemDevice();
+            if(type == CmdHandlerType.FIFO_PRIORITY)
+            {
+                //two references to the same object with different responsibilities
+                this.mCmdHandleInterface = new FecpFifoCmdHandler(this.mCommController);
+                this.mCommunicationThread = (FecpFifoCmdHandler)this.mCmdHandleInterface;
+            }
+            else if(type == CmdHandlerType.CMD_TYPE_PRIORITY)
+            {
+                //todo make the CmdTypeCommand handler
+            }
+            this.mCommunicationThread.start();//start running the system
         }
 
         //send command to get the system's info
         try
         {
-            //this.mCommController.sendCmdBuffer(this.mSysDev.getCommand(CommandId.GET_INFO).getCmdMsg());
+            this.mCommController.sendCmdBuffer(this.mSysDev.getCommand(CommandId.GET_INFO).getCmdMsg());
         }
         catch (Exception ex)
         {
@@ -112,23 +126,41 @@ public class FecpController implements CommReply{
     }
 
     /**
-     * TODO CHANGE
-     * @param cmd command to send
-     * @throws Exception
+     * Addes a command to send to the device
+     * @param cmd the command to send to the device
      */
-    public void sendCommand(FecpCommand cmd) throws Exception
+    public void addCmd(FecpCommand cmd)
     {
-        this.mCommController.sendCmdBuffer(cmd.getCommand().getCmdMsg());
+        this.mCmdHandleInterface.addFecpCommand(cmd);
     }
 
+    private void initializeSystemDevice() throws Exception
+    {
+        //send command to get info to main device
 
-    @Override
-    public void stsMsgHandler(ByteBuffer buff) {
+        Command cmd = new InfoCmd(DeviceId.MAIN);
 
-        try {
-            this.mSysDev.getCommand(CommandId.GET_INFO).getStatus().handleStsMsg(buff);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
+        this.mSysDev = new SystemDevice();
+    }
+
+    private void getDevicesInfo(DeviceId devId) throws Exception
+    {
+        Command cmd = new InfoCmd(devId);
+
+        cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
+        //cmd should have the data that we need
+    }
+    private void getSupportedCommands(DeviceId devId) throws Exception
+    {
+        Command cmd = new InfoCmd(devId);
+        this.mCommController.sendCmdBuffer(cmd.getCmdMsg());
+
+    }
+    private void getSupportedSubDevices(DeviceId devId) throws Exception
+    {
+        Command cmd = new InfoCmd(devId);
+        this.mCommController.sendCmdBuffer(cmd.getCmdMsg());
+
     }
 }
