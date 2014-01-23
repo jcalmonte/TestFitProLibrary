@@ -27,7 +27,7 @@ public enum BitFieldId {
     RUNNING_TIME(11, 4, true, new LongConverter(), "Running Time"),
     WORKOUT_MODE(12, 1, false, new ByteConverter(), "Workout Mode"),
     CALORIES(13, 2, true, new ShortConverter(), "Calories"),
-    AUDIO_SOURCE(14, 1, true, new ByteConverter(), "Audio Source"),
+    AUDIO_SOURCE(14, 1, false, new ByteConverter(), "Audio Source"),
     ANDROID_KEYS(15, 1, true, new ByteConverter(), "Android Keys"),
     ACTUAL_KPH(16, 2, true, new SpeedConverter(), "Actual KPH"),
     ACTUAL_INCLINE(17, 2, true, new InclineConverter(), "Actual Incline"),

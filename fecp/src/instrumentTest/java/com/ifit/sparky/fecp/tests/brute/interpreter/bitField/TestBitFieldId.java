@@ -470,7 +470,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(1, bit.getSection());
         assertEquals(6, bit.getBit());
         assertEquals(1, bit.getSize());
-        assertEquals(true, bit.getReadOnly());
+        assertEquals(false, bit.getReadOnly());
         assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
         resultBuff1.clear();
         resultBuff1.put((byte) 5);
