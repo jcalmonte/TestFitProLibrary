@@ -42,10 +42,8 @@ public class TestDeviceInfo extends TestCase {
 
         DeviceInfo info;
         HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
-        bitSet.add(BitFieldId.TARGET_MPH);
-        bitSet.add(BitFieldId.CURRENT_MPH);
-        bitSet.add(BitFieldId.TARGET_INCLINE);
-        bitSet.add(BitFieldId.CURRENT_INCLINE);
+        bitSet.add(BitFieldId.KPH);
+        bitSet.add(BitFieldId.INCLINE);
 
         info = new DeviceInfo();
 
@@ -76,8 +74,7 @@ public class TestDeviceInfo extends TestCase {
     public void testGettersSetters_device() throws Exception{
         DeviceInfo info;
         HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
-        bitSet.add(BitFieldId.TARGET_INCLINE);
-        bitSet.add(BitFieldId.CURRENT_INCLINE);
+        bitSet.add(BitFieldId.INCLINE);
 
 
         info = new DeviceInfo();
@@ -89,8 +86,7 @@ public class TestDeviceInfo extends TestCase {
         info.setHWVersion(2);
         info.setSerialNumber(3);
         info.setManufactureNumber(4);
-        info.addBitfield(BitFieldId.TARGET_MPH);
-        info.addBitfield(BitFieldId.CURRENT_MPH);
+        info.addBitfield(BitFieldId.KPH);
         info.addAllBitfield(bitSet);
 
         //get and check

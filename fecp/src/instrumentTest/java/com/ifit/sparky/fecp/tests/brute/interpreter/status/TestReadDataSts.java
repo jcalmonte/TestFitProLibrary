@@ -88,7 +88,7 @@ public class TestReadDataSts extends TestCase {
         assertEquals(0, map.size());
 
         //add bitfield to the status for expecting a value in the reply
-        sts.getBitFieldData().addBitfieldData(BitFieldId.TARGET_MPH, 0);
+        sts.getBitFieldData().addBitfieldData(BitFieldId.KPH, 0);
         buff = builder.buildBuffer(sts.getDevId(), 7,sts.getCmdId(),StatusId.DONE);
 
         buff.putShort((short) 105);//10.5
@@ -100,8 +100,8 @@ public class TestReadDataSts extends TestCase {
         assertEquals(CommandId.READ_DATA, sts.getCmdId());
         assertEquals(7, sts.getLength());
         map = sts.getResultData();
-        assertTrue(map.containsKey(BitFieldId.TARGET_MPH));
+        assertTrue(map.containsKey(BitFieldId.KPH));
         assertEquals(1, map.size());
-        assertEquals(10.5, ((SpeedConverter)map.get(BitFieldId.TARGET_MPH)).getSpeed());
+        assertEquals(10.5, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
     }
 }

@@ -103,7 +103,7 @@ public class TestInfoSts extends TestCase {
         assertEquals(1, sts.getInfo().getSupportedBitfields().size());
         assertEquals(0, sts.getInfo().getSupportedReadBitfields().size());
         assertEquals(1, sts.getInfo().getSupportedWriteBitfields().size());
-        assertTrue(sts.getInfo().getSupportedWriteBitfields().contains(BitFieldId.TARGET_MPH));
+        assertTrue(sts.getInfo().getSupportedWriteBitfields().contains(BitFieldId.KPH));
 
     }
 }

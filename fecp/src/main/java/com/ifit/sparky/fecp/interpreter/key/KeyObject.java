@@ -11,7 +11,7 @@ package com.ifit.sparky.fecp.interpreter.key;
 public class KeyObject {
 
     private KeyCodes    mCode;
-    private int        mRawKeyCode;//this is the 0xFFFFFFC thing
+    private long        mRawKeyCode;//this is the 0xFFFFFFC thing
     private int         mTimePressed;
     private int         mTimeHeld;//how long it was held in milliseconds
 
@@ -33,7 +33,7 @@ public class KeyObject {
      * @param timePressed the time the key was pressed from the start of the workout
      * @param timeHeld how long the key was held in milliseconds
      */
-    public KeyObject(KeyCodes code, int rawKey, int timePressed, int timeHeld)
+    public KeyObject(KeyCodes code, long rawKey, int timePressed, int timeHeld)
     {
         this.mCode = code;
         this.mRawKeyCode = rawKey;
@@ -41,7 +41,7 @@ public class KeyObject {
         this.mTimeHeld = timeHeld;
     }
 
-    public KeyObject(int rawCode, int rawKey, int timePressed, int timeHeld) throws InvalidKeyCodeException
+    public KeyObject(int rawCode, long rawKey, int timePressed, int timeHeld) throws InvalidKeyCodeException
     {
         this.mCode = KeyCodes.getKeyCode(rawCode);
         this.mRawKeyCode = rawKey;
@@ -62,7 +62,7 @@ public class KeyObject {
      * Gets the raw value of all the button presses
      * @return the raw value of all the button presses
      */
-    public int getRawKeyCode()
+    public long getRawKeyCode()
     {
         return this.mRawKeyCode;
     }
@@ -99,7 +99,7 @@ public class KeyObject {
      * @param rawCode the keyCode value
      * @throws InvalidKeyCodeException if the keycode doesn't exist
      */
-    public void setCode(int rawCode) throws InvalidKeyCodeException
+    public void setCode(long rawCode) throws InvalidKeyCodeException
     {
         this.mCode = KeyCodes.getKeyCode(rawCode);
     }

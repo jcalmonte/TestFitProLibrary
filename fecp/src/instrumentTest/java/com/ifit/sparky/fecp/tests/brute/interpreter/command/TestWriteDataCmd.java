@@ -62,14 +62,14 @@ public class TestWriteDataCmd extends TestCase {
         assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
 
         //test 3rd constructor
-        map.put(BitFieldId.TARGET_MPH, 10.5);//10.5 mph
+        map.put(BitFieldId.KPH, 10.5);//10.5 mph
 
         cmd = new WriteDataCmd(DeviceId.TREADMILL, map);
 
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
         assertEquals(8, cmd.getLength());
         assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
-        assertTrue(cmd.containsBitField(BitFieldId.TARGET_MPH));
+        assertTrue(cmd.containsBitField(BitFieldId.KPH));
     }
 
     /** Tests adding a bitfield and a value to the command.
@@ -85,41 +85,41 @@ public class TestWriteDataCmd extends TestCase {
         assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
         assertEquals(5, cmd.getLength());//default min length
-        assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
+        assertFalse(cmd.containsBitField(BitFieldId.KPH));
 
         //add a single bitfield
-        cmd.addBitField(BitFieldId.TARGET_MPH, 10.5);
+        cmd.addBitField(BitFieldId.KPH, 10.5);
 
         assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
         assertEquals(8, cmd.getLength());
-        assertTrue(cmd.containsBitField(BitFieldId.TARGET_MPH));
+        assertTrue(cmd.containsBitField(BitFieldId.KPH));
 
         //test adding multiple in different sections
-        map.put(BitFieldId.TARGET_MPH, 11.5);
-        map.put(BitFieldId.TARGET_INCLINE, 11.50);
+        map.put(BitFieldId.KPH, 11.5);
+        map.put(BitFieldId.INCLINE, 11.50);
         cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
         cmd.addBitField(map);//overwrites the Target mph
         assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
         assertEquals(10, cmd.getLength());//default min length + 1 section
-        assertTrue(cmd.containsBitField(BitFieldId.TARGET_MPH));
-        assertTrue(cmd.containsBitField(BitFieldId.TARGET_INCLINE));
+        assertTrue(cmd.containsBitField(BitFieldId.KPH));
+        assertTrue(cmd.containsBitField(BitFieldId.INCLINE));
 
         //add duplicates
 
-        map.put(BitFieldId.TARGET_MPH, 12.5);
-        map.put(BitFieldId.TARGET_INCLINE, 12.50);//%12.5
-        map.put(BitFieldId.TARGET_RESISTANCE, 10.50);//%10.5
-        cmd.removeDataField(BitFieldId.TARGET_MPH);
+        map.put(BitFieldId.KPH, 12.5);
+        map.put(BitFieldId.INCLINE, 12.50);//%12.5
+        map.put(BitFieldId.RESISTANCE, 10.50);//%10.5
+        cmd.removeDataField(BitFieldId.KPH);
         cmd.addBitField(map);
         assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
         assertEquals(13, cmd.getLength());//2 sections, 3 short values
-        assertTrue(cmd.containsBitField(BitFieldId.TARGET_MPH));
-        assertTrue(cmd.containsBitField(BitFieldId.TARGET_INCLINE));
-        assertTrue(cmd.containsBitField(BitFieldId.TARGET_RESISTANCE));
+        assertTrue(cmd.containsBitField(BitFieldId.KPH));
+        assertTrue(cmd.containsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.containsBitField(BitFieldId.RESISTANCE));
     }
 
     /** Tests the removal of bitfield ids.
@@ -134,34 +134,34 @@ public class TestWriteDataCmd extends TestCase {
         cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
         assertEquals(5, cmd.getLength());//default min length
-        assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
+        assertFalse(cmd.containsBitField(BitFieldId.KPH));
 
         //remove empty list
-        cmd.removeDataField(BitFieldId.TARGET_MPH);
+        cmd.removeDataField(BitFieldId.KPH);
 
         assertEquals(5, cmd.getLength());//default min length
-        assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
+        assertFalse(cmd.containsBitField(BitFieldId.KPH));
 
         //test removing 1 of 2
-        map.put(BitFieldId.TARGET_MPH, 5.5);
-        map.put(BitFieldId.TARGET_INCLINE, 10.1);
+        map.put(BitFieldId.KPH, 5.5);
+        map.put(BitFieldId.INCLINE, 10.1);
         cmd = new WriteDataCmd(DeviceId.TREADMILL);
 
         cmd.addBitField(map);
-        cmd.removeDataField(BitFieldId.TARGET_MPH);
+        cmd.removeDataField(BitFieldId.KPH);
 
         assertEquals(8, cmd.getLength());//default min length + 1 section
-        assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
-        assertTrue(cmd.containsBitField(BitFieldId.TARGET_INCLINE));
+        assertFalse(cmd.containsBitField(BitFieldId.KPH));
+        assertTrue(cmd.containsBitField(BitFieldId.INCLINE));
 
         //removing duplicates and from a list
-        map.put(BitFieldId.TARGET_MPH, 11.5);
-        map.put(BitFieldId.TARGET_INCLINE, 12.5);
+        map.put(BitFieldId.KPH, 11.5);
+        map.put(BitFieldId.INCLINE, 12.5);
 
         cmd.removeDataField(map.keySet());
         assertEquals(5, cmd.getLength());//default min length + 1 section
-        assertFalse(cmd.containsBitField(BitFieldId.TARGET_MPH));
-        assertFalse(cmd.containsBitField(BitFieldId.TARGET_INCLINE));
+        assertFalse(cmd.containsBitField(BitFieldId.KPH));
+        assertFalse(cmd.containsBitField(BitFieldId.INCLINE));
     }
 
     /** Tests the getCommand Message, and the formatting
@@ -189,7 +189,7 @@ public class TestWriteDataCmd extends TestCase {
         //assume checksum is good
 
         //add bitfield
-        cmd.addBitField(BitFieldId.TARGET_MPH, 10.5);//105 in byte format
+        cmd.addBitField(BitFieldId.KPH, 10.5);//105 in byte format
         buffer = cmd.getCmdMsg();
 
         buffer.position(0);
