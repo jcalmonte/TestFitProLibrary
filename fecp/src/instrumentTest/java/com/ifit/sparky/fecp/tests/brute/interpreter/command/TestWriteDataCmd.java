@@ -116,7 +116,7 @@ public class TestWriteDataCmd extends TestCase {
         cmd.addBitField(map);
         assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
         assertEquals(DeviceId.TREADMILL, cmd.getDevId());
-        assertEquals(13, cmd.getLength());//2 sections, 3 short values
+        assertEquals(12, cmd.getLength());//2 sections, 3 short values
         assertTrue(cmd.containsBitField(BitFieldId.KPH));
         assertTrue(cmd.containsBitField(BitFieldId.INCLINE));
         assertTrue(cmd.containsBitField(BitFieldId.RESISTANCE));

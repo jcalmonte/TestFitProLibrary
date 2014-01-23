@@ -83,7 +83,7 @@ public class TestDataCmdStsBase extends TestCase {
         //add another byte to the 2nd section.
         dataBase.addBitfieldData(BitFieldId.RESISTANCE, 50.00);//%50.00
 
-        assertEquals(2, dataBase.getNumOfDataBytes());
+        assertEquals(1, dataBase.getNumOfDataBytes());
         assertEquals(6, dataBase.getMsgDataBytesCount());
     }
 
@@ -135,19 +135,19 @@ public class TestDataCmdStsBase extends TestCase {
         //add 1 in a different section
         dataBase.addBitfieldData(BitFieldId.RESISTANCE, 50.00);//%50.00
 
-        assertEquals(2, dataBase.getNumOfDataBytes());
+        assertEquals(1, dataBase.getNumOfDataBytes());
         assertEquals(4, dataBase.getMsgDataBytesCount());
 
         //remove the 1st section item
         dataBase.removeBitfieldData(BitFieldId.KPH);
 
-        assertEquals(2, dataBase.getNumOfDataBytes());// Caught Bug in code
+        assertEquals(1, dataBase.getNumOfDataBytes());// Caught Bug in code
         assertEquals(2, dataBase.getMsgDataBytesCount());
 
         //try adding one that is already there
         dataBase.addBitfieldData(BitFieldId.RESISTANCE, 50.00);//%50.00
 
-        assertEquals(2, dataBase.getNumOfDataBytes());
+        assertEquals(1, dataBase.getNumOfDataBytes());
         assertEquals(2, dataBase.getMsgDataBytesCount());
 
     }
@@ -184,7 +184,7 @@ public class TestDataCmdStsBase extends TestCase {
         buffer.position(0);
         assertEquals(2, buffer.capacity());
         assertEquals(1, buffer.get());//number of sections
-        assertEquals(5, buffer.get());
+        assertEquals(3, buffer.get());
 
         //add another in different section
         dataBase.addBitfieldData(BitFieldId.FAN_SPEED, 50);
@@ -193,7 +193,7 @@ public class TestDataCmdStsBase extends TestCase {
         buffer.position(0);
         assertEquals(3, buffer.capacity());
         assertEquals(2, buffer.get());//number of sections
-        assertEquals(5, buffer.get());
+        assertEquals(3, buffer.get());
         assertEquals(1, buffer.get());
 
         //skip a section and add it
@@ -202,12 +202,10 @@ public class TestDataCmdStsBase extends TestCase {
 
         buffer = dataBase.getMsgDataHeader();
         buffer.position(0);
-        assertEquals(5, buffer.capacity());
-        assertEquals(4, buffer.get());//number of sections
+        assertEquals(3, buffer.capacity());
+        assertEquals(2, buffer.get());//number of sections
+        assertEquals(3, buffer.get());
         assertEquals(5, buffer.get());
-        assertEquals(1, buffer.get());
-        assertEquals(0, buffer.get());
-        assertEquals((1<<5), buffer.get());//test bit 5 should be set
     }
 
     /** Tests getting the all the data, section bytes to the end of the last data object.
@@ -243,7 +241,7 @@ public class TestDataCmdStsBase extends TestCase {
         buffer.position(0);
         assertEquals(6, buffer.capacity());
         assertEquals(1, buffer.get());//number of sections
-        assertEquals(5, buffer.get());
+        assertEquals(3, buffer.get());
         assertEquals(105, buffer.getShort());//target speed
         assertEquals(1050, buffer.getShort());//target incline Caught Bug
 
@@ -252,13 +250,12 @@ public class TestDataCmdStsBase extends TestCase {
 
         buffer = dataBase.getWriteMsgData();
         buffer.position(0);
-        assertEquals(9, buffer.capacity());
-        assertEquals(2, buffer.get());//number of sections
-        assertEquals(5, buffer.get());//section 0
-        assertEquals(1, buffer.get());//section 1
-        assertEquals(105, buffer.getShort());//target speed
-        assertEquals(1050, buffer.getShort());//target incline
-        assertEquals(5000, buffer.getShort());//target Resistance
+        assertEquals(8, buffer.capacity());
+        assertEquals(1, buffer.get());//number of sections
+        assertEquals(7, buffer.get());//section 0
+        assertEquals(105, buffer.getShort());//speed
+        assertEquals(1050, buffer.getShort());//incline
+        assertEquals(5000, buffer.getShort());//Resistance
 
         //skip a section and add it
         //add another in different section
@@ -266,12 +263,10 @@ public class TestDataCmdStsBase extends TestCase {
 
         buffer = dataBase.getWriteMsgData();
         buffer.position(0);
-        assertEquals(12, buffer.capacity());
-        assertEquals(4, buffer.get());//number of sections
-        assertEquals(5, buffer.get());//section 0
-        assertEquals(1, buffer.get());//section 1
-        assertEquals(0, buffer.get());//section 2
-        assertEquals((1<<5), buffer.get());//section 3
+        assertEquals(10, buffer.capacity());
+        assertEquals(2, buffer.get());//number of sections
+        assertEquals(7, buffer.get());//section 0
+        assertEquals(4, buffer.get());//section 1
         assertEquals(105, buffer.getShort());//target speed
         assertEquals(1050, buffer.getShort());//target incline
         assertEquals(5000, buffer.getShort());//target Resistance

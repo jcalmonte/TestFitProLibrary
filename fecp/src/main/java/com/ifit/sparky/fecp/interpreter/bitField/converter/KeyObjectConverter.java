@@ -37,7 +37,7 @@ public class KeyObjectConverter extends BitfieldDataConverter {
         this.mKey.setCode(this.mRawData.getShort());
 
         //convert the first 4 bytes into the rawKeycode value
-        this.mKey.setRawKeyCode(this.mRawData.getInt());
+        this.mKey.setRawKeyCode(this.mRawData.getLong());
 
         //convert the Next 2 bytes into the Time it was pressed in seconds
         this.mKey.setTimePressed(this.mRawData.getShort());

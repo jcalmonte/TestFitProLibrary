@@ -23,7 +23,7 @@ public enum BitFieldId {
     KEY_OBJECT(7, 14, true, new KeyObjectConverter(), "Key Object"),
     FAN_SPEED(8, 1, false, new ByteConverter(), "Fan Speed"),
     VOLUME(9, 1, false, new ByteConverter(), "Volume"),
-    PULSE(10, 1, false, new ByteConverter(), "Pulse"),
+    PULSE(10, 1, true, new ByteConverter(), "Pulse"),
     RUNNING_TIME(11, 4, true, new LongConverter(), "Running Time"),
     WORKOUT_MODE(12, 1, false, new ByteConverter(), "Workout Mode"),
     CALORIES(13, 2, true, new ShortConverter(), "Calories"),
@@ -36,16 +36,16 @@ public enum BitFieldId {
 
     AGE(24, 1, false, new ByteConverter(), "Age"),
     WEIGHT(25, 2, false, new ShortConverter(), "Weight"),
-    GEARS(26, 1, true, new ByteConverter(), "Gears"),
+    GEARS(26, 1, false, new ByteConverter(), "Gears"),
     MAX_INCLINE(27, 2, true, new InclineConverter(), "Max Incline"),
     MIN_INCLINE(28, 2, true, new InclineConverter(), "Min Incline"),
-    TRANS_MAX(29, 2, true, new ShortConverter(), "Trans Max"),
+    TRANS_MAX(29, 2, false, new ShortConverter(), "Trans Max"),
     MAX_KPH(30, 2, true, new SpeedConverter(), "Max KPH"),
     MIN_KPH(31, 2, true, new SpeedConverter(), "Min KPH"),
-    BV_VOLUME(32, 1, true, new ByteConverter(), "Broadcast Vision Volume"),
-    BV_FREQUENCY(33, 1, true, new ByteConverter(), "Broadcast Vision Frequency"),
+    BV_VOLUME(32, 1, false, new ByteConverter(), "Broadcast Vision Volume"),
+    BV_FREQUENCY(33, 2, false, new ShortConverter(), "Broadcast Vision Frequency"),
     IDLE_TIMEOUT(34, 2, false, new ShortConverter(), "Idle Timeout"),
-    PAUSE_TIMEOUT(35, 2, true, new ShortConverter(), "Pause Timeout");
+    PAUSE_TIMEOUT(35, 2, false, new ShortConverter(), "Pause Timeout");
 
     private int mValue; // indexed at 1-255
     private int mSection;

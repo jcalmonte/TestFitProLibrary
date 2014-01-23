@@ -108,7 +108,7 @@ public class KeyObject {
      * Sets the rawKey Values
      * @param rawKeyValues the Raw Key values
      */
-    public void setRawKeyCode(int rawKeyValues)
+    public void setRawKeyCode(long rawKeyValues)
     {
         this.mRawKeyCode = rawKeyValues;
     }

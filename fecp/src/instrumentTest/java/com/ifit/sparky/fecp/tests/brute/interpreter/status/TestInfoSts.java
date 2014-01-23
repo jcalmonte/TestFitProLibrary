@@ -10,9 +10,7 @@ package com.ifit.sparky.fecp.tests.brute.interpreter.status;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
-import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.tests.brute.interpreter.command.TestCommandBuilder;
@@ -20,7 +18,6 @@ import com.ifit.sparky.fecp.tests.brute.interpreter.command.TestCommandBuilder;
 import junit.framework.TestCase;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class TestInfoSts extends TestCase {
 
@@ -101,7 +98,7 @@ public class TestInfoSts extends TestCase {
         assertEquals(4, sts.getInfo().getManufactureNumber());
         assertEquals(1, sts.getInfo().getSections());
         assertEquals(1, sts.getInfo().getSupportedBitfields().size());
-        assertEquals(0, sts.getInfo().getSupportedReadBitfields().size());
+        assertEquals(0, sts.getInfo().getSupportedReadOnlyBitfields().size());
         assertEquals(1, sts.getInfo().getSupportedWriteBitfields().size());
         assertTrue(sts.getInfo().getSupportedWriteBitfields().contains(BitFieldId.KPH));
 

@@ -121,7 +121,7 @@ public class TestWriteReadDataCmd  extends TestCase {
         map.put(BitFieldId.RESISTANCE, 10.50);//%10.5
         cmd.removeWriteDataField(BitFieldId.KPH);
         cmd.addWriteData(map);
-        assertEquals(14, cmd.getLength());//2 sections, 3 short values
+        assertEquals(13, cmd.getLength());//2 sections, 3 short values
         assertTrue(cmd.writeContainsBitField(BitFieldId.KPH));
         assertTrue(cmd.writeContainsBitField(BitFieldId.INCLINE));
         assertTrue(cmd.writeContainsBitField(BitFieldId.RESISTANCE));
@@ -208,7 +208,7 @@ public class TestWriteReadDataCmd  extends TestCase {
         idList.add(BitFieldId.RESISTANCE);
         cmd.removeReadDataField(BitFieldId.KPH);
         cmd.addReadBitField(idList);
-        assertEquals(8, cmd.getLength());//2 sections, 3 short values
+        assertEquals(7, cmd.getLength());//2 sections, 3 short values
         assertTrue(cmd.readContainsBitField(BitFieldId.KPH));
         assertTrue(cmd.readContainsBitField(BitFieldId.INCLINE));
         assertTrue(cmd.readContainsBitField(BitFieldId.RESISTANCE));
@@ -309,7 +309,7 @@ public class TestWriteReadDataCmd  extends TestCase {
         assertEquals(1, buffer.get());//Section 0
         assertEquals(105, (buffer.getShort() & 0xFFFF));//targetMPH speed
         assertEquals(1, buffer.get());//number of Read bytes
-        assertEquals(2, buffer.get());//Section 0
+        assertEquals(1, buffer.get());//Section 0
         assertEquals(cmd.getLength(), buffer.capacity());
     }
 

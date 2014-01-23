@@ -147,7 +147,7 @@ public class DeviceInfo {
      * gets the set of Supported Read Only Bitfields
      * @return set of Read only BitfieldIds
      */
-    public Set<BitFieldId> getSupportedReadBitfields()
+    public Set<BitFieldId> getSupportedReadOnlyBitfields()
     {
         HashSet<BitFieldId> readBitfields = new HashSet<BitFieldId>();
         for(BitFieldId bit : this.mSupportedBitFields)

@@ -61,9 +61,8 @@ public class TestDeviceInfo extends TestCase {
         assertEquals(2,info.getHWVersion());
         assertEquals(3,info.getSerialNumber());
         assertEquals(4,info.getManufactureNumber());
-        assertEquals(4,info.getSupportedBitfields().size());
         assertEquals(2,info.getSupportedWriteBitfields().size());
-        assertEquals(2,info.getSupportedReadBitfields().size());
+        assertEquals(0,info.getSupportedReadOnlyBitfields().size());
 
     }
 
@@ -95,9 +94,9 @@ public class TestDeviceInfo extends TestCase {
         assertEquals(2,info.getHWVersion());
         assertEquals(3,info.getSerialNumber());
         assertEquals(4,info.getManufactureNumber());
-        assertEquals(4,info.getSupportedBitfields().size());
+        assertEquals(2,info.getSupportedBitfields().size());
         assertEquals(2,info.getSupportedWriteBitfields().size());
-        assertEquals(2,info.getSupportedReadBitfields().size());
+        assertEquals(0,info.getSupportedReadOnlyBitfields().size());
     }
 
 }
