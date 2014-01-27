@@ -16,4 +16,15 @@ public class TestMotor extends TestCase{
         //and check against constant variable of 1.0 mph
         //make sure formatting is right for verification for english or metric units
     }
+    //the testMaxSpeedTime is planned to automate #59 of the software
+    //checklist to time the amount of time it takes to go from 0 to max speed
+    public void testMaxSpeedTime() throws Exception{
+        //outline for code
+        //look up max speed for device
+        //send basic start command to start motor at on position
+        //start stopwatch timer
+        //send command to change speed to max speed
+        //read current speed until actual is the same as target
+        //stop stopwatch and return/display/record the value of the stopwatch
+    }
 }
