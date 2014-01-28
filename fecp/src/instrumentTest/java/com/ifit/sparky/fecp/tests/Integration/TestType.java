@@ -1,6 +1,9 @@
 package com.ifit.sparky.fecp.tests.Integration;
 
 import com.ifit.sparky.fecp.FecpCommand;
+import com.ifit.sparky.fecp.interpreter.command.Command;
+import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
+import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 /**
@@ -12,67 +15,71 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 public class TestType {
     //need to connect to the FECP controller and get the correct type of machine
     //to choose what test to run
-    public char getType{
-        char machineType = x;
+    public char getType(){
+        char machineType = 'x';
         //if machine type is x we could not get the machine type
         //legend: t represents treadmill
         //        e represents elliptical
         //        b represents bike
         //        x represents unknown device
-        fecpCmd machine = null;
+        Device dev = new Device(DeviceId.valueOf());
+        Command cmd = new InfoCmd(DeviceId.valueOf());
+        //try to access the fecp system
+        String machine = "Unknown";
+        FecpCommand machine = null;
         try {
-            machine = new FecpCommand();
+            FecpCommand machine = new FecpCommand();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        device machineName = new DeviceId.getDeviceId();
+        Device machineName = new Device(DeviceId.valueOf());
         if(machine.equals("Treadmill"))
-            machineType = t;
+            machineType = 't';
         if(machine.equals("Elliptical"))
-            machineType = e;
+        machineType = 'e';
         if(machine.equals("Bike"))
-            machineType =b;
+            machineType = 'b';
         return machineType;
     }
-    public void chooseType{
-        char treadmill = t;
-        char elliptical = e;
-        char bike = b;
-        char unknown = x;
+    public void chooseType(){
+        char treadmill = 't';
+        char elliptical = 'e';
+        char bike = 'b';
+        char unknown = 'x';
         if(getType() == unknown)
             //unknown device don't run a test
         if(getType() == elliptical)
             //device is elliptical
-            //run elliptical test
+            //run elliptical test method
             testElliptical();
 
         if(getType() == bike)
             //device is bike
-            //run bike test
+            //run bike test method
             testBike();
 
         if(getType() == treadmill)
             //device is treadmill
-            //run treadmill test
+            //run treadmill test method
             testTreadmill();
 
     }
-    public void testElliptical{
+    public void testElliptical(){
         //method for Elliptical specific tests
         genericTest();
     }
-    public void testTreadmill{
+    public void testTreadmill(){
         //method for Treadmill specific tests
         genericTest();
         //test start speed automation from test motor class
         testStartSpeed();
 
     }
-    public void testBike{
+    public void testBike(){
         //method for bike specific tests
         genericTest();
     }
-    public void genericTest{
+    public void genericTest(){
         //method that includes all tests that are appropriate for all machines
         testTimeFiveMin();
         testTimeTenMin();
