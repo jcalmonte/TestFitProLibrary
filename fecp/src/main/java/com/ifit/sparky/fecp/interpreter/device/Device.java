@@ -61,6 +61,7 @@ public class Device {
         this.addCommands(commands);
         this.mSubDevArrayList.addAll(devices);
         this.mInfo = info;
+        populateDefaultCommands();
     }
 
     /*******************************
@@ -223,12 +224,11 @@ public class Device {
     private void populateDefaultCommands() throws Exception
     {
         //default commands
-        // get info
         this.addCommand(new InfoCmd(this.mInfo.getDevId()));
-        // write data
-        // read data
-        // write read data
-        // get supported commands
-        // get sub devices
+        this.addCommand(new GetCmdsCmd(this.mInfo.getDevId()));
+        this.addCommand(new GetSubDevicesCmd(this.mInfo.getDevId()));
+        this.addCommand(new WriteDataCmd(this.mInfo.getDevId()));
+        this.addCommand(new ReadDataCmd(this.mInfo.getDevId()));
+        this.addCommand(new WriteReadDataCmd(this.mInfo.getDevId()));
     }
 }

@@ -263,4 +263,6 @@ public class Command implements CommandInterface{
                     + this.MAX_MSG_LENGTH + ") your message size=(" + this.mLength + ")");
         }
     }
+
+
 }
