@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.CmdHandlerType;
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.FecpController;
@@ -85,6 +86,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     private FecpController fecpController;
     private FecpCommand tempCommand;
+    private SystemDevice MainDevice;
     private Device tempDevice;
     //private SystemStatusCallback systemStatusCallback;
 
@@ -111,7 +113,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         //systemStatusCallback =
         try{
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
-            fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
+            MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
+
             tempDevice = new Device(DeviceId.SPEED);
             tempDevice.addCommand(new WriteReadDataCmd(DeviceId.SPEED));
             ((WriteReadDataCmd)tempDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
