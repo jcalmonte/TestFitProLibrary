@@ -65,7 +65,6 @@ public class FecpController{
         if(this.mCommType == CommType.USB_COMMUNICATION)
         {
             this.mCommController = new UsbComm(this.mContext, this.mIntent);
-            this.initializeSystemDevice();
             if(type == CmdHandlerType.FIFO_PRIORITY)
             {
                 //two references to the same object with different responsibilities
@@ -76,6 +75,8 @@ public class FecpController{
             {
                 //todo make the CmdTypeCommand handler
             }
+            this.mCommController.setStsHandler((FecpFifoCmdHandler)this.mCmdHandleInterface);
+            this.initializeSystemDevice();
             this.mCommunicationThread.start();//start running the system
         }
 
@@ -140,6 +141,7 @@ public class FecpController{
 
         Command cmd = new InfoCmd(DeviceId.MAIN);
 
+//        this.mCommController.sendCmdBuffer(cmd.getCmdMsg());
         cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
         this.mSysDev = new SystemDevice();
     }
