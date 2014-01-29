@@ -23,9 +23,12 @@ public class TestType {
         //        b represents bike
         //        x represents unknown device
         Device dev = new Device(DeviceId.valueOf());
+        dev.getCommand();
         Command cmd = new InfoCmd(DeviceId.valueOf());
         //try to access the fecp system
-        String machine = "Unknown";
+        String machine;
+        //try to put the type into a string to compare it
+        machine = DeviceId.();
         FecpCommand machine = null;
         try {
             FecpCommand machine = new FecpCommand();
@@ -33,11 +36,12 @@ public class TestType {
             e.printStackTrace();
         }
         Device machineName = new Device(DeviceId.valueOf());
-        if(machine.equals("Treadmill"))
+        //the device can not be both tread and trainer therefore XOR gate
+        if((machine.equals("TREADMILL"))^(machine.equals("INCLINE_TRAINER")))
             machineType = 't';
-        if(machine.equals("Elliptical"))
-        machineType = 'e';
-        if(machine.equals("Bike"))
+        if(machine.equals("ELLIPTICAL"))
+            machineType = 'e';
+        if(machine.equals("BIKE"))
             machineType = 'b';
         return machineType;
     }

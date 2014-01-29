@@ -12,8 +12,8 @@ public class TestMotor extends TestCase{
         //outline for code
         //send basic start command to start motor at on position
         //request actual speed from device to make sure it is connected and moving
-        //read speed received into this code
-        //and check against constant variable of 1.0 mph
+        //read speed received into this code which should be target speed
+        //check against constant variable of 1.0 mph
         //make sure formatting is right for verification for english or metric units
     }
     //the testMaxSpeedTime is planned to automate #59 of the software
