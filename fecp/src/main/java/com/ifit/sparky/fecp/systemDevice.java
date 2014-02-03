@@ -34,6 +34,19 @@ public class SystemDevice extends Device{
     }
 
     /**
+     * generates a System Device from a generic device.
+     * easier for initialization
+     * @param dev the device that will be the System Device
+     * @throws Exception
+     */
+    public SystemDevice(Device dev) throws Exception
+    {
+        super(dev.getCommandSet().values(), dev.getSubDeviceList(),dev.getInfo());
+
+        this.mConfig = SystemConfiguration.SLAVE;
+    }
+
+    /**
      * the default constructor for the System Device
      */
     public SystemDevice(DeviceId id, SystemConfiguration config) throws Exception

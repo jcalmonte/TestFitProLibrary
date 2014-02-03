@@ -18,10 +18,18 @@ import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
+import com.ifit.sparky.fecp.interpreter.command.GetSubDevicesCmd;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
+import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
+import com.ifit.sparky.fecp.interpreter.status.GetCmdsSts;
+import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
+import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 
 import java.nio.ByteBuffer;
+import java.util.Set;
 
 public class FecpController{
     //Fecp System Version number
@@ -51,7 +59,6 @@ public class FecpController{
         this.mIsConnected = false;
         this.mContext = context;
         this.mIntent = intent;
-
     }
 
     /**
@@ -65,7 +72,7 @@ public class FecpController{
         if(this.mCommType == CommType.USB_COMMUNICATION)
         {
             this.mCommController = new UsbComm(this.mContext, this.mIntent);
-            this.initializeSystemDevice();
+            this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
             if(type == CmdHandlerType.FIFO_PRIORITY)
             {
                 //two references to the same object with different responsibilities
@@ -76,20 +83,9 @@ public class FecpController{
             {
                 //todo make the CmdTypeCommand handler
             }
+            this.mCommController.setStsHandler((CommReply)this.mCmdHandleInterface);
             this.mCommunicationThread.start();//start running the system
         }
-
-        //send command to get the system's info
-        try
-        {
-            this.mCommController.sendCmdBuffer(this.mSysDev.getCommand(CommandId.GET_INFO).getCmdMsg());
-        }
-        catch (Exception ex)
-        {
-
-        }
-        //only after it is complete handle the data back
-
         return this.mSysDev;
     }
 
@@ -134,33 +130,74 @@ public class FecpController{
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
 
-    private void initializeSystemDevice() throws Exception
+    private Device getSubDevice(DeviceId devId) throws Exception
     {
-        //send command to get info to main device
+        Device dev = new Device(devId);//
+        Set<DeviceId> subDeviceList;
+        Set<CommandId> tempCmds;
+        //get subDevices
+        subDeviceList = getSupportedSubDevices(devId);
 
-        Command cmd = new InfoCmd(DeviceId.MAIN);
+        for(DeviceId subDevId : subDeviceList)
+        {
+            dev.addSubDevice(getSubDevice(subDevId));
+        }
+        //add commands
+        tempCmds = getSupportedCommands(dev.getInfo().getDevId());
 
+        for(CommandId id : tempCmds)
+        {
+            dev.addCommand(initializeCommand(dev.getInfo().getDevId(), id));
+        }
+
+        //add info
+        dev.setDeviceInfo(getDevicesInfo(dev.getInfo().getDevId()));
+        return dev;
+    }
+
+
+    private DeviceInfo getDevicesInfo(DeviceId devId) throws Exception
+    {
+        Command cmd = new InfoCmd(devId);
         cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
-        this.mSysDev = new SystemDevice();
+        return ((InfoSts)cmd.getStatus()).getInfo();
     }
 
-    private void getDevicesInfo(DeviceId devId) throws Exception
+    private Set<CommandId> getSupportedCommands(DeviceId devId) throws Exception
     {
-        Command cmd = new InfoCmd(devId);
-
+        Command cmd = new GetCmdsCmd(devId);
         cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
-        //cmd should have the data that we need
+        return ((GetCmdsSts)cmd.getStatus()).getSupportedCommands();
     }
-    private void getSupportedCommands(DeviceId devId) throws Exception
+    private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception
     {
-        Command cmd = new InfoCmd(devId);
-        this.mCommController.sendCmdBuffer(cmd.getCmdMsg());
-
+        Command cmd = new GetSubDevicesCmd(devId);
+        cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
+        return ((GetSubDevicesSts)cmd.getStatus()).getSubDevices();
     }
-    private void getSupportedSubDevices(DeviceId devId) throws Exception
+
+    private static Command initializeCommand(DeviceId devId, CommandId cmdId) throws Exception
     {
-        Command cmd = new InfoCmd(devId);
-        this.mCommController.sendCmdBuffer(cmd.getCmdMsg());
+        Command cmd;
 
+        if(CommandId.CONNECT == cmdId)
+        {
+            //not implemented yet
+            throw new Exception("Command not supported yet");
+        }
+        else if(CommandId.DISCONNECT == cmdId)
+        {
+            //not implemented yet
+            throw new Exception("Command not supported yet");
+        }
+        else if(CommandId.CALIBRATE == cmdId)
+        {
+            //not implemented yet
+            throw new Exception("Command not supported yet");
+        }
+        return null;//nothing supported yet
     }
+
+
+
 }

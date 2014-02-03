@@ -41,6 +41,7 @@ public class GetCmdsSts extends Status implements StatusInterface {
         super.handleStsMsg(buff);
 
         //now parse the data
+        //does not count master generic commands
         if(this.mStsId == StatusId.DONE)
         {
             //check get the size of the data

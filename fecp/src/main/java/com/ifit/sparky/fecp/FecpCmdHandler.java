@@ -9,6 +9,7 @@ package com.ifit.sparky.fecp;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommReply;
+import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.Status;
@@ -128,7 +129,8 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, Co
         this.run();//call the next command
 
     }
-//
+
+    //
 //    /**
 //     * implements runnable
 //     */
