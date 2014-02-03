@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 /**
  * Created by eetestlab on 1/23/14.
  */
-public class TestMotor extends TestCase{
+public class TestMotor extends TestIntegration{
     //The testStartSpeed is planned to automate #16 of the software
     //checklist to make sure that the machine starts at 1.0mph or 2.0kph
     public void testStartSpeed() throws Exception{
