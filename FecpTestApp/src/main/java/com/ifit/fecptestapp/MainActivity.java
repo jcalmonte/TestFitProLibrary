@@ -85,6 +85,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }
+        //debug add a command
+
     }
 
     /**

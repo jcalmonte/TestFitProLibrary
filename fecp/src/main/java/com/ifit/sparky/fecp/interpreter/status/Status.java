@@ -175,6 +175,11 @@ public class Status implements StatusInterface{
         buff.position(0);
         actualByte = buff.get();
         //todo check if message was sent to main.
+        if(this.getDevId() == DeviceId.MAIN)
+        {
+            //set actual byte to be the device id
+            this.setDevId(DeviceId.getDeviceId(actualByte));
+        }
         if(actualByte != (byte)this.mDevId.getVal())
         {
             throw new InvalidDeviceException(actualByte, this.mDevId);

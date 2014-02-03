@@ -18,6 +18,7 @@ import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
 import com.ifit.sparky.fecp.interpreter.command.GetSubDevicesCmd;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
@@ -164,7 +165,7 @@ public class FecpController{
 
     private Set<CommandId> getSupportedCommands(DeviceId devId) throws Exception
     {
-        Command cmd = new GetSubDevicesCmd(devId);
+        Command cmd = new GetCmdsCmd(devId);
         cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
         return ((GetCmdsSts)cmd.getStatus()).getSupportedCommands();
     }

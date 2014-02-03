@@ -16,7 +16,26 @@ public enum DeviceId {
     MAIN(0x02, "Main, or Parent, device that contains all the sub devices"),
     TREADMILL(0x04, "Treadmill system"),
     INCLINE_TRAINER(0x05, "Incline Trainer"),
-    AUDIO(0x40, "Audio Controller");
+    ELLIPTICAL(0x06, "Incline Trainer"),
+    FITNESS_BIKE(0x07, "Traditional bike"),
+    SPIN_BIKE(0x08, "cylcist bike"),
+    POWER_BOARD(0x15, "Power Board"),
+    BLE(0x16, "Blue Tooth Low Energy"),
+    ANT_FIT1E(0x17, "Ant Fit1e"),
+    ANT_POWER_METER(0x31, "Ant Power Meter"),
+    ANT_PLUS_HRM(0x37, "Ant Plus Heart Rate Monitor"),
+    AUDIO(0x40, "Audio Controller"),
+    SPEED(0X41, "Speed Controller"),
+    WATTS(0X43, "Watts Controller"),
+    TORQUE(0X44, "Torque Controller"),
+    RESISTANCE(0X45, "Resistance Controller"),
+    PULSE(0X46, "Pulse Controller"),
+    KEY_PRESS(0X47, "Keypress controller"),
+    BIKE_GEAR(0X48, "Bike Gears for front and back"),
+    FAN(0x4A, "Fan Controller"),
+    MODE(0x4C, "Mode Controller"),
+    DISTANCE(0X4D, "Distance Controller"),
+    USER_TIME(0X4E, "User Time Controller");
 
     private int mId;
     private String mDescription;

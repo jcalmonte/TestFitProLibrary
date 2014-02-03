@@ -364,6 +364,7 @@ public class UsbComm extends Activity implements CommInterface {
                 ByteBuffer replyBuffer;
 
                 byte[] message = new byte[TX_SIZE];
+                byte[] replyMessage = new byte[TX_SIZE];
                 for(int i = 0; i < buff.capacity(); i++){
                     message[i] = buff.get(i);
                 }
@@ -376,24 +377,18 @@ public class UsbComm extends Activity implements CommInterface {
 
                 try
                 {
+                    this.mConnection.bulkTransfer(this.mEndpointIntrRead1, replyMessage, replyMessage.length, 100);
 
-                    //Thread.sleep(2000);
-                    this.mConnection.bulkTransfer(this.mEndpointIntrRead1, message, message.length, 100);
-
-                    replyBuffer = ByteBuffer.allocate(message.length);
+                    replyBuffer = ByteBuffer.allocate(replyMessage.length);
                     replyBuffer.order(ByteOrder.LITTLE_ENDIAN);
                     replyBuffer.position(0);
-                    replyBuffer.put(message);
+                    replyBuffer.put(replyMessage);
                     return replyBuffer;
                 }
                 catch (Exception ex)
                 {
 
                 }
-
-
-                //after the data is send
-                // read the data back
             }
         }
         return null;

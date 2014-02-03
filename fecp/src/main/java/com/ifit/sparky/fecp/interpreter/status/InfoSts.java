@@ -44,6 +44,7 @@ public class InfoSts extends Status implements StatusInterface {
         if(this.mStsId == StatusId.DONE)
         {
             this.mInfo.interpretInfo(buff);
+            this.mInfo.setDevId(this.mDevId);//it is given that device id is known from the send
         }
     }
 

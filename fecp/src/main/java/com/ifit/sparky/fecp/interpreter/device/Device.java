@@ -58,10 +58,10 @@ public class Device {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
 
-        this.addCommands(commands);
         this.mSubDevArrayList.addAll(devices);
         this.mInfo = info;
         populateDefaultCommands();
+        this.addCommands(commands);
     }
 
     /*******************************
@@ -168,7 +168,6 @@ public class Device {
         if(this.mCommandMap.containsKey(cmd.getCmdId()))
         {
             throw new InvalidCommandException(cmd);
-
         }
 
         this.mCommandMap.put(cmd.getCmdId(), cmd);
@@ -183,7 +182,10 @@ public class Device {
     {
         for(Command tempCmd : cmds)
         {
-            this.addCommand(tempCmd);
+            if(this.getCommandSet().containsKey(tempCmd.getCmdId()) == false)//if it doesn't contain a default command add it.
+            {
+                this.addCommand(tempCmd);
+            }
         }
     }
 
