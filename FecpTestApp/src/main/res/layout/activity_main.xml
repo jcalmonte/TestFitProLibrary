@@ -8,7 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
+        android:text="Main Device"
         android:id="@+id/textView"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
@@ -121,9 +121,9 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Speed: 0 MPH"
         android:id="@+id/textViewSpeed"
-        android:layout_below="@+id/buttonClearTxCount"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="25dp" />
+        android:layout_above="@+id/buttonSpeedDec"
+        android:layout_alignParentLeft="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -236,4 +236,17 @@
         android:id="@+id/buttonSpeedInc"
         android:layout_alignTop="@+id/buttonSpeed12"
         android:layout_toRightOf="@+id/buttonSpeed12" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/deviceInfoTextView"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/buttonSpeedInc"
+        android:layout_toLeftOf="@+id/buttonSpeed4"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/buttonSpeedDec" />
+
 </RelativeLayout>

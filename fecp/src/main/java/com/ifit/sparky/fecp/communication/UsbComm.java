@@ -81,7 +81,6 @@ public class UsbComm extends Activity implements CommInterface {
     private Handler m_handler_local_run;
     private int m_interval_local_run = 0; // ms of delay
     private Handler m_handler_1ms;
-    private CommReply replyHandler;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -190,10 +189,6 @@ public class UsbComm extends Activity implements CommInterface {
         return tempBuff;
     }
 
-    @Override
-    public void setStsHandler(CommReply handler) {
-        replyHandler = handler;
-    }
 
     /**
      * sends the command and waits for the reply to handle the buffer
@@ -304,7 +299,6 @@ public class UsbComm extends Activity implements CommInterface {
                 buffList_ep1.remove(0);
             ByteBuffer tempBuff = buffList_ep1.get(0);
             buffList_ep1.remove(0);
-            replyHandler.stsMsgHandler(tempBuff);
         }
     }
 
@@ -371,7 +365,8 @@ public class UsbComm extends Activity implements CommInterface {
 
                 if(ENDPOINT_2 == endpoint){
                     mConnection.bulkTransfer(mEndpointIntrWrite2, message, message.length, 500);
-                }else if(ENDPOINT_4 == endpoint){
+                }
+                else if(ENDPOINT_4 == endpoint){
                     mConnection.bulkTransfer(mEndpointIntrWrite4, message, message.length, 0);
                 }
 

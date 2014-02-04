@@ -10,7 +10,9 @@ package com.ifit.sparky.fecp;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 
-public class FecpCommand {
+import java.util.concurrent.ScheduledFuture;
+
+public class FecpCommand extends Thread{
 
     //cmd and device
     private Device mDevice;
@@ -20,6 +22,9 @@ public class FecpCommand {
     private int mFrequency;//time in between each call.
     private int mCmdSentCounter;
     private int mCmdReceivedCounter;
+    private long mCommSendReceiveTime;
+    private FecpCmdHandleInterface mSendHandler;
+    private ScheduledFuture<?> mFutureScheduleTask;
 
     /**
      * default constructor
@@ -86,6 +91,7 @@ public class FecpCommand {
         this.mFrequency = frequency;
         this.mCmdSentCounter = 0;
         this.mCmdReceivedCounter = 0;
+        this.mCommSendReceiveTime = 0;
     }
 
     /*************
@@ -150,6 +156,15 @@ public class FecpCommand {
      */
     public int getCmdReceivedCounter() {
         return this.mCmdReceivedCounter;
+    }
+
+    public long getCommSendReceiveTime()
+    {
+        return this.mCommSendReceiveTime;
+    }
+
+    public ScheduledFuture<?> getFutureScheduleTask() {
+        return mFutureScheduleTask;
     }
 
     /*************
@@ -224,5 +239,31 @@ public class FecpCommand {
      */
     public void incrementCmdReceivedCounter() {
         this.mCmdReceivedCounter++;
+    }
+
+    /**
+     * Approximate time in nano seconds for how long it took to send and receive the command
+     * @param nanoSecondTime the time in nano seconds
+     */
+    public void setCommSendReceiveTime(long nanoSecondTime)
+    {
+        this.mCommSendReceiveTime = nanoSecondTime;
+    }
+
+    public void setSendHandler(FecpCmdHandleInterface sendHandler)
+    {
+        this.mSendHandler = sendHandler;
+    }
+    public void setFutureScheduleTask(ScheduledFuture<?> scheduledFut)
+    {
+        this.mFutureScheduleTask = scheduledFut;
+    }
+
+    @Override
+    public void run() {
+        super.run();
+        //this will add the command to the queue
+        this.mSendHandler.processFecpCommand(this);
+
     }
 }

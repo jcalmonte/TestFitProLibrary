@@ -22,6 +22,6 @@ public interface CommInterface {
      * @return
      */
     ByteBuffer sendAndRecieveCmd(ByteBuffer buff);
-    void setStsHandler(CommReply handler);
+    //todo add send and receive commands with timeouts
 
 }

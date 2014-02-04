@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.ifit.sparky.fecp.FecpCommand;
@@ -82,6 +83,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private TextView textViewTxCount;
     private TextView textViewRxCount;
     private TextView textViewPerSecond;
+    private TextView deviceInfoText;
+    private ListView deviceList;
 
     private Calendar timeWhenCleared;
 
@@ -98,6 +101,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        String devInfoStr = "";
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -116,18 +120,25 @@ public class MainActivity extends Activity implements View.OnClickListener{
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
             MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
 
-            //tempDevice = new Device(DeviceId.SPEED);
-            //tempDevice.addCommand(new WriteReadDataCmd(DeviceId.SPEED));
-            //((WriteReadDataCmd)tempDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
             ((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
             tempCommand = new FecpCommand(MainDevice, MainDevice.getCommand(CommandId.WRITE_READ_DATA), null);
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }
-        //debug add a command
-        mainDeviceTextView.setText("Main Device-" + MainDevice.getInfo().getDevId().getDescription()
-                + " version-" +MainDevice.getInfo().getSWVersion()
-                +  " subDevice count-" +MainDevice.getSubDeviceList().size());
+//        //debug add a command
+//        mainDeviceTextView.setText("Main Device-" + MainDevice.getInfo().getDevId().getDescription()
+//                + " version-" +MainDevice.getInfo().getSWVersion()
+//                +  " subDevice count-" +MainDevice.getSubDeviceList().size());
+        //populate the listview of devices or bitfields
+        mainDeviceTextView.setText(MainDevice.toString());
+
+
+        for(Device tempDev : MainDevice.getSubDeviceList())
+        {
+            devInfoStr += tempDev.toString() +"\n";
+        }
+        deviceInfoText.setText(devInfoStr);
+
     }
 
     /**
@@ -163,6 +174,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
      */
     @Override
     public void onClick(View view) {
+
+        //check if it is the listview
+        if(view == deviceList)
+        {
+            //load data into the deviceInfoText
+            return;
+        }
+
         if(view == buttonDecPeriod100 && m_interval >= 100){
             m_interval -= 100;
         }else if(view == buttonDecPeriod10 && m_interval >= 10){
@@ -326,7 +345,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         textViewRxCount = (TextView) findViewById(R.id.textViewRxCount);
         textViewPerSecond = (TextView) findViewById(R.id.textViewPerSecond);
         mainDeviceTextView = (TextView) findViewById(R.id.textView);
-
+        deviceInfoText = (TextView)findViewById(R.id.deviceInfoTextView);
+        //deviceList = (ListView) findViewById(R.id.deviceListView);
 
         buttonSpeedDec = (Button) findViewById(R.id.buttonSpeedDec);
         buttonSpeedDec.setOnClickListener(this);

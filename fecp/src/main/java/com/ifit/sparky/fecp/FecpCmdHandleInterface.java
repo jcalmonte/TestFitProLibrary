@@ -29,7 +29,13 @@ public interface FecpCmdHandleInterface {
      * Adds the command to the list to be sent
      * @param cmd the command to be sent.
      */
-    void addFecpCommand(FecpCommand cmd);
+    void addFecpCommand(FecpCommand cmd)throws Exception;
+
+    /**
+     * adds the command to the queue, in order to be ready to send.
+     * @param cmd the command to be sent.
+     */
+    void processFecpCommand(FecpCommand cmd);
 
     /**
      * Removes the command if it matches the Command id and the Device ID.
@@ -37,6 +43,13 @@ public interface FecpCmdHandleInterface {
      * @return true if it removed the element
      */
     boolean removeFecpCommand(DeviceId devId, CommandId cmdId);
+
+    /**
+     * Removes the command if it matches the Command id and the Device ID.
+     * If there are multiples in the command list it will remove both of them.
+     * @return true if it removed the element
+     */
+    boolean removeFecpCommand(FecpCommand cmd);
 
     /**
      * Sends the command to the Fecp Communication Controller

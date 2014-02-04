@@ -8,33 +8,35 @@
 package com.ifit.sparky.fecp;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
-import com.ifit.sparky.fecp.communication.CommReply;
-import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
-import com.ifit.sparky.fecp.interpreter.status.Status;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, CommReply {
+public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface{
 
     private CommInterface mCommController;
-    private FecpCommand mLastestSentCmd;
-    private FecpCmdList mCmds;
+    private FecpCmdList mProcessCmds;
+    private FecpCmdList mPeriodicCmds;//this will use the thread scheduler
+    private ScheduledExecutorService mThreadManager = Executors.newSingleThreadScheduledExecutor();//this will keep track of all the threads
 
     public FecpCmdHandler(CommInterface commController)
     {
         super();//initializes the thread
         this.mCommController = commController;
-        this.mCmds = new FecpCmdList();
+        this.mProcessCmds = new FecpCmdList();
+        this.mPeriodicCmds = new FecpCmdList();
     }
 
-    @Override
-    public void run() {
-        super.run();
-        //start my own process handling
-    }
+//    @Override
+//    public void run() {
+//        super.run();
+//        //start my own process handling
+//    }
 
     /**
      * Sets the Comm controller for the system.
@@ -44,7 +46,6 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, Co
     public void setCommController(CommInterface CommController) {
         //initialized outside of  this function
         this.mCommController = CommController;
-        this.mCommController.setStsHandler(this);
     }
 
     /**
@@ -63,9 +64,22 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, Co
      * @param cmd the command to be sent.
      */
     @Override
-    public void addFecpCommand(FecpCommand cmd)
+    public void addFecpCommand(FecpCommand cmd) throws Exception
     {
-        this.mCmds.add(cmd);
+
+        //check if thread is set
+        cmd.setSendHandler(this);
+        //check if the thread is running
+        if(cmd.getFrequency() != 0)
+        {
+            this.mPeriodicCmds.add(cmd);
+            cmd.setFutureScheduleTask(this.mThreadManager.scheduleAtFixedRate(cmd, 0, cmd.getFrequency(), TimeUnit.MILLISECONDS));
+        }
+        else
+        {
+            this.processFecpCommand(cmd);
+        }
+
     }
 
     /**
@@ -80,15 +94,33 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, Co
     public boolean removeFecpCommand(DeviceId devId, CommandId cmdId) {
 
         boolean result = false;
-        for(FecpCommand cmd : this.mCmds)
+        for(FecpCommand cmd : this.mPeriodicCmds)
         {
             if(cmd.getCommand().getCmdId() == cmdId && cmd.getCommand().getDevId() == devId)
             {
-                this.mCmds.remove(cmd);
+                cmd.getFutureScheduleTask().cancel(false);//cancels
+                this.mPeriodicCmds.remove(cmd);
                 result = true;
             }
         }
         return result;
+    }
+
+    /**
+     * Removes the command
+     * @param cmd the fecpCommand to remove
+     * @return true if it removed the element
+     */
+    @Override
+    public boolean removeFecpCommand(FecpCommand cmd) {
+
+        if(this.mPeriodicCmds.contains(cmd))
+        {
+            this.mPeriodicCmds.remove(cmd);
+            cmd.getFutureScheduleTask().cancel(false);//stop calling it
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -98,58 +130,68 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, Co
      */
     @Override
     public void sendCommand(FecpCommand cmd) throws Exception{
-        this.mLastestSentCmd = cmd;
-        this.mLastestSentCmd.incrementCmdSentCounter();
-        //this.mCommController.sendCmdBuffer(cmd.getCommand().getCmdMsg());
+        long startTime = 0;
+        long endTime = 0;
+        cmd.incrementCmdSentCounter();
+        ByteBuffer tempBuffer = cmd.getCommand().getCmdMsg();
         //send the command and handle the response.
-        cmd.getCommand().getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCommand().getCmdMsg()));
-
+        startTime = System.nanoTime();
+        tempBuffer = this.mCommController.sendAndRecieveCmd(tempBuffer);
+        endTime = System.nanoTime();
+        cmd.getCommand().getStatus().handleStsMsg(tempBuffer);
+        cmd.setCommSendReceiveTime(endTime - startTime);
+        cmd.incrementCmdReceivedCounter();
     }
 
+    /**
+     * adds the command to the queue, in order to be ready to send.
+     *
+     * @param cmd the command to be sent.
+     */
     @Override
-    public void stsMsgHandler(ByteBuffer buff) {
-        Status msgStatus;
-        CommandCallback cmdCallback;
+    public void processFecpCommand(FecpCommand cmd) {
+        //add to list of commands to send as soon as possible
+        //check if already in the list
+        if(!this.mProcessCmds.contains(cmd))
+        {
+            this.mProcessCmds.add(cmd);
+        }
+        if(!this.isAlive())//if it isn't running start it.
+        {
+            this.start();
+        }
+    }
+
+    /**
+     * implements runnable
+     */
+    @Override
+    public void run() {
+
+        //go through the list of commands and make the function calls to them.
+        //yes this is an infinite loop.
         try
         {
-            msgStatus = this.mLastestSentCmd.getCommand().getStatus();
-
-            msgStatus.handleStsMsg(buff);
-            this.mLastestSentCmd.incrementCmdReceivedCounter();
-            //check if we need to call the callback
-            if(msgStatus.getStsId()!= StatusId.IN_PROGRESS)
+            while(this.mProcessCmds.size() > 0)
             {
-                //call callback
-                cmdCallback = this.mLastestSentCmd.getCallback();
-                cmdCallback.msgHandler(this.mLastestSentCmd.getCommand());
-                //set flag that it was sent
+                FecpCommand tempCmd = this.mProcessCmds.get(0);
+                this.sendCommand(tempCmd);
+                //if there is a callback call it
+                if(tempCmd.getCallback() != null
+                        && (tempCmd.getCommand().getStatus().getStsId() == StatusId.DONE
+                        || tempCmd.getCommand().getStatus().getStsId() == StatusId.FAILED))
+                {
+                    tempCmd.getCallback().msgHandler(tempCmd.getCommand());
+                    //remove from this
+                    this.mProcessCmds.remove(0);
+                }
+
             }
         }
         catch (Exception ex)
         {
-            //check the exception and determine whether to throw it or hold it
+
         }
-        this.run();//call the next command
 
     }
-
-    //
-//    /**
-//     * implements runnable
-//     */
-//    @Override
-//    public void run() {
-//
-//        //go through the list of commands and make the function calls to them.
-//        //yes this is an infinite loop.
-//        try
-//        {
-//            this.sendCommand(this.mCmds.get(0));
-//        }
-//        catch (Exception ex)
-//        {
-//
-//        }
-//
-//    }
 }

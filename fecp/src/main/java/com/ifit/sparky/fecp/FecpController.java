@@ -41,7 +41,6 @@ public class FecpController{
     private Context mContext;
     private Intent mIntent;
     private CommInterface mCommController;
-    private Thread mCommunicationThread;//this thread is to handle all the communications
     private FecpCmdHandleInterface mCmdHandleInterface;
 
     /**
@@ -73,18 +72,9 @@ public class FecpController{
         {
             this.mCommController = new UsbComm(this.mContext, this.mIntent);
             this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
-            if(type == CmdHandlerType.FIFO_PRIORITY)
-            {
-                //two references to the same object with different responsibilities
-                this.mCmdHandleInterface = new FecpFifoCmdHandler(this.mCommController);
-                this.mCommunicationThread = (FecpFifoCmdHandler)this.mCmdHandleInterface;
-            }
-            else if(type == CmdHandlerType.CMD_TYPE_PRIORITY)
-            {
-                //todo make the CmdTypeCommand handler
-            }
-            this.mCommController.setStsHandler((CommReply)this.mCmdHandleInterface);
-            this.mCommunicationThread.start();//start running the system
+
+            //two references to the same object with different responsibilities
+            this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
         }
         return this.mSysDev;
     }
@@ -125,10 +115,11 @@ public class FecpController{
      * Addes a command to send to the device
      * @param cmd the command to send to the device
      */
-    public void addCmd(FecpCommand cmd)
+    public void addCmd(FecpCommand cmd) throws Exception
     {
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
+
     //this is temp function to be removed
     //todo remove
     public void sendCommand(FecpCommand cmd) throws Exception
@@ -203,7 +194,5 @@ public class FecpController{
         }
         return null;//nothing supported yet
     }
-
-
 
 }
