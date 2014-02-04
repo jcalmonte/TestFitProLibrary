@@ -78,6 +78,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private TextView textViewSpeed;
 
     private TextView textViewPeriod;
+    private TextView mainDeviceTextView;
     private TextView textViewTxCount;
     private TextView textViewRxCount;
     private TextView textViewPerSecond;
@@ -124,7 +125,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
             Log.e("Device Info fail", ex.getMessage());
         }
         //debug add a command
-
+        mainDeviceTextView.setText("Main Device-" + MainDevice.getInfo().getDevId().getDescription()
+                + " version-" +MainDevice.getInfo().getSWVersion()
+                +  " subDevice count-" +MainDevice.getSubDeviceList().size());
     }
 
     /**
@@ -322,6 +325,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         textViewTxCount = (TextView) findViewById(R.id.textViewTxCount);
         textViewRxCount = (TextView) findViewById(R.id.textViewRxCount);
         textViewPerSecond = (TextView) findViewById(R.id.textViewPerSecond);
+        mainDeviceTextView = (TextView) findViewById(R.id.textView);
+
 
         buttonSpeedDec = (Button) findViewById(R.id.buttonSpeedDec);
         buttonSpeedDec.setOnClickListener(this);
