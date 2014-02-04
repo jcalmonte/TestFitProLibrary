@@ -129,6 +129,12 @@ public class FecpController{
     {
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
+    //this is temp function to be removed
+    //todo remove
+    public void sendCommand(FecpCommand cmd) throws Exception
+    {
+        this.mCmdHandleInterface.sendCommand(cmd);
+    }
 
     private Device getSubDevice(DeviceId devId) throws Exception
     {

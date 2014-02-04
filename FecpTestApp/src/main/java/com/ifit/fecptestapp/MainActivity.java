@@ -115,10 +115,11 @@ public class MainActivity extends Activity implements View.OnClickListener{
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
             MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
 
-            tempDevice = new Device(DeviceId.SPEED);
-            tempDevice.addCommand(new WriteReadDataCmd(DeviceId.SPEED));
-            ((WriteReadDataCmd)tempDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
-            tempCommand = new FecpCommand(tempDevice, tempDevice.getCommand(CommandId.WRITE_READ_DATA), null);
+            //tempDevice = new Device(DeviceId.SPEED);
+            //tempDevice.addCommand(new WriteReadDataCmd(DeviceId.SPEED));
+            //((WriteReadDataCmd)tempDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
+            ((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
+            tempCommand = new FecpCommand(MainDevice, MainDevice.getCommand(CommandId.WRITE_READ_DATA), null);
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }
@@ -253,9 +254,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
             if(mSpeedMph != mSpeedMphPrev){
                 textViewSpeed.setText("Speed: " + String.format("%.2f", mSpeedMph) + " MPH");
                 try {
-                    ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
 
-                    fecpController.addCmd(tempCommand);
+                    ((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, mSpeedMph);
+                    //fecpController.addCmd(tempCommand);
+                    fecpController.sendCommand(tempCommand);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

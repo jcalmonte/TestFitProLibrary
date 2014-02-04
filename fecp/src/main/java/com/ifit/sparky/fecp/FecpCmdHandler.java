@@ -100,7 +100,10 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface, Co
     public void sendCommand(FecpCommand cmd) throws Exception{
         this.mLastestSentCmd = cmd;
         this.mLastestSentCmd.incrementCmdSentCounter();
-        this.mCommController.sendCmdBuffer(cmd.getCommand().getCmdMsg());
+        //this.mCommController.sendCmdBuffer(cmd.getCommand().getCmdMsg());
+        //send the command and handle the response.
+        cmd.getCommand().getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCommand().getCmdMsg()));
+
     }
 
     @Override
