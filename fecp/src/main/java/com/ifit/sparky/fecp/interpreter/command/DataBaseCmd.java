@@ -10,6 +10,8 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 
+import org.apache.http.client.utils.CloneUtils;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Comparator;
@@ -38,6 +40,28 @@ public class DataBaseCmd{
                 return bitFieldId.compareTo(bitFieldId2);
             }
         });
+    }
+
+    /**
+     * Copy constructor for the DatabaseCmd
+     * @param copyData the data to copy over
+     * @throws Exception
+     */
+    public DataBaseCmd(DataBaseCmd copyData) throws Exception
+    {
+        this.mNumOfDataBytes = copyData.mNumOfDataBytes;
+
+        this.mMsgData = new TreeMap<BitFieldId, Object>(new Comparator<BitFieldId>() {
+            @Override
+            public int compare(BitFieldId bitFieldId, BitFieldId bitFieldId2) {
+                return bitFieldId.compareTo(bitFieldId2);
+            }
+        });
+
+        for(Map.Entry<BitFieldId, Object> entry : copyData.mMsgData.entrySet())
+        {
+            this.mMsgData.put(entry.getKey(), CloneUtils.clone(entry.getValue()));//copies each object
+        }
     }
 
     /**
@@ -178,6 +202,14 @@ public class DataBaseCmd{
     public boolean cmdContainsBitfield(BitFieldId id)
     {
         return  this.mMsgData.containsKey(id);
+    }
+
+    /**
+     * Gets the TreeMap of all the data in the list
+     * @return Treemap of all the data
+     */
+    public TreeMap<BitFieldId, Object> getMsgData() {
+        return mMsgData;
     }
 
     /**

@@ -8,14 +8,12 @@
 package com.ifit.sparky.fecp;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
-import com.ifit.sparky.fecp.interpreter.device.Device;
 
 import java.util.concurrent.ScheduledFuture;
 
 public class FecpCommand extends Thread{
 
     //cmd and device
-    private Device mDevice;
     private Command mCommand;//this holds the command and the status.
     private CommandCallback mCallback;
     private int mTimeout;
@@ -31,61 +29,57 @@ public class FecpCommand extends Thread{
      */
     public FecpCommand() throws Exception
     {
-        this.fecpInitializer(new Device(), new Command(), null, 0,0);
+        this.fecpInitializer(null, null, 0,0);
     }
 
     /**
      * Constructor for a simple command.
-     * @param dev the device to send the command to.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      */
-    public FecpCommand(Device dev, Command cmd, CommandCallback callback)
+    public FecpCommand(Command cmd, CommandCallback callback) throws Exception
     {
-        this.fecpInitializer(dev, cmd, callback, 0,0);
+        this.fecpInitializer(cmd, callback, 0,0);
     }
 
     /**
      * Constructs a command with a timeout
-     * @param dev the device to send the command to.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      * @param timeout the length of time it should receive a response.
      */
-    public FecpCommand(Device dev, Command cmd, CommandCallback callback, int timeout)
+    public FecpCommand(Command cmd, CommandCallback callback, int timeout) throws Exception
     {
-        this.fecpInitializer(dev, cmd, callback, timeout,0);
+        this.fecpInitializer(cmd, callback, timeout,0);
     }
     /**
      * Constructs a command with a timeout
-     * @param dev the device to send the command to.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      * @param timeout the length of time it should receive a response.
      * @param frequency How frequent messages should be sent.
      */
-    public FecpCommand(Device dev, Command cmd, CommandCallback callback, int timeout, int frequency)
+    public FecpCommand(Command cmd, CommandCallback callback, int timeout, int frequency) throws Exception
     {
-        this.fecpInitializer(dev, cmd, callback, timeout, frequency);
+        this.fecpInitializer(cmd, callback, timeout, frequency);
     }
-
 
     /**
      * Initializes all the values
-     * @param dev the device to send the command to.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      * @param timeout the length of time it should receive a response.
      * @param frequency How frequent messages should be sent.
      */
-    private void fecpInitializer(Device dev,
-                                 Command cmd,
+    private void fecpInitializer(Command cmd,
                                  CommandCallback callback,
                                  int timeout,
-                                 int frequency)
+                                 int frequency) throws Exception
     {
-        this.mDevice = dev;
-        this.mCommand = cmd;
+        if(cmd != null)
+        {
+            this.mCommand = cmd.getCommandCopy();
+        }
         this.mCallback = callback;
         this.mTimeout = timeout;
         this.mFrequency = frequency;
@@ -97,15 +91,6 @@ public class FecpCommand extends Thread{
     /*************
      *  GETTERS
      ************/
-
-    /**
-     * Gets the commands device
-     * @return the device of the command
-     */
-    public Device getDevice()
-    {
-        return this.mDevice;
-    }
 
     /**
      * Gets the Command to be sent
@@ -172,19 +157,11 @@ public class FecpCommand extends Thread{
      ************/
 
     /**
-     * Sets the device for the command
-     * @param mDevice the device
-     */
-    public void setDevice(Device mDevice) {
-        this.mDevice = mDevice;
-    }
-
-    /**
      * Sets the command for the send
      * @param mCommand the command
      */
-    public void setCommand(Command mCommand) {
-        this.mCommand = mCommand;
+    public void setCommand(Command mCommand) throws Exception{
+        this.mCommand = mCommand.getCommandCopy();
     }
 
     /**

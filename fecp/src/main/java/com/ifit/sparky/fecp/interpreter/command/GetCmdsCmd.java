@@ -38,6 +38,13 @@ public class GetCmdsCmd extends Command implements CommandInterface{
         super(new GetCmdsSts(devId), MIN_CMD_LENGTH, CommandId.GET_SUPPORTED_COMMANDS, devId);
     }
 
+    @Override
+    public Command getCommandCopy() throws Exception{
+        GetCmdsCmd cmdCopy = new GetCmdsCmd(this.mDevId);
+
+        return cmdCopy;//no other information to copy
+    }
+
     /**
      * Gets the command message for all commands that extend this class.
      * When they want to get the command they have to get the command.

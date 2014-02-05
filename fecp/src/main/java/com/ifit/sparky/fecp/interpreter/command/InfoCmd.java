@@ -52,4 +52,17 @@ public class InfoCmd extends Command implements CommandInterface{
 
         return buff;
     }
+
+    /**
+     * Gets a Co
+     *
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Command getCommandCopy() throws Exception {
+        InfoCmd cmdCopy = new InfoCmd(this.mDevId);
+
+        return cmdCopy;//no other information to copy
+    }
 }

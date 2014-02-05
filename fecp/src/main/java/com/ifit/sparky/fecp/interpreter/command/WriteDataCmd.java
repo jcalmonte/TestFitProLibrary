@@ -149,4 +149,17 @@ public class WriteDataCmd extends Command implements CommandInterface{
         return buffer;
 
     }
+
+    /**
+     * Gets a Co
+     *
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Command getCommandCopy() throws Exception {
+        WriteDataCmd cmdCopy = new WriteDataCmd(this.mDevId);
+        cmdCopy.mData = new DataBaseCmd(this.mData);//adds a copy of all the data
+        return cmdCopy;
+    }
 }

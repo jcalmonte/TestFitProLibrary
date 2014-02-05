@@ -14,7 +14,7 @@ import com.ifit.sparky.fecp.interpreter.status.Status;
 
 import java.nio.*;
 
-public class Command implements CommandInterface{
+public abstract class Command implements CommandInterface{
 
     public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
@@ -205,11 +205,11 @@ public class Command implements CommandInterface{
     }
 
     /**
-     * Gets the command message for all commands that extend this class.
-     * When they want to get the command they have to get the command.
-     * @return the Command structured to be ready to send over the usb.
+     * Gets a Co
+     * @return
+     * @throws Exception
      */
-   // public abstract ByteBuffer getCmdMsg();
+    public abstract Command getCommandCopy() throws Exception;
 
     /**
      * gets the checksum byte from the bytebuffer. Excludes the last byte in the buffer

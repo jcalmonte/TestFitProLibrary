@@ -158,7 +158,7 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface{
         }
         if(!this.isAlive())//if it isn't running start it.
         {
-            this.start();
+            this.run();
         }
     }
 
@@ -182,11 +182,11 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface{
                         || tempCmd.getCommand().getStatus().getStsId() == StatusId.FAILED))
                 {
                     tempCmd.getCallback().msgHandler(tempCmd.getCommand());
-                    //remove from this
-                    this.mProcessCmds.remove(0);
                 }
-
+                //remove from this it will add it later when it needs to.
+                this.mProcessCmds.remove(0);
             }
+            //kill this thread
         }
         catch (Exception ex)
         {

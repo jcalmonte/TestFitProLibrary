@@ -55,4 +55,17 @@ public class GetSubDevicesCmd extends Command implements CommandInterface{
         buff.put(Command.getCheckSum(buff));
         return buff;
     }
+
+    /**
+     * Gets a Co
+     *
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Command getCommandCopy() throws Exception {
+        GetSubDevicesCmd cmdCopy = new GetSubDevicesCmd(this.mDevId);
+
+        return cmdCopy;//no other information to copy
+    }
 }

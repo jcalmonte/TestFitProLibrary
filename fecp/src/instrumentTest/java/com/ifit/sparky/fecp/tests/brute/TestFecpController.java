@@ -35,7 +35,6 @@ public class TestFecpController extends TestCase {
         c = getTestContext();
         callback = new TempFecpCallbacker();
 
-
         controller = new FecpController(c, null, CommType.USB_COMMUNICATION, callback);
 
         assertEquals(CommType.USB_COMMUNICATION, controller.getCommType());

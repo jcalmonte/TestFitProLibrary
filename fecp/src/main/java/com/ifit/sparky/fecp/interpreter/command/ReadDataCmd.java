@@ -131,4 +131,19 @@ public class ReadDataCmd extends Command implements CommandInterface{
         return buff;
     }
 
+    /**
+     * Gets a Command for the Read Data Command
+     *
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Command getCommandCopy() throws Exception {
+        ReadDataCmd cmdCopy = new ReadDataCmd(this.mDevId);
+
+        DataBaseCmd data = ((ReadDataSts)this.getStatus()).getBitFieldData();
+        cmdCopy.addBitField(data.getMsgData().keySet());
+
+        return cmdCopy;
+    }
 }

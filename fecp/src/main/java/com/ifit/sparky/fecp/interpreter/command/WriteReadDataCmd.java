@@ -244,4 +244,19 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
         return buff;
     }
 
+    /**
+     * Gets a Co
+     *
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public Command getCommandCopy() throws Exception {
+        WriteReadDataCmd cmdCopy = new WriteReadDataCmd(this.mDevId);
+        cmdCopy.mData = new DataBaseCmd(this.mData);//adds a copy of all the data
+
+        DataBaseCmd data = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
+        cmdCopy.addReadBitField(data.getMsgData().keySet());
+        return cmdCopy;
+    }
 }

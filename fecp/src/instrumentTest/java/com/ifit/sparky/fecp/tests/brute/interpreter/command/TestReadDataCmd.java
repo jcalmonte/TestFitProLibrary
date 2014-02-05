@@ -170,7 +170,7 @@ public class TestReadDataCmd extends TestCase {
         assertFalse(cmd.containsBitField(BitFieldId.INCLINE));
     }
 
-    /** Tests the getCommand Message, and the formatting
+    /** Tests the getCommandCopy Message, and the formatting
      *
      * @throws Exception
      */

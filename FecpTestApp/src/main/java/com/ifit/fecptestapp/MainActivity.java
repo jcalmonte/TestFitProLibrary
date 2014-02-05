@@ -84,14 +84,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private TextView textViewRxCount;
     private TextView textViewPerSecond;
     private TextView deviceInfoText;
-    private ListView deviceList;
 
     private Calendar timeWhenCleared;
 
     private FecpController fecpController;
     private FecpCommand tempCommand;
+    private FecpCommand infoCommand;//gets info on the whole system
+    private FecpCommand modeCommand;//changes mode
     private SystemDevice MainDevice;
-    private Device tempDevice;
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -121,17 +121,15 @@ public class MainActivity extends Activity implements View.OnClickListener{
             MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
 
             ((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
-            tempCommand = new FecpCommand(MainDevice, MainDevice.getCommand(CommandId.WRITE_READ_DATA), null);
+
+            tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), null);
+            //create a copy of the system device
+
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }
-//        //debug add a command
-//        mainDeviceTextView.setText("Main Device-" + MainDevice.getInfo().getDevId().getDescription()
-//                + " version-" +MainDevice.getInfo().getSWVersion()
-//                +  " subDevice count-" +MainDevice.getSubDeviceList().size());
-        //populate the listview of devices or bitfields
-        mainDeviceTextView.setText(MainDevice.toString());
 
+        mainDeviceTextView.setText(MainDevice.toString());
 
         for(Device tempDev : MainDevice.getSubDeviceList())
         {
@@ -174,13 +172,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
      */
     @Override
     public void onClick(View view) {
-
-        //check if it is the listview
-        if(view == deviceList)
-        {
-            //load data into the deviceInfoText
-            return;
-        }
 
         if(view == buttonDecPeriod100 && m_interval >= 100){
             m_interval -= 100;
@@ -236,8 +227,22 @@ public class MainActivity extends Activity implements View.OnClickListener{
         }
 
         if(m_interval < 0)
+        {
             m_interval = 0;
+        }
         textViewPeriod.setText("TX Period: " + m_interval + " ms");
+
+        if(mSpeedMph != mSpeedMphPrev){
+            try {
+
+                ((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, mSpeedMph);
+                //fecpController.addCmd(tempCommand);
+                fecpController.addCmd(tempCommand);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        mSpeedMphPrev = mSpeedMph;
     }
 
     /**
@@ -273,20 +278,20 @@ public class MainActivity extends Activity implements View.OnClickListener{
             //usbComm.sendCmdBuffer(buff);
             txCount++;
 
-            if(mSpeedMph != mSpeedMphPrev){
-                textViewSpeed.setText("Speed: " + String.format("%.2f", mSpeedMph) + " MPH");
-                try {
+//            if(mSpeedMph != mSpeedMphPrev){
+//                textViewSpeed.setText("Speed: " + String.format("%.2f", mSpeedMph) + " MPH");
+//                try {
+//
+//                    ((WriteReadDataCmd)MainDevice.getCommandCopy(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, mSpeedMph);
+//                    //fecpController.addCmd(tempCommand);
+//                    //fecpController.sendCommand(tempCommand);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            mSpeedMphPrev = mSpeedMph;
 
-                    ((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, mSpeedMph);
-                    //fecpController.addCmd(tempCommand);
-                    fecpController.sendCommand(tempCommand);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            mSpeedMphPrev = mSpeedMph;
-
-            m_handler.postDelayed(m_sendUsbData, m_interval);
+            //m_handler.postDelayed(m_sendUsbData, m_interval);
         }
     };
 
