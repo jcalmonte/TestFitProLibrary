@@ -120,7 +120,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
             MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
 
-            ((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
+            //((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
 
             tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), null);
             //create a copy of the system device
@@ -234,9 +234,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         if(mSpeedMph != mSpeedMphPrev){
             try {
-
-                ((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, mSpeedMph);
-                //fecpController.addCmd(tempCommand);
+                ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
                 fecpController.addCmd(tempCommand);
             } catch (Exception e) {
                 e.printStackTrace();

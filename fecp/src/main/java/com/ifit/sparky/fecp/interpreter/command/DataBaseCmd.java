@@ -60,7 +60,7 @@ public class DataBaseCmd{
 
         for(Map.Entry<BitFieldId, Object> entry : copyData.mMsgData.entrySet())
         {
-            this.mMsgData.put(entry.getKey(), CloneUtils.clone(entry.getValue()));//copies each object
+            this.mMsgData.put(entry.getKey(), entry.getValue());//copies each object
         }
     }
 
