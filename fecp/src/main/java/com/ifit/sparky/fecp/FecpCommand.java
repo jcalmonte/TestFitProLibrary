@@ -35,6 +35,16 @@ public class FecpCommand extends Thread{
     }
 
     /**
+     * constructor for just a command, it will only be called once with no callback
+     * @param cmd the command to send
+     * @throws Exception
+     */
+    public FecpCommand(Command cmd) throws Exception
+    {
+        this.fecpInitializer(cmd, null, 0,0);
+    }
+
+    /**
      * Constructor for a simple command.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.

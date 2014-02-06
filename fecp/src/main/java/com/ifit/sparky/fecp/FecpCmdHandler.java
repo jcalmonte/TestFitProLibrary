@@ -6,8 +6,6 @@
  * handles the common items as far as what to send and what to receive.
  */
 package com.ifit.sparky.fecp;
-
-import android.os.Looper;
 import android.util.Log;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
@@ -26,22 +24,14 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     private FecpCmdList mProcessCmds;
     private FecpCmdList mPeriodicCmds;//this will use the thread scheduler
     private ScheduledExecutorService mThreadManager = Executors.newSingleThreadScheduledExecutor();//this will keep track of all the threads
-    private volatile Looper mMyLooper;
     private Thread mCurrentThread;//this thread will be recreated when needed.
 
     public FecpCmdHandler(CommInterface commController)
     {
-        super();//initializes the thread
         this.mCommController = commController;
         this.mProcessCmds = new FecpCmdList();
         this.mPeriodicCmds = new FecpCmdList();
     }
-
-//    @Override
-//    public void run() {
-//        super.run();
-//        //start my own process handling
-//    }
 
     /**
      * Sets the Comm controller for the system.
@@ -71,7 +61,6 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     @Override
     public void addFecpCommand(FecpCommand cmd) throws Exception
     {
-
         //check if thread is set
         cmd.setSendHandler(this);
         //check if the thread is running
@@ -197,10 +186,5 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         {
             Log.e("thread error", ex.getMessage());
         }
-    }
-
-    public void killMe()
-    {
-        this.mMyLooper.quit();
     }
 }
