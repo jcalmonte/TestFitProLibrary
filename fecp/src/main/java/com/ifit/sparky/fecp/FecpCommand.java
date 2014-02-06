@@ -7,6 +7,8 @@
  */
 package com.ifit.sparky.fecp;
 
+import android.os.Looper;
+
 import com.ifit.sparky.fecp.interpreter.command.Command;
 
 import java.util.concurrent.ScheduledFuture;

@@ -7,6 +7,9 @@
  */
 package com.ifit.sparky.fecp;
 
+import android.os.Looper;
+import android.util.Log;
+
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
@@ -17,12 +20,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface{
+public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
 
     private CommInterface mCommController;
     private FecpCmdList mProcessCmds;
     private FecpCmdList mPeriodicCmds;//this will use the thread scheduler
     private ScheduledExecutorService mThreadManager = Executors.newSingleThreadScheduledExecutor();//this will keep track of all the threads
+    private volatile Looper mMyLooper;
+    private Thread mCurrentThread;//this thread will be recreated when needed.
 
     public FecpCmdHandler(CommInterface commController)
     {
@@ -156,9 +161,10 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface{
         {
             this.mProcessCmds.add(cmd);
         }
-        if(!this.isAlive())//if it isn't running start it.
+        if(this.mCurrentThread == null || !this.mCurrentThread.isAlive())
         {
-            this.run();
+            this.mCurrentThread = new Thread(this);
+            this.mCurrentThread.start();
         }
     }
 
@@ -167,13 +173,12 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface{
      */
     @Override
     public void run() {
-
         //go through the list of commands and make the function calls to them.
         //yes this is an infinite loop.
         try
         {
             while(this.mProcessCmds.size() > 0)
-            {
+                {
                 FecpCommand tempCmd = this.mProcessCmds.get(0);
                 this.sendCommand(tempCmd);
                 //if there is a callback call it
@@ -190,8 +195,12 @@ public class FecpCmdHandler extends Thread implements FecpCmdHandleInterface{
         }
         catch (Exception ex)
         {
-
+            Log.e("thread error", ex.getMessage());
         }
+    }
 
+    public void killMe()
+    {
+        this.mMyLooper.quit();
     }
 }

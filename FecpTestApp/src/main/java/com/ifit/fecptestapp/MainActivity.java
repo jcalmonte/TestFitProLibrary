@@ -20,23 +20,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.CmdHandlerType;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
-import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.FecpController;
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
-import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.WriteDataCmd;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
-import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import java.nio.ByteBuffer;
 import java.util.Calendar;
@@ -92,6 +86,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private FecpCommand infoCommand;//gets info on the whole system
     private FecpCommand modeCommand;//changes mode
     private SystemDevice MainDevice;
+    private HandleInfo handleInfoCmd;
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -122,9 +117,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
             //((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
 
+            handleInfoCmd = new HandleInfo(this, textViewSpeed);
+            infoCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), handleInfoCmd, 0, 1000);//every 1 second
+            ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
+            ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.KPH);
             tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), null);
             //create a copy of the system device
-
+            this.fecpController.addCmd(tempCommand);
+            this.fecpController.addCmd(infoCommand);
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }
