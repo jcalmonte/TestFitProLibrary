@@ -71,5 +71,25 @@ public class TestCmdMsgs extends TestCase {
         }
     }
 
+    /**
+     * Tests the get command copy
+     * @throws Exception in id issues
+     */
+    public void testInfoCmd_getCommandCopy() throws Exception{
+
+        InfoCmd cmd;
+        InfoCmd cmdCopy;
+        cmd = new InfoCmd();
+
+        assertEquals(DeviceId.NONE, cmd.getDevId());
+        cmd.setDevId(DeviceId.INCLINE_TRAINER);
+        cmdCopy = (InfoCmd)cmd.getCommandCopy();
+
+        cmdCopy.setDevId(DeviceId.TREADMILL);
+
+        assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());
+        assertEquals(DeviceId.TREADMILL, cmdCopy.getDevId());//validate that they are different
+    }
+
 
 }

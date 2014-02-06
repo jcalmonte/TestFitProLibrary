@@ -105,7 +105,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         initLayout();
 
         m_handler = new Handler();
-        m_sendUsbData.run();
+        //m_sendUsbData.run();
 
         m_handlerUi = new Handler();
         m_updateUi.run();
@@ -258,40 +258,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
             return inflater.inflate(R.layout.fragment_main, container, false);
         }
     }
-
-    /**
-     * m_sendUsbData
-     * This routine transmits data periodically according the value of 'm_interval'.
-     * The initial value of 'm_interval' is 1000 which means that a packet will be sent every 1000
-     * milliseconds. The value of 'm_interval' can be modified by using the GUI buttons.
-     */
-    Runnable m_sendUsbData = new Runnable()
-    {
-
-        @Override
-        public void run() {
-            ByteBuffer buff = ByteBuffer.allocate(64);
-            for(int i = 20; i < 64; i++)
-                buff.put(i, (byte)i);
-            //usbComm.sendCmdBuffer(buff);
-            txCount++;
-
-//            if(mSpeedMph != mSpeedMphPrev){
-//                textViewSpeed.setText("Speed: " + String.format("%.2f", mSpeedMph) + " MPH");
-//                try {
-//
-//                    ((WriteReadDataCmd)MainDevice.getCommandCopy(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, mSpeedMph);
-//                    //fecpController.addCmd(tempCommand);
-//                    //fecpController.sendCommand(tempCommand);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            mSpeedMphPrev = mSpeedMph;
-
-            //m_handler.postDelayed(m_sendUsbData, m_interval);
-        }
-    };
 
     /**
      * m_updateUi
