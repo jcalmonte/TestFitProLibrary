@@ -110,7 +110,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
             //initialize connection, and get the system Device
             MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
 
-
             //How to create a Callback handler that implements CommandCallback
             handleInfoCmd = new HandleInfo(this, textViewSpeed);
 
