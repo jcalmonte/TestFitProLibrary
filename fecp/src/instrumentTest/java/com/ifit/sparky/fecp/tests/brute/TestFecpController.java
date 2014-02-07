@@ -9,7 +9,6 @@
 package com.ifit.sparky.fecp.tests.brute;
 
 import android.content.Context;
-import android.content.Intent;
 import android.test.ServiceTestCase;
 
 import com.ifit.sparky.fecp.FecpController;
@@ -56,15 +55,8 @@ public class TestFecpController extends TestCase {
         assertEquals(DeviceId.MAIN, controller.getSysDev().getInfo().getDevId());
         assertEquals(false, controller.getIsConnected());
 
-        try
-        {
-            //controller.initializeConnection();
-        }
-        catch (Exception ex)
-        {
-            assertTrue(true);
-            //TODO fix the exception, we need a device
-        }
+        //controller.initializeConnection();
+
 
     }
 

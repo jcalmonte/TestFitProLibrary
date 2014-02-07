@@ -23,10 +23,10 @@ public class Status implements StatusInterface{
 
     public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
-    protected StatusId mStsId;
-    protected int mLength;
-    protected CommandId mCmdId;
-    protected DeviceId mDevId;
+    private StatusId mStsId;
+    private int mLength;
+    private CommandId mCmdId;
+    private DeviceId mDevId;
 
     /**
      * Default Constructor for the Status object.

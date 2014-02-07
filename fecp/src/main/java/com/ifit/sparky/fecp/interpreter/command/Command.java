@@ -16,12 +16,12 @@ import java.nio.*;
 
 public abstract class Command implements CommandInterface{
 
-    public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
+    private final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
-    protected Status mStatus;
-    protected int mLength;
-    protected CommandId mCmdId;
-    protected DeviceId mDevId;
+    private Status mStatus;
+    private int mLength;
+    private CommandId mCmdId;
+    private DeviceId mDevId;
 
     /**
      * Constructor for the command object. This will handle all the things dealing with
@@ -205,21 +205,21 @@ public abstract class Command implements CommandInterface{
     }
 
     /**
-     * Gets a Co
-     * @return
+     * Gets a Cloned Copy of the Command
+     * @return a Cloned copy of the Command
      * @throws Exception
      */
     public abstract Command getCommandCopy() throws Exception;
 
     /**
-     * gets the checksum byte from the bytebuffer. Excludes the last byte in the buffer
+     * gets the checksum byte from the byte buffer. Excludes the last byte in the buffer
      * @param buff the Buffer with the command or status in it.
      * @return the checksum byte
      */
     public static byte getCheckSum(ByteBuffer buff)
     {
         byte checkSum = 0;
-        byte msgLength = 0;
+        byte msgLength;
         buff.position(1);
         msgLength = buff.get();
         buff.position(0);

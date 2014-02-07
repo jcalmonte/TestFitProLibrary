@@ -53,7 +53,7 @@ public class ReadDataSts extends Status implements StatusInterface  {
 
     /**
      * Gets the data from the message received
-     * @return a Treemap of all the data base on BitfieldIds(mph,incline,etc..)
+     * @return a Tree map of all the data base on BitfieldIds(mph,incline,etc..)
      */
     public TreeMap<BitFieldId, BitfieldDataConverter> getResultData() {
         return mResultData;

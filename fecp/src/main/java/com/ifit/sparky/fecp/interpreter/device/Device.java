@@ -19,7 +19,7 @@ public class Device {
 
     private Map<CommandId, Command> mCommandMap;//list of all the available commands.
     private ArrayList<Device> mSubDevArrayList;//list of all the subDevices.
-    protected DeviceInfo mInfo;// all the major information about a system.
+    private DeviceInfo mInfo;// all the major information about a system.
 
     /**
      * Default constructor for devices.
@@ -183,7 +183,7 @@ public class Device {
     {
         for(Command tempCmd : cmds)
         {
-            if(this.getCommandSet().containsKey(tempCmd.getCmdId()) == false)//if it doesn't contain a default command add it.
+            if(!this.getCommandSet().containsKey(tempCmd.getCmdId()))//if it doesn't contain a default command add it.
             {
                 this.addCommand(tempCmd);
             }

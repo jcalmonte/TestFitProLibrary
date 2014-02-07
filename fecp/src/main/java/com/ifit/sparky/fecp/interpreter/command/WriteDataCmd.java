@@ -34,7 +34,7 @@ public class WriteDataCmd extends Command implements CommandInterface{
         super();
         this.setCmdId(CommandId.WRITE_DATA);
         this.mData = new DataBaseCmd();
-        this.setStatus(new WriteDataSts(this.mDevId));
+        this.setStatus(new WriteDataSts(this.getDevId()));
         this.setLength(MIN_CMD_LENGTH);//length varies
     }
 
@@ -70,14 +70,16 @@ public class WriteDataCmd extends Command implements CommandInterface{
      */
     public void addBitField(BitFieldId id, Object data) throws Exception
     {
+        int tempLength;
         if(id.getReadOnly())
         {
             throw new Exception("Invalid BitfieldId "+ id.getDescription()+" This bitfield is read only");
         }
         this.mData.addBitfieldData(id, data);
-        this.mLength = this.mData.getNumOfDataBytes();
-        this.mLength += MIN_CMD_LENGTH;
-        this.mLength += this.mData.getMsgDataBytesCount();
+        tempLength = this.mData.getNumOfDataBytes();
+        tempLength += MIN_CMD_LENGTH;
+        tempLength += this.mData.getMsgDataBytesCount();
+        this.setLength(tempLength);
         this.checkMsgSize();
     }
 
@@ -111,10 +113,12 @@ public class WriteDataCmd extends Command implements CommandInterface{
      */
     public void removeDataField(BitFieldId id) throws Exception
     {
+        int tempLength;
         this.mData.removeBitfieldData(id);//always 0 for reading
-        this.mLength = this.mData.getNumOfDataBytes();
-        this.mLength += MIN_CMD_LENGTH;
-        this.mLength += this.mData.getMsgDataBytesCount();
+        tempLength = this.mData.getNumOfDataBytes();
+        tempLength += MIN_CMD_LENGTH;
+        tempLength += this.mData.getMsgDataBytesCount();
+        this.setLength(tempLength);
 
         this.checkMsgSize();
     }
@@ -151,14 +155,13 @@ public class WriteDataCmd extends Command implements CommandInterface{
     }
 
     /**
-     * Gets a Co
-     *
-     * @return
-     * @throws Exception
+     * Gets a cloned copy of the command
+     * @return the cloned copy of the command
+     * @throws Exception if
      */
     @Override
     public Command getCommandCopy() throws Exception {
-        WriteDataCmd cmdCopy = new WriteDataCmd(this.mDevId);
+        WriteDataCmd cmdCopy = new WriteDataCmd(this.getDevId());
         cmdCopy.mData = new DataBaseCmd(this.mData);//adds a copy of all the data
         return cmdCopy;
     }

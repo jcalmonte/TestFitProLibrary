@@ -9,8 +9,7 @@
 package com.ifit.sparky.fecp;
 
 public enum CmdHandlerType {
-    FIFO_PRIORITY(),
-    CMD_TYPE_PRIORITY();
+    FIFO_PRIORITY();
 
     /**
      * Constructor for the command handler type.

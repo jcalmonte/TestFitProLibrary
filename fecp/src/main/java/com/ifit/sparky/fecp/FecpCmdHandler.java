@@ -14,6 +14,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,26 +22,16 @@ import java.util.concurrent.TimeUnit;
 public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
 
     private CommInterface mCommController;
-    private FecpCmdList mProcessCmds;
-    private FecpCmdList mPeriodicCmds;//this will use the thread scheduler
+    private ArrayList<FecpCommand> mProcessCmds;
+    private ArrayList<FecpCommand> mPeriodicCmds;//this will use the thread scheduler
     private ScheduledExecutorService mThreadManager = Executors.newSingleThreadScheduledExecutor();//this will keep track of all the threads
     private Thread mCurrentThread;//this thread will be recreated when needed.
 
     public FecpCmdHandler(CommInterface commController)
     {
         this.mCommController = commController;
-        this.mProcessCmds = new FecpCmdList();
-        this.mPeriodicCmds = new FecpCmdList();
-    }
-
-    /**
-     * Sets the Comm controller for the system.
-     * @param CommController the comm controller
-     */
-    @Override
-    public void setCommController(CommInterface CommController) {
-        //initialized outside of  this function
-        this.mCommController = CommController;
+        this.mProcessCmds = new ArrayList<FecpCommand>();
+        this.mPeriodicCmds = new ArrayList<FecpCommand>();
     }
 
     /**
@@ -80,8 +71,8 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
      * Removes the command if it matches the Command id and the Device ID.
      * If there are multiples in the command list it will remove both of them.
      *
-     * @param devId
-     * @param cmdId
+     * @param devId Device id to check if the command matches
+     * @param cmdId the command to be removed
      * @return true if it removed the element
      */
     @Override
@@ -124,16 +115,32 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
      */
     @Override
     public void sendCommand(FecpCommand cmd) throws Exception{
-        long startTime = 0;
-        long endTime = 0;
+        long startTime;
+        long endTime;
         cmd.incrementCmdSentCounter();
         ByteBuffer tempBuffer = cmd.getCommand().getCmdMsg();
         //send the command and handle the response.
-        startTime = System.nanoTime();
-        tempBuffer = this.mCommController.sendAndRecieveCmd(tempBuffer);
-        endTime = System.nanoTime();
-        cmd.getCommand().getStatus().handleStsMsg(tempBuffer);
+        if(cmd.getTimeout() == 0)
+        {
+            startTime = System.nanoTime();
+            tempBuffer = this.mCommController.sendAndReceiveCmd(tempBuffer);
+            endTime = System.nanoTime();
+        }
+        else
+        {
+            startTime = System.nanoTime();
+            tempBuffer = this.mCommController.sendAndReceiveCmd(tempBuffer, cmd.getTimeout());
+            endTime = System.nanoTime();
+        }
         cmd.setCommSendReceiveTime(endTime - startTime);
+        //check if there was an error with the send. if so return Failed
+        if(tempBuffer.get(0)== 0)
+        {
+            //message failed
+            cmd.getCommand().getStatus().setStsId(StatusId.FAILED);
+            return;
+        }
+        cmd.getCommand().getStatus().handleStsMsg(tempBuffer);
         cmd.incrementCmdReceivedCounter();
     }
 

@@ -23,8 +23,8 @@ public class InfoCmd extends Command implements CommandInterface{
     {
         super();
         this.setCmdId(CommandId.GET_INFO);
-        this.setStatus(new InfoSts(this.mDevId));
-        this.setLength(this.CMD_LENGTH);
+        this.setStatus(new InfoSts(this.getDevId()));
+        this.setLength(CMD_LENGTH);
     }
 
     /**
@@ -54,15 +54,12 @@ public class InfoCmd extends Command implements CommandInterface{
     }
 
     /**
-     * Gets a Co
-     *
-     * @return
-     * @throws Exception
+     * Gets a cloned copy of the command
+     * @return the cloned copy of the command
+     * @throws Exception if
      */
     @Override
     public Command getCommandCopy() throws Exception {
-        InfoCmd cmdCopy = new InfoCmd(this.mDevId);
-
-        return cmdCopy;//no other information to copy
+        return new InfoCmd(this.getDevId());
     }
 }

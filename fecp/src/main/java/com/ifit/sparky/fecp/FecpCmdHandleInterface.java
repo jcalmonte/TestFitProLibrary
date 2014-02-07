@@ -14,12 +14,6 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 public interface FecpCmdHandleInterface {
 
     /**
-     * Sets the Comm controller for the system.
-     * @param CommController the comm controller
-     */
-    void setCommController(CommInterface CommController);
-
-    /**
      * Gets the comm controller used for the system.
      * @return the comm controller
      */

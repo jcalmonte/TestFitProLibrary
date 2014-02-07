@@ -10,8 +10,6 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 
-import org.apache.http.client.utils.CloneUtils;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Comparator;
@@ -127,7 +125,7 @@ public class DataBaseCmd{
     {
         //plus one for the number of bytes
         buffer.put((byte)this.mNumOfDataBytes);
-        //add all the sections we need for the databits
+        //add all the sections we need for the data bits
         for(int i = 0; i < this.mNumOfDataBytes; i++)
         {
             buffer.put(getHeaderDataBitBytes(i));
@@ -206,7 +204,7 @@ public class DataBaseCmd{
 
     /**
      * Gets the TreeMap of all the data in the list
-     * @return Treemap of all the data
+     * @return Tree map of all the data
      */
     public TreeMap<BitFieldId, Object> getMsgData() {
         return mMsgData;
@@ -228,7 +226,7 @@ public class DataBaseCmd{
             }
         });
 
-        //get the objects from the bytebuffer
+        //get the objects from the byte buffer
         for(Map.Entry<BitFieldId, Object> entry : this.mMsgData.entrySet())
         {
 
@@ -245,7 +243,7 @@ public class DataBaseCmd{
     }
 
     /**
-     * Loops through the HashMap of databits and creates a byte for a specific section
+     * Loops through the HashMap of data bits and creates a byte for a specific section
      * @param section the section you need a byte from
      * @return byte of the section
      */

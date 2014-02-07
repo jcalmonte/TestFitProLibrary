@@ -7,26 +7,39 @@
  */
 package com.ifit.sparky.fecp.tests.brute;
 
+import android.util.Log;
+
 import com.ifit.sparky.fecp.communication.CommInterface;
 
 import java.nio.ByteBuffer;
 
 
-public class TestToolDumyCom implements CommInterface {
+public class TestToolDummyCom implements CommInterface {
 
 
-    public TestToolDumyCom()
+    public TestToolDummyCom()
     {
 
     }
     private ByteBuffer mSendBuffer;
-    @Override
-    public void sendCmdBuffer(ByteBuffer buff) {
-        mSendBuffer = buff.duplicate();
-    }
 
+    /**
+     * sends the command and waits for the reply to handle the buffer
+     *
+     * @param buff the command buffer to send
+     * @return returns the array sent
+     */
     @Override
-    public ByteBuffer getStsBuffer() {
+    public ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout) {
+        this.mSendBuffer = buff.duplicate();
+        try {
+
+            Thread.sleep(timeout);
+        }
+        catch (Exception ex)
+        {
+            Log.e("Sleep fail", ex.getMessage());
+        }
         return this.mSendBuffer;
     }
 
@@ -34,10 +47,10 @@ public class TestToolDumyCom implements CommInterface {
      * sends the command and waits for the reply to handle the buffer
      *
      * @param buff the command buffer to send
-     * @return
+     * @return returns the array sent
      */
     @Override
-    public ByteBuffer sendAndRecieveCmd(ByteBuffer buff) {
+    public ByteBuffer sendAndReceiveCmd(ByteBuffer buff) {
         this.mSendBuffer = buff.duplicate();
         try {
 
@@ -45,7 +58,7 @@ public class TestToolDumyCom implements CommInterface {
         }
         catch (Exception ex)
         {
-
+            Log.e("Sleep fail", ex.getMessage());
         }
         return this.mSendBuffer;
     }

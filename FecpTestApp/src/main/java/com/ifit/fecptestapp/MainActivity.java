@@ -32,7 +32,6 @@ import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 
-import java.nio.ByteBuffer;
 import java.util.Calendar;
 
 public class MainActivity extends Activity implements View.OnClickListener{
@@ -84,7 +83,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private FecpController fecpController;
     private FecpCommand tempCommand;
     private FecpCommand infoCommand;//gets info on the whole system
-    private FecpCommand modeCommand;//changes mode
     private SystemDevice MainDevice;
     private HandleInfo handleInfoCmd;
     //private SystemStatusCallback systemStatusCallback;
@@ -100,31 +98,39 @@ public class MainActivity extends Activity implements View.OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //usbComm = new UsbComm(MainActivity.this);
-
         initLayout();
 
         m_handler = new Handler();
-        //m_sendUsbData.run();
-
         m_handlerUi = new Handler();
         m_updateUi.run();
 
-        //systemStatusCallback =
         try{
+            //create FecpController
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
-            MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
+            //initialize connection, and get the system Device
+            MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
 
-            //((WriteReadDataCmd)MainDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
 
+            //How to create a Callback handler that implements CommandCallback
             handleInfoCmd = new HandleInfo(this, textViewSpeed);
+
+            //create command by passing the command of the specific device you want to use.
+            //NOTE do not create a command, always use FecpCommand. If you use command it can corrupt data.
+            //                              command,                                       callback,   timeout, frequency
             infoCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), handleInfoCmd, 0, 1000);//every 1 second
+
+            //typecast the command that you want to customize, and add what ever data you want to the specific command
+            //we want to read the mode and the Speed
             ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
             ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.KPH);
-            tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), null);
-            //create a copy of the system device
-            this.fecpController.addCmd(tempCommand);
-            this.fecpController.addCmd(infoCommand);
+
+            // Create a single fire command with no callback
+            tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
+
+            //add the commands to the system
+            this.fecpController.addCmd(tempCommand);//does nothing
+            this.fecpController.addCmd(infoCommand);//gets speed and mode and calls callback every 1 second
+
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }

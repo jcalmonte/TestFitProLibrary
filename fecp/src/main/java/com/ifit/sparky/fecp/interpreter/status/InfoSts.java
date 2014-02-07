@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 
 public class InfoSts extends Status implements StatusInterface {
 
-    DeviceInfo mInfo;
+    private DeviceInfo mInfo;
     private static final int STS_LENGTH = 14;
 
     /**
@@ -41,10 +41,10 @@ public class InfoSts extends Status implements StatusInterface {
         super.handleStsMsg(buff);
 
         //now parse the data
-        if(this.mStsId == StatusId.DONE)
+        if(this.getStsId() == StatusId.DONE)
         {
             this.mInfo.interpretInfo(buff);
-            this.mInfo.setDevId(this.mDevId);//it is given that device id is known from the send
+            this.mInfo.setDevId(this.getDevId());//it is given that device id is known from the send
         }
     }
 

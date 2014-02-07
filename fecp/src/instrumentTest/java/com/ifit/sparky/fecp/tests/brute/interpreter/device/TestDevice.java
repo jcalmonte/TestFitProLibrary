@@ -126,6 +126,7 @@ public class TestDevice extends TestCase {
         cmdSet.add(new InfoCmd(DeviceId.INCLINE_TRAINER));
         assertEquals(6, deviceObjOne.getCommandSet().size());
         assertEquals(CommandId.GET_INFO,deviceObjOne.getCommand(CommandId.GET_INFO).getCmdId());
+        assertEquals(CommandId.GET_INFO,deviceObjOne.getCommand(CommandId.GET_INFO.getVal()).getCmdId());
 
         //test the getInfo
         deviceObjOne.setDeviceInfo(info);
