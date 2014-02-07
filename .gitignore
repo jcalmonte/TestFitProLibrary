@@ -33,3 +33,14 @@ proguard/
 /local.properties
 /.idea/workspace.xml
 .DS_Store
+
+
+###########################
+## Android Studio
+###########################
+#*/build/*
+#/build
+#.gradle/*
+#*/gen/*
+#*/BuildConfig.java
+#*/Manifest.java
