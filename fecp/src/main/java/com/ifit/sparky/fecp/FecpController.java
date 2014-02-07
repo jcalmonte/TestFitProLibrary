@@ -47,10 +47,10 @@ public class FecpController{
      * @param callback the callback for connection and disconnections
      * @throws Exception if the device is invalid
      */
-    public FecpController(Context context, Intent intent, CommType type, SystemStatusCallback callback) throws Exception
-    {
-        this.mCommType = type;
-        this.statusCallback = callback;
+        public FecpController(Context context, Intent intent, CommType type, SystemStatusCallback callback) throws Exception
+        {
+            this.mCommType = type;
+            this.statusCallback = callback;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
         this.mIsConnected = false;
         this.mContext = context;
