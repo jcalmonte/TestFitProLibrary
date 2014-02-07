@@ -71,6 +71,48 @@ public class TestIntegration extends TestCase{
         else
             testPassed = false;
     }
+    public void testTimeModes() throws Exception{
+        //outline for code support #930 in redmine
+        //start timer stopwatch
+        //change mode to running
+        //wait 5 min
+        //read current displayed time and store value
+        //wait 10 min
+        //read current displayed time and store value
+        //wait 15 min
+        //read current displayed time and store values
+        //stop, reset, and start stopwatch
+        //change mode to pause
+        //keep reading mode status until mode changes to idle for pause timeout
+        //stop timer and record pause timeout
+        //stop, reset, and start stopwatch
+        //keep reading mode status until mode changes from idle timeout
+        //record time taken going out of idle mode
+        //verify 5, 10, 15 min values, pause and idle timeout values
+        //against hardcoded constant values to make sure the timeout works
+    }
+    public void testSystemConfiguration() throws Exception{
+        //outline for code support #951
+        //read System Config data from Brainboard or config file
+        //verify the data against PDM data
+    }
+
+    //test for checking max values hardcoded
+    public boolean maxCheckTest(int max){
+        //simple method for checking max against standard incline trainer 30% max incline
+        int standardMax = 30;
+        if(max == standardMax)
+            return true;
+        else return false;
+    }
+    //test for checking min values hardcoded
+    public boolean minCheckTest(int min){
+        //simple method for checking min against standard incline trainer -6 min incline
+        int standardMin = 6;
+        if(min == standardMin)
+            return true;
+        else return false;
+    }
 
     //super test to run through all the tests; not sure if necessary
     public void superTest() throws Exception{
