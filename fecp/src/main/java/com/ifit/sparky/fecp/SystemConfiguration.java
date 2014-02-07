@@ -13,7 +13,6 @@ public enum SystemConfiguration {
             "if communication is lost system continues."),
     MULTI_MASTER("Both the systems need to play nice, if communication is lost, system continues");
 
-
     private String mDescription;//description about the mode
 
     /**

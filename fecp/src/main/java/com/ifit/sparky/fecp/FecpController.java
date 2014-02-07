@@ -9,10 +9,8 @@ package com.ifit.sparky.fecp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Message;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
-import com.ifit.sparky.fecp.communication.CommReply;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
@@ -28,7 +26,6 @@ import com.ifit.sparky.fecp.interpreter.status.GetCmdsSts;
 import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 
-import java.nio.ByteBuffer;
 import java.util.Set;
 
 public class FecpController{
@@ -41,7 +38,6 @@ public class FecpController{
     private Context mContext;
     private Intent mIntent;
     private CommInterface mCommController;
-    private Thread mCommunicationThread;//this thread is to handle all the communications
     private FecpCmdHandleInterface mCmdHandleInterface;
 
     /**
@@ -71,20 +67,11 @@ public class FecpController{
         //add as we add support for these
         if(this.mCommType == CommType.USB_COMMUNICATION)
         {
-            this.mCommController = new UsbComm(this.mContext, this.mIntent);
+            this.mCommController = new UsbComm(this.mContext, this.mIntent, 100);
             this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
-            if(type == CmdHandlerType.FIFO_PRIORITY)
-            {
-                //two references to the same object with different responsibilities
-                this.mCmdHandleInterface = new FecpFifoCmdHandler(this.mCommController);
-                this.mCommunicationThread = (FecpFifoCmdHandler)this.mCmdHandleInterface;
-            }
-            else if(type == CmdHandlerType.CMD_TYPE_PRIORITY)
-            {
-                //todo make the CmdTypeCommand handler
-            }
-            this.mCommController.setStsHandler((CommReply)this.mCmdHandleInterface);
-            this.mCommunicationThread.start();//start running the system
+
+            //two references to the same object with different responsibilities
+            this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
         }
         return this.mSysDev;
     }
@@ -122,10 +109,10 @@ public class FecpController{
     }
 
     /**
-     * Addes a command to send to the device
+     * Adds a command to send to the device
      * @param cmd the command to send to the device
      */
-    public void addCmd(FecpCommand cmd)
+    public void addCmd(FecpCommand cmd) throws Exception
     {
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
@@ -155,31 +142,28 @@ public class FecpController{
         return dev;
     }
 
-
     private DeviceInfo getDevicesInfo(DeviceId devId) throws Exception
     {
         Command cmd = new InfoCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
+        cmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(cmd.getCmdMsg()));
         return ((InfoSts)cmd.getStatus()).getInfo();
     }
 
     private Set<CommandId> getSupportedCommands(DeviceId devId) throws Exception
     {
         Command cmd = new GetCmdsCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
+        cmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(cmd.getCmdMsg()));
         return ((GetCmdsSts)cmd.getStatus()).getSupportedCommands();
     }
     private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception
     {
         Command cmd = new GetSubDevicesCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mCommController.sendAndRecieveCmd(cmd.getCmdMsg()));
+        cmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(cmd.getCmdMsg()));
         return ((GetSubDevicesSts)cmd.getStatus()).getSubDevices();
     }
 
     private static Command initializeCommand(DeviceId devId, CommandId cmdId) throws Exception
     {
-        Command cmd;
-
         if(CommandId.CONNECT == cmdId)
         {
             //not implemented yet
@@ -197,7 +181,5 @@ public class FecpController{
         }
         return null;//nothing supported yet
     }
-
-
 
 }

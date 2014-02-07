@@ -24,8 +24,8 @@ public class GetCmdsCmd extends Command implements CommandInterface{
     {
         super();
         this.setCmdId(CommandId.GET_SUPPORTED_COMMANDS);
-        this.setStatus(new GetCmdsSts(this.mDevId));
-        this.setLength(this.MIN_CMD_LENGTH);
+        this.setStatus(new GetCmdsSts(this.getDevId()));
+        this.setLength(MIN_CMD_LENGTH);
     }
 
     /**
@@ -36,6 +36,11 @@ public class GetCmdsCmd extends Command implements CommandInterface{
     public GetCmdsCmd(DeviceId devId) throws Exception
     {
         super(new GetCmdsSts(devId), MIN_CMD_LENGTH, CommandId.GET_SUPPORTED_COMMANDS, devId);
+    }
+
+    @Override
+    public Command getCommandCopy() throws Exception{
+        return new GetCmdsCmd(this.getDevId());
     }
 
     /**

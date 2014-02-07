@@ -10,6 +10,7 @@
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.*;
 
 import java.util.*;
@@ -18,7 +19,7 @@ public class Device {
 
     private Map<CommandId, Command> mCommandMap;//list of all the available commands.
     private ArrayList<Device> mSubDevArrayList;//list of all the subDevices.
-    protected DeviceInfo mInfo;// all the major information about a system.
+    private DeviceInfo mInfo;// all the major information about a system.
 
     /**
      * Default constructor for devices.
@@ -182,7 +183,7 @@ public class Device {
     {
         for(Command tempCmd : cmds)
         {
-            if(this.getCommandSet().containsKey(tempCmd.getCmdId()) == false)//if it doesn't contain a default command add it.
+            if(!this.getCommandSet().containsKey(tempCmd.getCmdId()))//if it doesn't contain a default command add it.
             {
                 this.addCommand(tempCmd);
             }
@@ -232,5 +233,21 @@ public class Device {
         this.addCommand(new WriteDataCmd(this.mInfo.getDevId()));
         this.addCommand(new ReadDataCmd(this.mInfo.getDevId()));
         this.addCommand(new WriteReadDataCmd(this.mInfo.getDevId()));
+    }
+
+    @Override
+    public String toString() {
+        //get a list of
+        String deviceStr;
+        deviceStr = this.mInfo.getDevId().getDescription();
+        deviceStr += " swV=" + this.getInfo().getSWVersion();
+        deviceStr += " hwV=" + this.getInfo().getHWVersion();
+        deviceStr += " bitfields=";
+        for(BitFieldId bitId : this.getInfo().getSupportedBitfields())
+        {
+            deviceStr += bitId.getDescription() + ", ";
+        }
+
+        return deviceStr;
     }
 }

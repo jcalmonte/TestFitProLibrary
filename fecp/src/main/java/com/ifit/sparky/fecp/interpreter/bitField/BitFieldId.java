@@ -10,7 +10,6 @@ package com.ifit.sparky.fecp.interpreter.bitField;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.*;
 
 import java.nio.ByteBuffer;
-import java.util.Comparator;
 
 public enum BitFieldId {
     KPH(0, 2, false, new SpeedConverter(), "KPH"),

@@ -30,7 +30,7 @@ public enum DeviceId {
     TORQUE(0X44, "Torque Controller"),
     RESISTANCE(0X45, "Resistance Controller"),
     PULSE(0X46, "Pulse Controller"),
-    KEY_PRESS(0X47, "Keypress controller"),
+    KEY_PRESS(0X47, "Key Press controller"),
     BIKE_GEAR(0X48, "Bike Gears for front and back"),
     FAN(0x4A, "Fan Controller"),
     MODE(0x4C, "Mode Controller"),

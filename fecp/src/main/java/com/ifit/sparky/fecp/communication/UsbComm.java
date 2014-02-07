@@ -1,5 +1,5 @@
 /**
- * Interface for all communication types (e.g. usb, uart, blue tooth).
+ * usb communication controller for the Fecp Library
  * @author Ryan.Tensmeyer
  * @date 12/10/13
  * @version 1
@@ -41,9 +41,9 @@ public class UsbComm extends Activity implements CommInterface {
     private final int PRODUCT_ID = 2;
 
     //Constant variables for locations in Input and Output Data Arrays
-    public final int TX_SIZE = 64;
-    public final int ENDPOINT_2 = 2;
-    public final int ENDPOINT_4 = 4;
+    private final int TX_SIZE = 64;
+    private final int ENDPOINT_2 = 2;
+    private final int ENDPOINT_4 = 4;
 
     private Context mContext;
     private Intent mIntent;
@@ -52,22 +52,22 @@ public class UsbComm extends Activity implements CommInterface {
     private UsbInterface mInterface;
     private UsbDevice mDevice;
     private UsbDeviceConnection mConnection;
-    private UsbEndpoint mEndpointIntrRead1;
-    private UsbEndpoint mEndpointIntrWrite2;
-    private UsbEndpoint mEndpointIntrWrite4;
+    private UsbEndpoint mEndpointInterRead1;
+    private UsbEndpoint mEndpointInterWrite2;
+    private UsbEndpoint mEndpointInterWrite4;
 
-    public boolean attachFailed = false;
-    public int timeUntilClose = 2000; 	//2.0 seconds
+    private boolean attachFailed = false;
+    private int timeUntilClose = 2000; 	//2.0 seconds
 
-    ByteBuffer buffer_ep1 = ByteBuffer.allocate(64);
-    ByteBuffer buffer_ep3 = ByteBuffer.allocate(64);
-    UsbRequest request_ep1 = new UsbRequest();
-    UsbRequest request_ep3 = new UsbRequest();
+    private ByteBuffer buffer_ep1 = ByteBuffer.allocate(64);
+    private ByteBuffer buffer_ep3 = ByteBuffer.allocate(64);
+    private UsbRequest request_ep1 = new UsbRequest();
+    private UsbRequest request_ep3 = new UsbRequest();
 
-    ArrayList<ByteBuffer> buffList_ep1 = new ArrayList<ByteBuffer>();
+    private ArrayList<ByteBuffer> buffList_ep1 = new ArrayList<ByteBuffer>();
 
-    boolean waitingForEp1Data = false;
-    boolean waitingForEp3Data = false;
+    private boolean waitingForEp1Data = false;
+    private boolean waitingForEp3Data = false;
 
     // Counters
     private long ep1_RX_Count = 0;
@@ -81,7 +81,7 @@ public class UsbComm extends Activity implements CommInterface {
     private Handler m_handler_local_run;
     private int m_interval_local_run = 0; // ms of delay
     private Handler m_handler_1ms;
-    private CommReply replyHandler;
+    private int mSendTimeout;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -94,11 +94,12 @@ public class UsbComm extends Activity implements CommInterface {
      * UsbComm - constructor
      * @param c - the Context from the main activity
      */
-    public UsbComm(Context c, Intent i) {
+    public UsbComm(Context c, Intent i, int defaultTimeout) {
         mContext = c;
         mIntent = i;
         onCreateUSB();
         onResumeUSB(mIntent);
+        this.mSendTimeout = defaultTimeout;
     }
 
     /**
@@ -170,41 +171,28 @@ public class UsbComm extends Activity implements CommInterface {
     }
 
     /**
-     * sendCmdBuffer
-     * Required to be part of the Command Interface
-     */
-    @Override
-    public void sendCmdBuffer(ByteBuffer buff) {
-        sendCommand(ENDPOINT_2, buff);
-        waitingForEp1Data = true;
-    }
-
-    /**
-     * getStsBuffer
-     * Required to be part of the Command Interface
-     */
-    @Override
-    public ByteBuffer getStsBuffer() {
-        ByteBuffer tempBuff = buffList_ep1.get(0);
-        buffList_ep1.remove(0);
-        return tempBuff;
-    }
-
-    @Override
-    public void setStsHandler(CommReply handler) {
-        replyHandler = handler;
-    }
-
-    /**
      * sends the command and waits for the reply to handle the buffer
      *
      * @param buff the command buffer to send
-     * @return
+     * @return the message from the device
      */
     @Override
-    public ByteBuffer sendAndRecieveCmd(ByteBuffer buff) {
+    public ByteBuffer sendAndReceiveCmd(ByteBuffer buff) {
 
-        return sendAndReceiveCommand(ENDPOINT_2, buff);
+        return sendAndReceiveCommand(ENDPOINT_2, buff, this.mSendTimeout);
+    }
+
+    /**
+     * Send and receive with a timeout
+     *
+     * @param buff    the buffer to send
+     * @param timeout the max time you want to take till it is send
+     * @return the buffer from the device 0 in the first byte for failed
+     */
+    @Override
+    public ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout) {
+
+        return sendAndReceiveCommand(ENDPOINT_2, buff, timeout);
     }
 
     /**
@@ -302,9 +290,8 @@ public class UsbComm extends Activity implements CommInterface {
             buffList_ep1.add(buffer_ep1);
             while(buffList_ep1.size() > 100)
                 buffList_ep1.remove(0);
-            ByteBuffer tempBuff = buffList_ep1.get(0);
+            //ByteBuffer tempBuff = buffList_ep1.get(0);
             buffList_ep1.remove(0);
-            replyHandler.stsMsgHandler(tempBuff);
         }
     }
 
@@ -330,65 +317,69 @@ public class UsbComm extends Activity implements CommInterface {
         }
     }
 
-    /**
-     * sendCommand
-     * @param endpoint which endpoint to send data on ENDPOINT2 or ENDPOINT4
-     * @param buff the data to send, not to exceed 64 bytes
-     */
-    private void sendCommand(int endpoint, ByteBuffer buff) {
-        synchronized (this) {
-            if (mConnection != null) {
-
-                byte[] message = new byte[TX_SIZE];
-                for(int i = 0; i < buff.capacity(); i++){
-                    message[i] = buff.get(i);
-                }
-
-                if(ENDPOINT_2 == endpoint){
-                    mConnection.bulkTransfer(mEndpointIntrWrite2, message, message.length, 0);
-                }else if(ENDPOINT_4 == endpoint){
-                    mConnection.bulkTransfer(mEndpointIntrWrite4, message, message.length, 0);
-                }
-            }
-        }
-    }
+//    private void sendCommand(int endpoint, ByteBuffer buff) {
+//        synchronized (this) {
+//            if (mConnection != null) {
+//
+//                byte[] message = new byte[TX_SIZE];
+//                for(int i = 0; i < buff.capacity(); i++){
+//                    message[i] = buff.get(i);
+//                }
+//
+//                if(ENDPOINT_2 == endpoint){
+//                    mConnection.bulkTransfer(mEndpointInterWrite2, message, message.length, 0);
+//                }else if(ENDPOINT_4 == endpoint){
+//                    mConnection.bulkTransfer(mEndpointInterWrite4, message, message.length, 0);
+//                }
+//            }
+//        }
+//    }
 
     /**
-     * sendCommand
+     * sends the data and receives it if error the buffer will start with 0
      * @param endpoint which endpoint to send data on ENDPOINT2 or ENDPOINT4
      * @param buff the data to send, not to exceed 64 bytes
+     * @param timeout The time in milliseconds to send the message
      */
-    private ByteBuffer sendAndReceiveCommand(int endpoint, ByteBuffer buff) {
+    private ByteBuffer sendAndReceiveCommand(int endpoint, ByteBuffer buff, int timeout) {
         synchronized (this) {
             if (mConnection != null) {
                 ByteBuffer replyBuffer;
 
                 byte[] message = new byte[TX_SIZE];
                 byte[] replyMessage = new byte[TX_SIZE];
+                int sendStatus = 0;
                 for(int i = 0; i < buff.capacity(); i++){
                     message[i] = buff.get(i);
+                    replyMessage[i]= 0;
                 }
+                replyBuffer = ByteBuffer.allocate(replyMessage.length);
+                replyBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                replyBuffer.position(0);
 
                 if(ENDPOINT_2 == endpoint){
-                    mConnection.bulkTransfer(mEndpointIntrWrite2, message, message.length, 500);
-                }else if(ENDPOINT_4 == endpoint){
-                    mConnection.bulkTransfer(mEndpointIntrWrite4, message, message.length, 0);
+                    sendStatus = mConnection.bulkTransfer(mEndpointInterWrite2, message, message.length, timeout);
                 }
-
-                try
+                else if(ENDPOINT_4 == endpoint){
+                    sendStatus = mConnection.bulkTransfer(mEndpointInterWrite4, message, message.length, timeout);
+                }
+                //check if there was an error sending the data
+                if(sendStatus < 0)
                 {
-                    this.mConnection.bulkTransfer(this.mEndpointIntrRead1, replyMessage, replyMessage.length, 100);
-
-                    replyBuffer = ByteBuffer.allocate(replyMessage.length);
-                    replyBuffer.order(ByteOrder.LITTLE_ENDIAN);
-                    replyBuffer.position(0);
                     replyBuffer.put(replyMessage);
-                    return replyBuffer;
+                    return replyBuffer;//error sending
                 }
-                catch (Exception ex)
-                {
 
+                sendStatus = this.mConnection.bulkTransfer(this.mEndpointInterRead1, replyMessage, replyMessage.length, timeout);
+                //error sending the data
+                if(sendStatus < 0)
+                {
+                    replyMessage[0] = 0;//indicator that the message was bad
                 }
+
+                this.ep1_RX_Count++;
+                replyBuffer.put(replyMessage);
+                return replyBuffer;
             }
         }
         return null;
@@ -473,8 +464,7 @@ public class UsbComm extends Activity implements CommInterface {
      */
     private void setDevice(UsbDevice device) {
 
-        UsbEndpoint mEndpointIntrRead1;
-        UsbEndpoint mEndpointIntrRead3;
+        UsbEndpoint mEndpointInterRead3;
         UsbEndpoint ep;
 
         Log.d(TAG, "setDevice " + device);
@@ -499,28 +489,28 @@ public class UsbComm extends Activity implements CommInterface {
             return;
         }
 
-        this.mEndpointIntrRead1 = ep;
+        this.mEndpointInterRead1 = ep;
 
         ep = mInterface.getEndpoint(1);
         if (ep.getType() != UsbConstants.USB_ENDPOINT_XFER_INT) {
             Log.e(TAG, "Write endpoint 2 is not interrupt type");
             return;
         }
-        mEndpointIntrWrite2 = ep;
+        mEndpointInterWrite2 = ep;
 
         ep = mInterface.getEndpoint(2);
         if (ep.getType() != UsbConstants.USB_ENDPOINT_XFER_INT) {
             Log.e(TAG, "Read endpoint 3 is not interrupt type");
             return;
         }
-        mEndpointIntrRead3 = ep;
+        mEndpointInterRead3 = ep;
 
         ep = mInterface.getEndpoint(3);
         if (ep.getType() != UsbConstants.USB_ENDPOINT_XFER_INT) {
             Log.e(TAG, "Write endpoint 4 is not interrupt type");
             return;
         }
-        mEndpointIntrWrite4 = ep;
+        mEndpointInterWrite4 = ep;
 
         mDevice = device;
         if (device != null) {
@@ -528,8 +518,8 @@ public class UsbComm extends Activity implements CommInterface {
             if (connection != null && connection.claimInterface(mInterface, true)) {
                 Log.d(TAG, "open SUCCESS");
                 mConnection = connection;
-                request_ep1.initialize(mConnection, this.mEndpointIntrRead1);
-                request_ep3.initialize(mConnection, mEndpointIntrRead3);
+                request_ep1.initialize(mConnection, this.mEndpointInterRead1);
+                request_ep3.initialize(mConnection, mEndpointInterRead3);
 
                 isInitialized = true;
                 connectionState = ConnectionState.CONNECTED;

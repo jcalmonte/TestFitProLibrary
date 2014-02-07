@@ -32,7 +32,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
         super();
         this.setCmdId(CommandId.WRITE_READ_DATA);
         this.mData = new DataBaseCmd();
-        this.setStatus(new WriteReadDataSts(this.mDevId));
+        this.setStatus(new WriteReadDataSts(this.getDevId()));
         this.setLength(MIN_CMD_LENGTH);//length varies
     }
 
@@ -87,6 +87,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
     public void addWriteData(BitFieldId id, Object data) throws Exception
     {
         DataBaseCmd readData;
+        int tempLength;
         if(id.getReadOnly())
         {
             throw new Exception("Invalid BitfieldId "+ id.getDescription()+" This bitfield is read only");
@@ -94,11 +95,12 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
 
         readData = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
         this.mData.addBitfieldData(id, data);
-        this.mLength = this.mData.getNumOfDataBytes();
-        this.mLength += MIN_CMD_LENGTH;
-        this.mLength += this.mData.getMsgDataBytesCount();
+        tempLength = this.mData.getNumOfDataBytes();
+        tempLength += MIN_CMD_LENGTH;
+        tempLength += this.mData.getMsgDataBytesCount();
         //add read data also to the length
-        this.mLength += readData.getNumOfDataBytes();
+        tempLength += readData.getNumOfDataBytes();
+        setLength(tempLength);
         this.checkMsgSize();
     }
 
@@ -122,13 +124,16 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      */
     public void addReadBitField(BitFieldId id) throws Exception
     {
+        int tempLength;
         DataBaseCmd readData = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
         readData.addBitfieldData(id, 0);//always 0 for reading
-        this.mLength = this.mData.getNumOfDataBytes();
-        this.mLength += MIN_CMD_LENGTH;
-        this.mLength += this.mData.getMsgDataBytesCount();
+
+        tempLength = this.mData.getNumOfDataBytes();
+        tempLength += MIN_CMD_LENGTH;
+        tempLength += this.mData.getMsgDataBytesCount();
         //add read data also to the length
-        this.mLength += readData.getNumOfDataBytes();
+        tempLength += readData.getNumOfDataBytes();
+        setLength(tempLength);
         this.checkMsgSize();
     }
 
@@ -150,13 +155,16 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      */
     public void removeWriteDataField(BitFieldId id) throws Exception
     {
+        int tempLength;
         DataBaseCmd readData = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
         this.mData.removeBitfieldData(id);
-        this.mLength = this.mData.getNumOfDataBytes();
-        this.mLength += MIN_CMD_LENGTH;
-        this.mLength += this.mData.getMsgDataBytesCount();
+
+        tempLength = this.mData.getNumOfDataBytes();
+        tempLength += MIN_CMD_LENGTH;
+        tempLength += this.mData.getMsgDataBytesCount();
         //add read data also to the length
-        this.mLength += readData.getNumOfDataBytes();
+        tempLength += readData.getNumOfDataBytes();
+        setLength(tempLength);
 
         this.checkMsgSize();
     }
@@ -179,13 +187,18 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      */
     public void removeReadDataField(BitFieldId id) throws Exception
     {
+        int tempLength;
         DataBaseCmd readData = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
         readData.removeBitfieldData(id);//always 0 for reading
-        this.mLength = this.mData.getNumOfDataBytes();
-        this.mLength += MIN_CMD_LENGTH;
-        this.mLength += this.mData.getMsgDataBytesCount();
+
+
+        tempLength = this.mData.getNumOfDataBytes();
+        tempLength += MIN_CMD_LENGTH;
+        tempLength += this.mData.getMsgDataBytesCount();
         //add read data also to the length
-        this.mLength += readData.getNumOfDataBytes();
+        tempLength += readData.getNumOfDataBytes();
+        setLength(tempLength);
+
         this.checkMsgSize();
     }
 
@@ -244,4 +257,18 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
         return buff;
     }
 
+    /**
+     * Gets a cloned copy of the command
+     * @return the cloned copy of the command
+     * @throws Exception
+     */
+    @Override
+    public Command getCommandCopy() throws Exception {
+        WriteReadDataCmd cmdCopy = new WriteReadDataCmd(this.getDevId());
+        cmdCopy.mData = new DataBaseCmd(this.mData);//adds a copy of all the data
+
+        DataBaseCmd data = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
+        cmdCopy.addReadBitField(data.getMsgData().keySet());
+        return cmdCopy;
+    }
 }

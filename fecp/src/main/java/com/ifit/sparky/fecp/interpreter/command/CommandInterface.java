@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * Interface that all commands need to implement.
  * @author Levi.Balling
  * @date 12/16/13
  * @version 1
- * Details.
+ * All commands need to be able to get the buffer to send to the device.
  */
 package com.ifit.sparky.fecp.interpreter.command;
 

@@ -83,6 +83,55 @@ public class TestWriteReadDataCmd  extends TestCase {
         assertTrue(cmd.writeContainsBitField(BitFieldId.KPH));
     }
 
+    /** Tests the Copy Constructors.
+     *
+     * @throws Exception
+     */
+    public void testWriteReadDataCmd_CopyConstructor() throws Exception{
+
+        //check all the different options for generating the buffer
+        WriteReadDataCmd cmd;
+        WriteReadDataCmd copyCmd;
+
+        cmd = new WriteReadDataCmd();
+        //check default constructor
+        assertEquals(DeviceId.NONE, cmd.getDevId());//a little redundant
+        assertEquals(CommandId.WRITE_READ_DATA, cmd.getCmdId());
+
+        cmd.addWriteData(BitFieldId.KPH, 12.3);
+        cmd.addReadBitField(BitFieldId.KPH);
+
+        assertTrue(cmd.writeContainsBitField(BitFieldId.KPH));
+        assertTrue(cmd.readContainsBitField(BitFieldId.KPH));
+
+        copyCmd = (WriteReadDataCmd)cmd.getCommandCopy();
+        //check default constructor
+        assertTrue(copyCmd.writeContainsBitField(BitFieldId.KPH));
+        assertTrue(copyCmd.readContainsBitField(BitFieldId.KPH));
+        assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
+        assertEquals(CommandId.WRITE_READ_DATA, copyCmd.getCmdId());
+
+        //set the original to be different
+        cmd.removeWriteDataField(BitFieldId.KPH);
+        cmd.removeReadDataField(BitFieldId.KPH);
+        cmd.addWriteData(BitFieldId.INCLINE, 32.1);
+        cmd.addReadBitField(BitFieldId.INCLINE);
+        cmd.setDevId(DeviceId.INCLINE_TRAINER);
+        assertTrue(cmd.writeContainsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.readContainsBitField(BitFieldId.INCLINE));
+        assertFalse(cmd.writeContainsBitField(BitFieldId.KPH));
+        assertFalse(cmd.readContainsBitField(BitFieldId.KPH));
+        assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());//a little redundant
+        assertEquals(CommandId.WRITE_READ_DATA, cmd.getCmdId());
+
+        //check to make sure the copy didn't change
+        assertTrue(copyCmd.writeContainsBitField(BitFieldId.KPH));
+        assertTrue(copyCmd.readContainsBitField(BitFieldId.KPH));
+        assertFalse(copyCmd.writeContainsBitField(BitFieldId.INCLINE));
+        assertFalse(copyCmd.readContainsBitField(BitFieldId.INCLINE));
+        assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
+        assertEquals(CommandId.WRITE_READ_DATA, copyCmd.getCmdId());
+    }
 
     /** Tests the the Add Write data function.
      *

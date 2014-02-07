@@ -48,47 +48,50 @@ public class TestFecpCommand extends TestCase {
         //test default constructor
         fecpCmd = new FecpCommand();
 
-        assertEquals(DeviceId.NONE, fecpCmd.getDevice().getInfo().getDevId());
-        assertEquals(CommandId.NONE, fecpCmd.getCommand().getCmdId());
+        assertEquals(null, fecpCmd.getCommand());
         assertEquals(null, fecpCmd.getCallback());
         assertEquals(0, fecpCmd.getTimeout());
         assertEquals(0, fecpCmd.getFrequency());
         assertEquals(0, fecpCmd.getCmdSentCounter());
         assertEquals(0, fecpCmd.getCmdReceivedCounter());
+        assertEquals(0, fecpCmd.getCommSendReceiveTime());
 
         //test 2nd constructor
         dev = new Device(DeviceId.INCLINE_TRAINER);
-        fecpCmd = new FecpCommand(dev, dev.getCommand(CommandId.GET_INFO), null);
+        fecpCmd = new FecpCommand(dev.getCommand(CommandId.GET_INFO), null);
 
-        assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getDevice().getInfo().getDevId());
+        assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getCommand().getDevId());
         assertEquals(CommandId.GET_INFO, fecpCmd.getCommand().getCmdId());
         assertEquals(null, fecpCmd.getCallback());
         assertEquals(0, fecpCmd.getTimeout());
         assertEquals(0, fecpCmd.getFrequency());
         assertEquals(0, fecpCmd.getCmdSentCounter());
         assertEquals(0, fecpCmd.getCmdReceivedCounter());
+        assertEquals(0, fecpCmd.getCommSendReceiveTime());
 
         //test the 3rd constructor
-        fecpCmd = new FecpCommand(dev, dev.getCommand(CommandId.GET_INFO), null, 1);
+        fecpCmd = new FecpCommand(dev.getCommand(CommandId.GET_INFO), null, 1);
 
-        assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getDevice().getInfo().getDevId());
+        assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getCommand().getDevId());
         assertEquals(CommandId.GET_INFO, fecpCmd.getCommand().getCmdId());
         assertEquals(null, fecpCmd.getCallback());
         assertEquals(1, fecpCmd.getTimeout());
         assertEquals(0, fecpCmd.getFrequency());
         assertEquals(0, fecpCmd.getCmdSentCounter());
         assertEquals(0, fecpCmd.getCmdReceivedCounter());
+        assertEquals(0, fecpCmd.getCommSendReceiveTime());
 
         //test the 4th constructor
-        fecpCmd = new FecpCommand(dev, dev.getCommand(CommandId.GET_INFO), null, 1, 2);
+        fecpCmd = new FecpCommand(dev.getCommand(CommandId.GET_INFO), null, 1, 2);
 
-        assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getDevice().getInfo().getDevId());
+        assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getCommand().getDevId());
         assertEquals(CommandId.GET_INFO, fecpCmd.getCommand().getCmdId());
         assertEquals(null, fecpCmd.getCallback());
         assertEquals(1, fecpCmd.getTimeout());
         assertEquals(2, fecpCmd.getFrequency());
         assertEquals(0, fecpCmd.getCmdSentCounter());
         assertEquals(0, fecpCmd.getCmdReceivedCounter());
+        assertEquals(0, fecpCmd.getCommSendReceiveTime());
     }
 
     /** Tests the Setters.
@@ -103,8 +106,7 @@ public class TestFecpCommand extends TestCase {
         //setup default values
         fecpCmd = new FecpCommand();
 
-        assertEquals(DeviceId.NONE, fecpCmd.getDevice().getInfo().getDevId());
-        assertEquals(CommandId.NONE, fecpCmd.getCommand().getCmdId());
+        assertEquals(null , fecpCmd.getCommand());
         assertEquals(null, fecpCmd.getCallback());
         assertEquals(0, fecpCmd.getTimeout());
         assertEquals(0, fecpCmd.getFrequency());
@@ -112,11 +114,6 @@ public class TestFecpCommand extends TestCase {
         assertEquals(0, fecpCmd.getCmdReceivedCounter());
 
         dev = new Device(DeviceId.INCLINE_TRAINER);
-
-        //test setDevice
-        fecpCmd.setDevice(dev);
-        assertEquals(DeviceId.INCLINE_TRAINER, fecpCmd.getDevice().getInfo().getDevId());
-        assertEquals(CommandId.NONE, fecpCmd.getCommand().getCmdId());
 
         //test setCommand
         fecpCmd.setCommand(dev.getCommand(CommandId.GET_INFO));
@@ -155,16 +152,14 @@ public class TestFecpCommand extends TestCase {
     public void testCallback_fecpCommand() throws Exception
     {
         FecpCommand fecpCmd;
-        Device dev;
         Command cmd;
 
         TempFecpCallbacker callbacker = new TempFecpCallbacker();
         assertEquals(false, callbacker.getWorksStatus());
         callbacker.setCmdId(CommandId.GET_INFO);
 
-        dev = new Device(DeviceId.INCLINE_TRAINER);
         cmd = new InfoCmd(DeviceId.INCLINE_TRAINER);
-        fecpCmd = new FecpCommand(dev, cmd, callbacker);
+        fecpCmd = new FecpCommand(cmd, callbacker);
         assertEquals(false, callbacker.getWorksStatus());
         //call callback
         fecpCmd.getCallback().msgHandler(cmd);

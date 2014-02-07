@@ -42,7 +42,7 @@ public class GetSubDevicesSts extends Status implements StatusInterface {
         super.handleStsMsg(buff);
 
         //now parse the data
-        if(this.mStsId == StatusId.DONE)
+        if(this.getStsId() == StatusId.DONE)
         {
             int numberOfDevices = buff.get();
 

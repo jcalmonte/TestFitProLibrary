@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * Interface for all Status.
  * @author Levi.Balling
  * @date 12/16/13
  * @version 1
- * Details.
+ * They need to be able to handle a buffer that will interpret the data.
  */
 package com.ifit.sparky.fecp.interpreter.status;
 

@@ -13,15 +13,19 @@ import java.nio.ByteBuffer;
 
 public interface CommInterface {
 
-    void sendCmdBuffer(ByteBuffer buff);
-    ByteBuffer getStsBuffer();
-
     /**
      * sends the command and waits for the reply to handle the buffer
      * @param buff the command buffer to send
-     * @return
+     * @return a buffer with the message 0 if failed
      */
-    ByteBuffer sendAndRecieveCmd(ByteBuffer buff);
-    void setStsHandler(CommReply handler);
+    ByteBuffer sendAndReceiveCmd(ByteBuffer buff);
+
+    /**
+     * Send and receive with a timeout
+     * @param buff the buffer to send
+     * @param timeout the max time you want to take till it is send
+     * @return the buffer from the device 0 in the first byte for failed
+     */
+    ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout);
 
 }

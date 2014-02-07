@@ -15,6 +15,9 @@ public class InclineConverter extends BitfieldDataConverter {
 
     private double mIncline;
 
+    /**
+     * constructor for the Incline converter
+     */
     public InclineConverter()
     {
         super();
@@ -26,8 +29,7 @@ public class InclineConverter extends BitfieldDataConverter {
     public BitfieldDataConverter getData() throws Exception
     {
         //need to cast as a signed value of a short.
-        short tempShort = (short)this.getRawToInt();
-        this.mIncline = tempShort;
+        this.mIncline = (short)this.getRawToInt();
         this.mIncline /= 100.0;
         return this;
     }

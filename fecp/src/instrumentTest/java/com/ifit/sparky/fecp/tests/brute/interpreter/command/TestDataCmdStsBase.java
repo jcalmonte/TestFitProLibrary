@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * Tests the Data Command Status Base.
  * @author Levi.Balling
  * @date 12/16/13
  * @version 1
- * Details.
+ * This will make sure all of the methods in the Data Cmd Sts base are valid.
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 
@@ -54,6 +54,47 @@ public class TestDataCmdStsBase extends TestCase {
         assertEquals(0, dataBase.getNumOfDataBytes());
         assertEquals(0, dataBase.getMsgDataBytesCount());
 
+    }
+    /** Tests the Copy Constructors.
+     *
+     * @throws Exception
+     */
+    public void testDataCmdSts_CopyConstructor() throws Exception{
+
+        DataBaseCmd dataBase;
+        DataBaseCmd copyDataBase;
+
+        dataBase = new DataBaseCmd();
+        //default constructor
+        assertEquals(0, dataBase.getNumOfDataBytes());
+        assertEquals(0, dataBase.getMsgDataBytesCount());
+        dataBase.addBitfieldData(BitFieldId.KPH, 2.5);
+        dataBase.addBitfieldData(BitFieldId.INCLINE, 10.5);
+        assertEquals(1, dataBase.getNumOfDataBytes());
+        assertEquals(4, dataBase.getMsgDataBytesCount());
+        assertEquals(2.5, dataBase.getMsgData().get(BitFieldId.KPH));
+        assertEquals(10.5, dataBase.getMsgData().get(BitFieldId.INCLINE));
+
+        //create copy, and make sure it is the same
+        copyDataBase = new DataBaseCmd(dataBase);
+        assertEquals(1, copyDataBase.getNumOfDataBytes());
+        assertEquals(4, copyDataBase.getMsgDataBytesCount());
+        assertEquals(2.5, copyDataBase.getMsgData().get(BitFieldId.KPH));
+        assertEquals(10.5, copyDataBase.getMsgData().get(BitFieldId.INCLINE));
+
+        //change original and make sure that it doesn't change both of them.
+        dataBase.addBitfieldData(BitFieldId.KPH, 32.1);
+        dataBase.addBitfieldData(BitFieldId.INCLINE, 1.2);
+        assertEquals(1, dataBase.getNumOfDataBytes());
+        assertEquals(4, dataBase.getMsgDataBytesCount());
+        assertEquals(32.1, dataBase.getMsgData().get(BitFieldId.KPH));
+        assertEquals(1.2, dataBase.getMsgData().get(BitFieldId.INCLINE));
+
+        //check copy and make sure it is the same.
+        assertEquals(1, copyDataBase.getNumOfDataBytes());
+        assertEquals(4, copyDataBase.getMsgDataBytesCount());
+        assertEquals(2.5, copyDataBase.getMsgData().get(BitFieldId.KPH));
+        assertEquals(10.5, copyDataBase.getMsgData().get(BitFieldId.INCLINE));
     }
 
     /** Tests the add bitfield and data.

@@ -26,7 +26,7 @@ public class ReadDataCmd extends Command implements CommandInterface{
     {
         super();
         this.setCmdId(CommandId.READ_DATA);
-        this.setStatus(new ReadDataSts(this.mDevId));
+        this.setStatus(new ReadDataSts(this.getDevId()));
         this.setLength(MIN_CMD_LENGTH);//length varies
     }
 
@@ -40,7 +40,7 @@ public class ReadDataCmd extends Command implements CommandInterface{
     }
 
     /**
-     * Contsructor for setting the bitfields that are used
+     * Constructor for setting the bitfields that are used
      * @param devId the main device Id to be used
      * @param bitFieldList the list of bitfields to be read
      * @throws Exception
@@ -59,7 +59,7 @@ public class ReadDataCmd extends Command implements CommandInterface{
     {
         DataBaseCmd data = ((ReadDataSts)this.getStatus()).getBitFieldData();
         data.addBitfieldData(id, 0);//always 0 for reading
-        this.mLength = data.getNumOfDataBytes() + MIN_CMD_LENGTH;
+        this.setLength(data.getNumOfDataBytes() + MIN_CMD_LENGTH);
         this.checkMsgSize();
     }
 
@@ -94,7 +94,7 @@ public class ReadDataCmd extends Command implements CommandInterface{
     {
         DataBaseCmd data = ((ReadDataSts)this.getStatus()).getBitFieldData();
         data.removeBitfieldData(id);//always 0 for reading
-        this.mLength = data.getNumOfDataBytes() + MIN_CMD_LENGTH;
+        this.setLength(data.getNumOfDataBytes() + MIN_CMD_LENGTH);
         this.checkMsgSize();
     }
 
@@ -131,4 +131,18 @@ public class ReadDataCmd extends Command implements CommandInterface{
         return buff;
     }
 
+    /**
+     * Gets a cloned copy of the command
+     * @return the cloned copy of the command
+     * @throws Exception if
+     */
+    @Override
+    public Command getCommandCopy() throws Exception {
+        ReadDataCmd cmdCopy = new ReadDataCmd(this.getDevId());
+
+        DataBaseCmd data = ((ReadDataSts)this.getStatus()).getBitFieldData();
+        cmdCopy.addBitField(data.getMsgData().keySet());
+
+        return cmdCopy;
+    }
 }

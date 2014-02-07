@@ -42,10 +42,10 @@ public class GetCmdsSts extends Status implements StatusInterface {
 
         //now parse the data
         //does not count master generic commands
-        if(this.mStsId == StatusId.DONE)
+        if(this.getStsId() == StatusId.DONE)
         {
             //check get the size of the data
-            for(int i = MIN_STS_LENGTH; i < this.mLength; i++)
+            for(int i = MIN_STS_LENGTH; i < this.getLength(); i++)
             {
                 this.mCmdList.add(CommandId.getCommandId(buff.get()));
             }

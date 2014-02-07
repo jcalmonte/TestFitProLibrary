@@ -14,13 +14,13 @@ import java.util.*;
 
 public class DeviceInfo {
 
-    protected DeviceId mId;
-    protected int mSWVersion;
-    protected int mHWVersion;
-    protected int mSerialNumber;
-    protected int mManufactureNumber;
-    protected int mSections;
-    protected Set<BitFieldId> mSupportedBitFields; //list of available items
+    private DeviceId mId;
+    private int mSWVersion;
+    private int mHWVersion;
+    private int mSerialNumber;
+    private int mManufactureNumber;
+    private int mSections;
+    private Set<BitFieldId> mSupportedBitFields; //list of available items
 
     /**
      * The default constructor
@@ -203,15 +203,6 @@ public class DeviceInfo {
     public void setManufactureNumber(int number)
     {
         this.mManufactureNumber = number;
-    }
-
-    /**
-     * Sets the Number of sections
-     * @param sections the Number of sections
-     */
-    public void setSections(int sections)
-    {
-        this.mSections = sections;
     }
 
     /**

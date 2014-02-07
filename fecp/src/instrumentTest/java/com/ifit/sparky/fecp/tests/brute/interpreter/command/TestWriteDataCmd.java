@@ -72,6 +72,47 @@ public class TestWriteDataCmd extends TestCase {
         assertTrue(cmd.containsBitField(BitFieldId.KPH));
     }
 
+    /** Tests the Copy Constructors.
+     *
+     * @throws Exception
+     */
+    public void testWriteDataCmd_CopyConstructor() throws Exception{
+
+        //check all the different options for generating the buffer
+        WriteDataCmd cmd;
+        WriteDataCmd copyCmd;
+
+        cmd = new WriteDataCmd();
+        //check default constructor
+        assertEquals(5, cmd.getLength());
+        assertEquals(DeviceId.NONE, cmd.getDevId());//a little redundant
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
+
+        cmd.addBitField(BitFieldId.KPH, 12.3);
+        assertTrue(cmd.containsBitField(BitFieldId.KPH));
+
+        copyCmd = (WriteDataCmd)cmd.getCommandCopy();
+        //check default constructor
+        assertTrue(copyCmd.containsBitField(BitFieldId.KPH));
+        assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
+        assertEquals(CommandId.WRITE_DATA, copyCmd.getCmdId());
+
+        //set the original to be different
+        cmd.removeDataField(BitFieldId.KPH);
+        cmd.addBitField(BitFieldId.INCLINE, 32.1);
+        cmd.setDevId(DeviceId.INCLINE_TRAINER);
+        assertTrue(cmd.containsBitField(BitFieldId.INCLINE));
+        assertFalse(cmd.containsBitField(BitFieldId.KPH));
+        assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());//a little redundant
+        assertEquals(CommandId.WRITE_DATA, cmd.getCmdId());
+
+        //check to make sure the copy didn't change
+        assertTrue(copyCmd.containsBitField(BitFieldId.KPH));
+        assertFalse(copyCmd.containsBitField(BitFieldId.INCLINE));
+        assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
+        assertEquals(CommandId.WRITE_DATA, copyCmd.getCmdId());
+    }
+
     /** Tests adding a bitfield and a value to the command.
      *
      * @throws Exception
@@ -164,7 +205,7 @@ public class TestWriteDataCmd extends TestCase {
         assertFalse(cmd.containsBitField(BitFieldId.INCLINE));
     }
 
-    /** Tests the getCommand Message, and the formatting
+    /** Tests the getCommandCopy Message, and the formatting
      *
      * @throws Exception
      */

@@ -41,6 +41,28 @@ public class DataBaseCmd{
     }
 
     /**
+     * Copy constructor for the DatabaseCmd
+     * @param copyData the data to copy over
+     * @throws Exception
+     */
+    public DataBaseCmd(DataBaseCmd copyData) throws Exception
+    {
+        this.mNumOfDataBytes = copyData.mNumOfDataBytes;
+
+        this.mMsgData = new TreeMap<BitFieldId, Object>(new Comparator<BitFieldId>() {
+            @Override
+            public int compare(BitFieldId bitFieldId, BitFieldId bitFieldId2) {
+                return bitFieldId.compareTo(bitFieldId2);
+            }
+        });
+
+        for(Map.Entry<BitFieldId, Object> entry : copyData.mMsgData.entrySet())
+        {
+            this.mMsgData.put(entry.getKey(), entry.getValue());//copies each object
+        }
+    }
+
+    /**
      * Adds a bitfield and the data that you want to send with it.
      * it assumes that the data you want to send is in the correct data format(e.g. double, int, etc)
      * @param id the bitfield that you want to send.
@@ -103,7 +125,7 @@ public class DataBaseCmd{
     {
         //plus one for the number of bytes
         buffer.put((byte)this.mNumOfDataBytes);
-        //add all the sections we need for the databits
+        //add all the sections we need for the data bits
         for(int i = 0; i < this.mNumOfDataBytes; i++)
         {
             buffer.put(getHeaderDataBitBytes(i));
@@ -181,6 +203,14 @@ public class DataBaseCmd{
     }
 
     /**
+     * Gets the TreeMap of all the data in the list
+     * @return Tree map of all the data
+     */
+    public TreeMap<BitFieldId, Object> getMsgData() {
+        return mMsgData;
+    }
+
+    /**
      * This will populate all the objects from the byte buffer, assumes position is set correctly
      * @param buffer that holds all the raw data.
      * @return Map(specifically a TreeMap) of all the BitfieldIds and BitfieldDataConverters received.
@@ -196,7 +226,7 @@ public class DataBaseCmd{
             }
         });
 
-        //get the objects from the bytebuffer
+        //get the objects from the byte buffer
         for(Map.Entry<BitFieldId, Object> entry : this.mMsgData.entrySet())
         {
 
@@ -213,7 +243,7 @@ public class DataBaseCmd{
     }
 
     /**
-     * Loops through the HashMap of databits and creates a byte for a specific section
+     * Loops through the HashMap of data bits and creates a byte for a specific section
      * @param section the section you need a byte from
      * @return byte of the section
      */

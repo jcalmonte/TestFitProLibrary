@@ -8,98 +8,99 @@
 package com.ifit.sparky.fecp;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
-import com.ifit.sparky.fecp.interpreter.device.Device;
 
-public class FecpCommand {
+import java.util.concurrent.ScheduledFuture;
+
+public class FecpCommand extends Thread{
 
     //cmd and device
-    private Device mDevice;
     private Command mCommand;//this holds the command and the status.
     private CommandCallback mCallback;
     private int mTimeout;
     private int mFrequency;//time in between each call.
     private int mCmdSentCounter;
     private int mCmdReceivedCounter;
+    private long mCommSendReceiveTime;
+    private FecpCmdHandleInterface mSendHandler;
+    private ScheduledFuture<?> mFutureScheduleTask;
 
     /**
      * default constructor
      */
     public FecpCommand() throws Exception
     {
-        this.fecpInitializer(new Device(), new Command(), null, 0,0);
+        this.fecpInitializer(null, null, 0,0);
+    }
+
+    /**
+     * constructor for just a command, it will only be called once with no callback
+     * @param cmd the command to send
+     * @throws Exception
+     */
+    public FecpCommand(Command cmd) throws Exception
+    {
+        this.fecpInitializer(cmd, null, 0,0);
     }
 
     /**
      * Constructor for a simple command.
-     * @param dev the device to send the command to.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      */
-    public FecpCommand(Device dev, Command cmd, CommandCallback callback)
+    public FecpCommand(Command cmd, CommandCallback callback) throws Exception
     {
-        this.fecpInitializer(dev, cmd, callback, 0,0);
+        this.fecpInitializer(cmd, callback, 0,0);
     }
 
     /**
      * Constructs a command with a timeout
-     * @param dev the device to send the command to.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      * @param timeout the length of time it should receive a response.
      */
-    public FecpCommand(Device dev, Command cmd, CommandCallback callback, int timeout)
+    public FecpCommand(Command cmd, CommandCallback callback, int timeout) throws Exception
     {
-        this.fecpInitializer(dev, cmd, callback, timeout,0);
+        this.fecpInitializer(cmd, callback, timeout,0);
     }
     /**
      * Constructs a command with a timeout
-     * @param dev the device to send the command to.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      * @param timeout the length of time it should receive a response.
      * @param frequency How frequent messages should be sent.
      */
-    public FecpCommand(Device dev, Command cmd, CommandCallback callback, int timeout, int frequency)
+    public FecpCommand(Command cmd, CommandCallback callback, int timeout, int frequency) throws Exception
     {
-        this.fecpInitializer(dev, cmd, callback, timeout, frequency);
+        this.fecpInitializer(cmd, callback, timeout, frequency);
     }
-
 
     /**
      * Initializes all the values
-     * @param dev the device to send the command to.
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      * @param timeout the length of time it should receive a response.
      * @param frequency How frequent messages should be sent.
      */
-    private void fecpInitializer(Device dev,
-                                 Command cmd,
+    private void fecpInitializer(Command cmd,
                                  CommandCallback callback,
                                  int timeout,
-                                 int frequency)
+                                 int frequency) throws Exception
     {
-        this.mDevice = dev;
-        this.mCommand = cmd;
+        if(cmd != null)
+        {
+            this.mCommand = cmd.getCommandCopy();
+        }
         this.mCallback = callback;
         this.mTimeout = timeout;
         this.mFrequency = frequency;
         this.mCmdSentCounter = 0;
         this.mCmdReceivedCounter = 0;
+        this.mCommSendReceiveTime = 0;
     }
 
     /*************
      *  GETTERS
      ************/
-
-    /**
-     * Gets the commands device
-     * @return the device of the command
-     */
-    public Device getDevice()
-    {
-        return this.mDevice;
-    }
 
     /**
      * Gets the Command to be sent
@@ -152,24 +153,25 @@ public class FecpCommand {
         return this.mCmdReceivedCounter;
     }
 
+    public long getCommSendReceiveTime()
+    {
+        return this.mCommSendReceiveTime;
+    }
+
+    public ScheduledFuture<?> getFutureScheduleTask() {
+        return mFutureScheduleTask;
+    }
+
     /*************
      *  SETTERS
      ************/
 
     /**
-     * Sets the device for the command
-     * @param mDevice the device
-     */
-    public void setDevice(Device mDevice) {
-        this.mDevice = mDevice;
-    }
-
-    /**
      * Sets the command for the send
      * @param mCommand the command
      */
-    public void setCommand(Command mCommand) {
-        this.mCommand = mCommand;
+    public void setCommand(Command mCommand) throws Exception{
+        this.mCommand = mCommand.getCommandCopy();
     }
 
     /**
@@ -224,5 +226,31 @@ public class FecpCommand {
      */
     public void incrementCmdReceivedCounter() {
         this.mCmdReceivedCounter++;
+    }
+
+    /**
+     * Approximate time in nano seconds for how long it took to send and receive the command
+     * @param nanoSecondTime the time in nano seconds
+     */
+    public void setCommSendReceiveTime(long nanoSecondTime)
+    {
+        this.mCommSendReceiveTime = nanoSecondTime;
+    }
+
+    public void setSendHandler(FecpCmdHandleInterface sendHandler)
+    {
+        this.mSendHandler = sendHandler;
+    }
+    public void setFutureScheduleTask(ScheduledFuture<?> scheduledFut)
+    {
+        this.mFutureScheduleTask = scheduledFut;
+    }
+
+    @Override
+    public void run() {
+        super.run();
+        //this will add the command to the queue
+        this.mSendHandler.processFecpCommand(this);
+
     }
 }

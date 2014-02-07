@@ -121,13 +121,12 @@ public class TestDevice extends TestCase {
         assertEquals(3, deviceObjOne.getSubDeviceList().size());
 
         //Test set command
-        deviceObjOne.addCommand(new Command());
-        assertEquals(7,deviceObjOne.getCommandSet().size());
+        assertEquals(6,deviceObjOne.getCommandSet().size());
         //Test set Commands and get command and command by idVal
         cmdSet.add(new InfoCmd(DeviceId.INCLINE_TRAINER));
-        assertEquals(7, deviceObjOne.getCommandSet().size());
+        assertEquals(6, deviceObjOne.getCommandSet().size());
         assertEquals(CommandId.GET_INFO,deviceObjOne.getCommand(CommandId.GET_INFO).getCmdId());
-        assertEquals(CommandId.NONE,deviceObjOne.getCommand(0).getCmdId());
+        assertEquals(CommandId.GET_INFO,deviceObjOne.getCommand(CommandId.GET_INFO.getVal()).getCmdId());
 
         //test the getInfo
         deviceObjOne.setDeviceInfo(info);

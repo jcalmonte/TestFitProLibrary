@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * Converts the Speed data into double.
  * @author Levi.Balling
  * @date 12/11/13
  * @version 1
- * Details.
+ * the units of Speed are 100 equals 10.0.
  */
 package com.ifit.sparky.fecp.interpreter.bitField.converter;
 

@@ -26,18 +26,12 @@ import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.CmdHandlerType;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
-import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.FecpController;
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
-import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.WriteDataCmd;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
-import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
-import java.nio.ByteBuffer;
 import java.util.Calendar;
 
 public class MainActivity extends Activity implements View.OnClickListener{
@@ -78,16 +72,19 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private TextView textViewSpeed;
 
     private TextView textViewPeriod;
+    private TextView mainDeviceTextView;
     private TextView textViewTxCount;
     private TextView textViewRxCount;
     private TextView textViewPerSecond;
+    private TextView deviceInfoText;
 
     private Calendar timeWhenCleared;
 
     private FecpController fecpController;
     private FecpCommand tempCommand;
+    private FecpCommand infoCommand;//gets info on the whole system
     private SystemDevice MainDevice;
-    private Device tempDevice;
+    private HandleInfo handleInfoCmd;
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -97,32 +94,53 @@ public class MainActivity extends Activity implements View.OnClickListener{
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        String devInfoStr = "";
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //usbComm = new UsbComm(MainActivity.this);
 
         initLayout();
 
         m_handler = new Handler();
-        m_sendUsbData.run();
-
         m_handlerUi = new Handler();
         m_updateUi.run();
 
-        //systemStatusCallback =
         try{
+            //create FecpController
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
-            MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);//todo change as needed
+            //initialize connection, and get the system Device
+            MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
 
-            tempDevice = new Device(DeviceId.SPEED);
-            tempDevice.addCommand(new WriteReadDataCmd(DeviceId.SPEED));
-            ((WriteReadDataCmd)tempDevice.getCommand(CommandId.WRITE_READ_DATA)).addWriteData(BitFieldId.KPH, 0);
-            tempCommand = new FecpCommand(tempDevice, tempDevice.getCommand(CommandId.WRITE_READ_DATA), null);
+            //How to create a Callback handler that implements CommandCallback
+            handleInfoCmd = new HandleInfo(this, textViewSpeed);
+
+            //create command by passing the command of the specific device you want to use.
+            //NOTE do not create a command, always use FecpCommand. If you use command it can corrupt data.
+            //                              command,                                       callback,   timeout, frequency
+            infoCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), handleInfoCmd, 0, 1000);//every 1 second
+
+            //typecast the command that you want to customize, and add what ever data you want to the specific command
+            //we want to read the mode and the Speed
+            ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
+            ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.KPH);
+
+            // Create a single fire command with no callback
+            tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
+
+            //add the commands to the system
+            this.fecpController.addCmd(tempCommand);//does nothing
+            this.fecpController.addCmd(infoCommand);//gets speed and mode and calls callback every 1 second
+
         }catch (Exception ex){
             Log.e("Device Info fail", ex.getMessage());
         }
-        //debug add a command
+
+        mainDeviceTextView.setText(MainDevice.toString());
+
+        for(Device tempDev : MainDevice.getSubDeviceList())
+        {
+            devInfoStr += tempDev.toString() +"\n";
+        }
+        deviceInfoText.setText(devInfoStr);
 
     }
 
@@ -159,6 +177,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
      */
     @Override
     public void onClick(View view) {
+
         if(view == buttonDecPeriod100 && m_interval >= 100){
             m_interval -= 100;
         }else if(view == buttonDecPeriod10 && m_interval >= 10){
@@ -213,8 +232,20 @@ public class MainActivity extends Activity implements View.OnClickListener{
         }
 
         if(m_interval < 0)
+        {
             m_interval = 0;
+        }
         textViewPeriod.setText("TX Period: " + m_interval + " ms");
+
+        if(mSpeedMph != mSpeedMphPrev){
+            try {
+                ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
+                fecpController.addCmd(tempCommand);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        mSpeedMphPrev = mSpeedMph;
     }
 
     /**
@@ -232,39 +263,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
             return inflater.inflate(R.layout.fragment_main, container, false);
         }
     }
-
-    /**
-     * m_sendUsbData
-     * This routine transmits data periodically according the value of 'm_interval'.
-     * The initial value of 'm_interval' is 1000 which means that a packet will be sent every 1000
-     * milliseconds. The value of 'm_interval' can be modified by using the GUI buttons.
-     */
-    Runnable m_sendUsbData = new Runnable()
-    {
-
-        @Override
-        public void run() {
-            ByteBuffer buff = ByteBuffer.allocate(64);
-            for(int i = 20; i < 64; i++)
-                buff.put(i, (byte)i);
-            //usbComm.sendCmdBuffer(buff);
-            txCount++;
-
-            if(mSpeedMph != mSpeedMphPrev){
-                textViewSpeed.setText("Speed: " + String.format("%.2f", mSpeedMph) + " MPH");
-                try {
-                    ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
-
-                    fecpController.addCmd(tempCommand);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            mSpeedMphPrev = mSpeedMph;
-
-            m_handler.postDelayed(m_sendUsbData, m_interval);
-        }
-    };
 
     /**
      * m_updateUi
@@ -320,6 +318,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
         textViewTxCount = (TextView) findViewById(R.id.textViewTxCount);
         textViewRxCount = (TextView) findViewById(R.id.textViewRxCount);
         textViewPerSecond = (TextView) findViewById(R.id.textViewPerSecond);
+        mainDeviceTextView = (TextView) findViewById(R.id.textView);
+        deviceInfoText = (TextView)findViewById(R.id.deviceInfoTextView);
+        //deviceList = (ListView) findViewById(R.id.deviceListView);
 
         buttonSpeedDec = (Button) findViewById(R.id.buttonSpeedDec);
         buttonSpeedDec.setOnClickListener(this);

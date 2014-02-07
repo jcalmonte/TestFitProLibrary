@@ -25,8 +25,8 @@ public class GetSubDevicesCmd extends Command implements CommandInterface{
     {
         super();
         this.setCmdId(CommandId.GET_SUPPORTED_DEVICES);
-        this.setStatus(new GetSubDevicesSts(this.mDevId));
-        this.setLength(this.MIN_CMD_LENGTH);
+        this.setStatus(new GetSubDevicesSts(this.getDevId()));
+        this.setLength(MIN_CMD_LENGTH);
     }
 
     /**
@@ -54,5 +54,15 @@ public class GetSubDevicesCmd extends Command implements CommandInterface{
         //get the checksum value
         buff.put(Command.getCheckSum(buff));
         return buff;
+    }
+
+    /**
+     * Gets a cloned copy of the command
+     * @return the cloned copy of the command
+     * @throws Exception if
+     */
+    @Override
+    public Command getCommandCopy() throws Exception {
+        return new GetSubDevicesCmd(this.getDevId());
     }
 }

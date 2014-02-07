@@ -13,7 +13,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 public class SystemDevice extends Device{
 
-    protected SystemConfiguration mConfig;//slave,master, or multi master
+    private SystemConfiguration mConfig;//slave,master, or multi master
 
     /**
      * the default constructor for the System Device

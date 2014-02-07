@@ -60,6 +60,44 @@ public class testGetSubDevicesCmd extends TestCase {
         assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());//a little redundant
     }
 
+    /** Tests the Copy Constructors.
+     *
+     * @throws Exception
+     */
+    public void testGetCmdsCmd_CopyConstructor() throws Exception{
+
+        //check all the different options for generating the buffer
+        GetSubDevicesCmd cmd;
+        GetSubDevicesCmd copyCmd;
+
+        cmd = new GetSubDevicesCmd();
+        //check default constructor
+        assertEquals(4, cmd.getLength());
+        assertEquals(DeviceId.NONE, cmd.getDevId());//a little redundant
+        assertEquals(CommandId.GET_SUPPORTED_DEVICES, cmd.getCmdId());
+        assertEquals(StatusId.DEV_NOT_SUPPORTED, cmd.getStatus().getStsId());//default
+
+        copyCmd = (GetSubDevicesCmd)cmd.getCommandCopy();
+        //check default constructor
+        assertEquals(4, copyCmd.getLength());
+        assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
+        assertEquals(CommandId.GET_SUPPORTED_DEVICES, copyCmd.getCmdId());
+        assertEquals(StatusId.DEV_NOT_SUPPORTED, copyCmd.getStatus().getStsId());//default
+
+        //set the original to be different
+        cmd.setDevId(DeviceId.INCLINE_TRAINER);
+        assertEquals(4, cmd.getLength());
+        assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());//a little redundant
+        assertEquals(CommandId.GET_SUPPORTED_DEVICES, cmd.getCmdId());
+        assertEquals(StatusId.DEV_NOT_SUPPORTED, cmd.getStatus().getStsId());//default
+
+        //check to make sure the copy didn't change
+        assertEquals(4, copyCmd.getLength());
+        assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
+        assertEquals(CommandId.GET_SUPPORTED_DEVICES, copyCmd.getCmdId());
+        assertEquals(StatusId.DEV_NOT_SUPPORTED, copyCmd.getStatus().getStsId());//default
+    }
+
     /**
      * Test the Get Sub Devices Message function.
      * @throws Exception
