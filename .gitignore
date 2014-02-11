@@ -38,9 +38,9 @@ proguard/
 ###########################
 ## Android Studio
 ###########################
-#*/build/*
-#/build
-#.gradle/*
-#*/gen/*
-#*/BuildConfig.java
-#*/Manifest.java
+*/build/*
+/build
+.gradle/*
+*/gen/*
+*/BuildConfig.java
+*/Manifest.java
