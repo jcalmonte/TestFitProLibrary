@@ -18,12 +18,14 @@ import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
 import com.ifit.sparky.fecp.interpreter.command.GetSubDevicesCmd;
+import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 import com.ifit.sparky.fecp.interpreter.status.GetCmdsSts;
 import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
+import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 
 import java.util.Set;
@@ -64,11 +66,24 @@ public class FecpController{
      */
     public SystemDevice initializeConnection(CmdHandlerType type) throws Exception
     {
+        GetSysInfoCmd sysInfoCmd;
         //add as we add support for these
         if(this.mCommType == CommType.USB_COMMUNICATION)
         {
             this.mCommController = new UsbComm(this.mContext, this.mIntent, 100);
             this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
+            sysInfoCmd = new GetSysInfoCmd(this.mSysDev.getInfo().getDevId());
+            sysInfoCmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
+
+            this.mSysDev.setConfig(((GetSysInfoSts)sysInfoCmd.getStatus()).getConfig());
+            this.mSysDev.setModel(((GetSysInfoSts)sysInfoCmd.getStatus()).getModel());
+            this.mSysDev.setPartNumber(((GetSysInfoSts)sysInfoCmd.getStatus()).getPartNumber());
+            this.mSysDev.setCpuUse(((GetSysInfoSts)sysInfoCmd.getStatus()).getCpuUse());
+            this.mSysDev.setNumberOfTasks(((GetSysInfoSts)sysInfoCmd.getStatus()).getNumberOfTasks());
+            this.mSysDev.setIntervalTime(((GetSysInfoSts)sysInfoCmd.getStatus()).getIntervalTime());
+            this.mSysDev.setCpuFrequency(((GetSysInfoSts)sysInfoCmd.getStatus()).getCpuFrequency());
+            this.mSysDev.setMcuName(((GetSysInfoSts)sysInfoCmd.getStatus()).getMcuName());
+            this.mSysDev.setConsoleName(((GetSysInfoSts)sysInfoCmd.getStatus()).getConsoleName());
 
             //two references to the same object with different responsibilities
             this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
