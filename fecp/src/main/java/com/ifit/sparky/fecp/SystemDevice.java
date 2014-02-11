@@ -14,6 +14,14 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 public class SystemDevice extends Device{
 
     private SystemConfiguration mConfig;//slave,master, or multi master
+    private int mModel;
+    private int mPartNumber;
+    private double mCpuUse;
+    private int mNumberOfTasks;
+    private int mIntervalTime;
+    private int mCpuFrequency;
+    private String mMcuName;
+    private String mConsoleName;
 
     /**
      * the default constructor for the System Device
@@ -22,6 +30,14 @@ public class SystemDevice extends Device{
     {
         super();
         this.mConfig = SystemConfiguration.SLAVE;
+        this.mModel = 0;
+        this.mPartNumber = 0;
+        this.mCpuUse = 0.0;
+        this.mNumberOfTasks = 0;
+        this.mIntervalTime = 0;
+        this.mCpuFrequency = 0;
+        this.mMcuName = "";
+        this.mConsoleName = "";
     }
 
     /**
@@ -31,6 +47,14 @@ public class SystemDevice extends Device{
     {
         super(id);
         this.mConfig = SystemConfiguration.SLAVE;
+        this.mModel = 0;
+        this.mPartNumber = 0;
+        this.mCpuUse = 0.0;
+        this.mNumberOfTasks = 0;
+        this.mIntervalTime = 0;
+        this.mCpuFrequency = 0;
+        this.mMcuName = "";
+        this.mConsoleName = "";
     }
 
     /**
@@ -44,6 +68,14 @@ public class SystemDevice extends Device{
         super(dev.getCommandSet().values(), dev.getSubDeviceList(),dev.getInfo());
 
         this.mConfig = SystemConfiguration.SLAVE;
+        this.mModel = 0;
+        this.mPartNumber = 0;
+        this.mCpuUse = 0.0;
+        this.mNumberOfTasks = 0;
+        this.mIntervalTime = 0;
+        this.mCpuFrequency = 0;
+        this.mMcuName = "";
+        this.mConsoleName = "";
     }
 
     /**
@@ -53,6 +85,14 @@ public class SystemDevice extends Device{
     {
         super(id);
         this.mConfig = config;
+        this.mModel = 0;
+        this.mPartNumber = 0;
+        this.mCpuUse = 0.0;
+        this.mNumberOfTasks = 0;
+        this.mIntervalTime = 0;
+        this.mCpuFrequency = 0;
+        this.mMcuName = "";
+        this.mConsoleName = "";
     }
 
     /**
@@ -65,6 +105,70 @@ public class SystemDevice extends Device{
     }
 
     /**
+     * Gets the model 
+     * @return the Model Number
+     */
+    public int getodel() {
+        return mModel;
+    }
+
+    /**
+     * Gets the part number for the main system
+     * @return
+     */
+    public int getPartNumber() {
+        return mPartNumber;
+    }
+
+    /**
+     * Gets the Current CPU of the System
+     * @return the CPU usage
+     */
+    public double getCpuUse() {
+        return mCpuUse;
+    }
+
+    /**
+     * Gets the number of Tasks used
+     * @return the number of tasks used
+     */
+    public int getNumberOfTasks() {
+        return mNumberOfTasks;
+    }
+
+    /**
+     * Gets the interval time in uSeconds
+     * @return the interval time in uSeconds
+     */
+    public int getIntervalTime() {
+        return mIntervalTime;
+    }
+
+    /**
+     * Gets the CPU frequency
+     * @return the CPU frequency in Hz
+     */
+    public int getCpuFrequency() {
+        return mCpuFrequency;
+    }
+
+    /**
+     * Gets the name of the Mcu
+     * @return the Mcu name
+     */
+    public String getMcuName() {
+        return mMcuName;
+    }
+
+    /**
+     * gets the Name of the Console according to the Main Device
+     * @return Main Device
+     */
+    public String getConsoleName() {
+        return mConsoleName;
+    }
+
+    /**
      * Sets the System's configuration
      * @param config the system's configuration
      */
@@ -73,4 +177,67 @@ public class SystemDevice extends Device{
         this.mConfig = config;
     }
 
+    /**
+     * Sets the model number for the Main Device
+     * @param model the model number
+     */
+    public void setModel(int model) {
+        this.mModel = model;
+    }
+
+    /**
+     * Sets the Part number for the Main Device
+     * @param partNumber the Part Number
+     */
+    public void setPartNumber(int partNumber) {
+        this.mPartNumber = partNumber;
+    }
+
+    /**
+     * Sets the current CPU usage 0.000
+     * @param cpuUse the CPU
+     */
+    public void setCpuUse(double cpuUse) {
+        this.mCpuUse = cpuUse;
+    }
+
+    /**
+     * Sets the Number of Tasks
+     * @param numberOfTasks the number of Tasks
+     */
+    public void setNumberOfTasks(int numberOfTasks) {
+        this.mNumberOfTasks = numberOfTasks;
+    }
+
+    /**
+     * Sets the length of time for the interval in uSeconds
+     * @param intervalTime time in uSeconds
+     */
+    public void setIntervalTime(int intervalTime) {
+        this.mIntervalTime = intervalTime;
+    }
+
+    /**
+     * Sets the Main Device CPU Frequency
+     * @param cpuFrequency the frequency in Hz
+     */
+    public void setCpuFrequency(int cpuFrequency) {
+        this.mCpuFrequency = cpuFrequency;
+    }
+
+    /**
+     * The name of the MCU of the Main System
+     * @param mcuName the Name of the Mcu
+     */
+    public void setMcuName(String mcuName) {
+        this.mMcuName = mcuName;
+    }
+
+    /**
+     * Sets the name of the Console
+     * @param consoleName the name of the console
+     */
+    public void setConsoleName(String consoleName) {
+        this.mConsoleName = consoleName;
+    }
 }

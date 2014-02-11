@@ -41,4 +41,9 @@ public enum SystemConfiguration {
     {
         return this.ordinal();
     }
+
+    public static SystemConfiguration convert(byte val)
+    {
+        return SystemConfiguration.values()[val];
+    }
 }

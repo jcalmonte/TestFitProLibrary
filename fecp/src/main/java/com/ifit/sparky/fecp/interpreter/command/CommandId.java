@@ -19,6 +19,8 @@ public enum CommandId {
     WRITE_DATA(0x0B, "Write Data."),
     GET_SUPPORTED_DEVICES(0x80, "Get Supported Devices."),
     GET_INFO(0x81, "Get Device Info."),
+    GET_SYSTEM_INFO(0x82, "Get System Info."),
+    GET_TASK_INFO(0x83, "Get Task Info."),
     GET_SUPPORTED_COMMANDS(0x88, "Get Supported Commands."),
     READ_DATA(0x90, "Read Data.");
 

@@ -7,9 +7,6 @@
  */
 package com.ifit.fecptestapp;
 
-import android.content.AsyncTaskLoader;
-import android.os.AsyncTask;
-import android.os.Looper;
 import android.widget.TextView;
 
 import com.ifit.sparky.fecp.CommandCallback;
