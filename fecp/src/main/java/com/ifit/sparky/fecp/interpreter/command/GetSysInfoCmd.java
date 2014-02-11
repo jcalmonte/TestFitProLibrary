@@ -60,7 +60,7 @@ public class GetSysInfoCmd extends Command implements CommandInterface{
      * sets whether we are getting the MCU Name
      * @param getMcuName True if we are getting the MCU name, false if not
      */
-    public void getMcuName(boolean getMcuName) {
+    public void setGetMcuName(boolean getMcuName) {
         this.mFetchMcuName = getMcuName;
     }
 
@@ -68,7 +68,7 @@ public class GetSysInfoCmd extends Command implements CommandInterface{
      * sets whether we are getting the Console Name
      * @param getConsoleName True if we are getting the Console name, false if not
      */
-    public void getConsoleName(boolean getConsoleName) {
+    public void setGetConsoleName(boolean getConsoleName) {
         this.mFetchConsoleName = getConsoleName;
     }
 
@@ -115,8 +115,8 @@ public class GetSysInfoCmd extends Command implements CommandInterface{
     @Override
     public Command getCommandCopy() throws Exception {
         Command tempCmd = new GetSysInfoCmd(this.getDevId());
-        ((GetSysInfoCmd)tempCmd).getConsoleName(this.mFetchConsoleName);
-        ((GetSysInfoCmd)tempCmd).getMcuName(this.mFetchMcuName);
+        ((GetSysInfoCmd)tempCmd).setGetConsoleName(this.mFetchConsoleName);
+        ((GetSysInfoCmd)tempCmd).setGetMcuName(this.mFetchMcuName);
         return tempCmd;
     }
 }

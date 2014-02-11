@@ -9,7 +9,7 @@ package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
+import com.ifit.sparky.fecp.interpreter.command.GetTaskInfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
@@ -17,34 +17,32 @@ import junit.framework.TestCase;
 
 import java.nio.ByteBuffer;
 
-public class TestGetSystemInfoCmd extends TestCase {
+public class TestGetTaskInfoCmd extends TestCase {
 
 
     /** Tests the Constructors.
      *
      * @throws Exception
      */
-    public void testGetSystemInfoCmd_Constructor() throws Exception{
+    public void testGetTaskInfoCmd_Constructor() throws Exception{
 
         //check all the different options for generating the buffer
-        GetSysInfoCmd cmd;
+        GetTaskInfoCmd cmd;
 
-        cmd = new GetSysInfoCmd();
+        cmd = new GetTaskInfoCmd();
         //check default constructor
-        assertEquals(6, cmd.getLength());
+        assertEquals(5, cmd.getLength());
         assertEquals(DeviceId.NONE, cmd.getDevId());//a little redundant
-        assertEquals(CommandId.GET_SYSTEM_INFO, cmd.getCmdId());
+        assertEquals(CommandId.GET_TASK_INFO, cmd.getCmdId());
         assertEquals(StatusId.DEV_NOT_SUPPORTED, cmd.getStatus().getStsId());//default
-        assertEquals(false, cmd.getMcuName());
-        assertEquals(false, cmd.getConsoleName());
+        assertEquals(0, cmd.getTaskIndex());
 
         //check second constructor
-        cmd = new GetSysInfoCmd(DeviceId.INCLINE_TRAINER);
-        assertEquals(CommandId.GET_SYSTEM_INFO, cmd.getCmdId());
+        cmd = new GetTaskInfoCmd(DeviceId.INCLINE_TRAINER);
+        assertEquals(CommandId.GET_TASK_INFO, cmd.getCmdId());
         assertEquals(StatusId.DEV_NOT_SUPPORTED, cmd.getStatus().getStsId());//default
         assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());//a little redundant
-        assertEquals(false, cmd.getMcuName());
-        assertEquals(false, cmd.getConsoleName());
+        assertEquals(0, cmd.getTaskIndex());
 
     }
 
@@ -53,37 +51,37 @@ public class TestGetSystemInfoCmd extends TestCase {
      *
      * @throws Exception
      */
-    public void testGetSystemInfoCmd_CopyConstructor() throws Exception{
+    public void testGetTaskInfoCmd_CopyConstructor() throws Exception{
 
         //check all the different options for generating the buffer
-        GetSysInfoCmd cmd;
-        GetSysInfoCmd copyCmd;
+        GetTaskInfoCmd cmd;
+        GetTaskInfoCmd copyCmd;
 
-        cmd = new GetSysInfoCmd();
+        cmd = new GetTaskInfoCmd();
         //check default constructor
-        assertEquals(6, cmd.getLength());
+        assertEquals(5, cmd.getLength());
         assertEquals(DeviceId.NONE, cmd.getDevId());//a little redundant
-        assertEquals(CommandId.GET_SYSTEM_INFO, cmd.getCmdId());
+        assertEquals(CommandId.GET_TASK_INFO, cmd.getCmdId());
         assertEquals(StatusId.DEV_NOT_SUPPORTED, cmd.getStatus().getStsId());//default
 
-        copyCmd = (GetSysInfoCmd)cmd.getCommandCopy();
+        copyCmd = (GetTaskInfoCmd)cmd.getCommandCopy();
         //check default constructor
-        assertEquals(6, copyCmd.getLength());
+        assertEquals(5, copyCmd.getLength());
         assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
-        assertEquals(CommandId.GET_SYSTEM_INFO, copyCmd.getCmdId());
+        assertEquals(CommandId.GET_TASK_INFO, copyCmd.getCmdId());
         assertEquals(StatusId.DEV_NOT_SUPPORTED, copyCmd.getStatus().getStsId());//default
 
         //set the original to be different
         cmd.setDevId(DeviceId.INCLINE_TRAINER);
-        assertEquals(6, cmd.getLength());
+        assertEquals(5, cmd.getLength());
         assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());//a little redundant
-        assertEquals(CommandId.GET_SYSTEM_INFO, cmd.getCmdId());
+        assertEquals(CommandId.GET_TASK_INFO, cmd.getCmdId());
         assertEquals(StatusId.DEV_NOT_SUPPORTED, cmd.getStatus().getStsId());//default
 
         //check to make sure the copy didn't change
-        assertEquals(6, copyCmd.getLength());
+        assertEquals(5, copyCmd.getLength());
         assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
-        assertEquals(CommandId.GET_SYSTEM_INFO, copyCmd.getCmdId());
+        assertEquals(CommandId.GET_TASK_INFO, copyCmd.getCmdId());
         assertEquals(StatusId.DEV_NOT_SUPPORTED, copyCmd.getStatus().getStsId());//default
     }
 
@@ -91,34 +89,31 @@ public class TestGetSystemInfoCmd extends TestCase {
      * Test the Get command Message function.
      * @throws Exception
      */
-    public void testGetSystemInfoCmd_getCmdMsg() throws Exception
+    public void testGetTaskInfoCmd_getCmdMsg() throws Exception
     {
-        GetSysInfoCmd cmd;
+        GetTaskInfoCmd cmd;
         ByteBuffer buff;
         byte checkSum;
 
-        cmd = new GetSysInfoCmd(DeviceId.INCLINE_TRAINER);
+        cmd = new GetTaskInfoCmd(DeviceId.INCLINE_TRAINER);
         buff = cmd.getCmdMsg();
         buff.position(0);
 
         assertEquals((byte)DeviceId.INCLINE_TRAINER.getVal(), buff.get());//check the device id
-        assertEquals(6,buff.get());// check the length of the message
-        assertEquals(CommandId.GET_SYSTEM_INFO, CommandId.getCommandId((buff.get() & 0xFF)));
+        assertEquals(5,buff.get());// check the length of the message
+        assertEquals(CommandId.GET_TASK_INFO, CommandId.getCommandId((buff.get() & 0xFF)));
         assertEquals(0,buff.get());// check if you want to read the MCU name
-        assertEquals(0,buff.get());// check if you want to read the Console name
         //get the checkSum value
         checkSum = buff.get();
         assertEquals(checkSum, Command.getCheckSum(buff));
-        cmd.setGetMcuName(true);
-        cmd.setGetConsoleName(true);
+        cmd.setTaskIndex(2);
         buff = cmd.getCmdMsg();
         buff.position(0);
 
         assertEquals((byte)DeviceId.INCLINE_TRAINER.getVal(), buff.get());//check the device id
-        assertEquals(6,buff.get());// check the length of the message
-        assertEquals(CommandId.GET_SYSTEM_INFO, CommandId.getCommandId((buff.get() & 0xFF)));
-        assertEquals(1,buff.get());// check if you want to read the MCU name
-        assertEquals(1,buff.get());// check if you want to read the Console name
+        assertEquals(5,buff.get());// check the length of the message
+        assertEquals(CommandId.GET_TASK_INFO, CommandId.getCommandId((buff.get() & 0xFF)));
+        assertEquals(2,buff.get());// check which task to read
         //get the checkSum value
         checkSum = buff.get();
         assertEquals(checkSum, Command.getCheckSum(buff));

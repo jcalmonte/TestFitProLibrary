@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
 
 public class GetSysInfoSts extends Status implements StatusInterface {
 
-    private static final int STS_LENGTH = 14;
+    private static final int STS_LENGTH = 24;
 
     private SystemConfiguration mConfig;//slave,master, or multi master
     private int mModel;
@@ -60,7 +60,7 @@ public class GetSysInfoSts extends Status implements StatusInterface {
      * Gets the model
      * @return the Model Number
      */
-    public int getodel() {
+    public int getModel() {
         return mModel;
     }
 
@@ -143,7 +143,8 @@ public class GetSysInfoSts extends Status implements StatusInterface {
             //part number
             this.mPartNumber = buff.getInt();
             //Cpu usage
-            this.mCpuUse = buff.getShort();
+            this.mCpuUse = buff.getShort();//240 == 0.240
+            this.mCpuUse /= 1000;
             //number Of tasks
             this.mNumberOfTasks = buff.get();
             //cpu Min interval

@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 
 public class GetTaskInfoSts extends Status implements StatusInterface {
 
-    private static final int MIN_STS_LENGTH = 27;
+    private static final int MIN_STS_LENGTH = 28;
 
     private CpuTask mTask;//slave,master, or multi master
 
@@ -29,6 +29,9 @@ public class GetTaskInfoSts extends Status implements StatusInterface {
         this.mTask = new CpuTask();
     }
 
+    public CpuTask getTask() {
+        return mTask;
+    }
     /**
      * Handles the message that is coming across the usb. It handles raw data, and it
      * must be handled by the correct status.
