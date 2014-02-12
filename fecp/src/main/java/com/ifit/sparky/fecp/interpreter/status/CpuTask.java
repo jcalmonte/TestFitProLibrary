@@ -214,4 +214,17 @@ public class CpuTask {
             this.mName += buff.get();
         }
     }
+
+    @Override
+    public String toString() {
+        return  "Task=" + mTaskIndex +
+                ", mInterval=" + mInterval +
+                ", mExecutFlag=" + mExecutFlag +
+                ", mRecentTime=" + mRecentTime +
+                ", mWorseTime=" + mWorseTime +
+                ", mBestTime=" + mBestTime +
+                ", mNumberOfCalls=" + mNumberOfCalls +
+                ", mNumberOfMisses=" + mNumberOfMisses +
+                ", mName='" + mName + '\n';
+    }
 }

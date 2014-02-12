@@ -59,10 +59,16 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
     private Calendar timeWhenCleared;
 
     private FecpController fecpController;
+    private FecpCommand mainCommand;//gets the info for the main command
+    private FecpCommand cpuInfoCommand;//gets info for the CPU
+    private FecpCommand modeCommand;//toggles the mode
+    private FecpCommand taskInfoCmd;//toggles the mode
+
     private FecpCommand tempCommand;
     private FecpCommand infoCommand;//gets info on the whole system
     private SystemDevice MainDevice;
     private HandleInfo handleInfoCmd;
+    private HandleTaskInfo handleTaskCmd;
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -80,7 +86,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
 
         m_handler = new Handler();
         m_handlerUi = new Handler();
-        m_updateUi.run();
 
         try{
             //create FecpController
@@ -90,11 +95,19 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
 
             //How to create a Callback handler that implements CommandCallback
             handleInfoCmd = new HandleInfo(this, textViewCurrentSpeed);
+            this.handleTaskCmd = new HandleTaskInfo(this, this.textViewData);//upload all the data into the data section.
+            this.handleTaskCmd.setNumOfTasks(this.MainDevice.getNumberOfTasks());
 
             //create command by passing the command of the specific device you want to use.
             //NOTE do not create a command, always use FecpCommand. If you use command it can corrupt data.
             //                              command,                                       callback,   timeout, frequency
             infoCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), handleInfoCmd, 0, 1000);//every 1 second
+
+            this.taskInfoCmd = new FecpCommand(MainDevice.getCommand(CommandId.GET_TASK_INFO),this.handleTaskCmd,0, 100);//rotates through
+
+            tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
+
+            mainCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));//displays the system
 
             //typecast the command that you want to customize, and add what ever data you want to the specific command
             //we want to read the mode and the Speed
@@ -102,13 +115,14 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
             ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.KPH);
 
             // Create a single fire command with no callback
-            tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
+
 
             //add the commands to the system
             this.fecpController.addCmd(tempCommand);//does nothing
             this.fecpController.addCmd(infoCommand);//gets speed and mode and calls callback every 1 second
 
         }catch (Exception ex){
+            ex.printStackTrace();
             Log.e("Device Info fail", ex.getLocalizedMessage());
         }
 
@@ -160,25 +174,22 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
         if(view == buttonMain )
         {
             //get info on the main Device and display it
+            this.fecpController.removeCmd(this.taskInfoCmd);
+            this.textViewData.setText(this.MainDevice.toString());//write everything to the main
         }
         else if(view == buttonTask)
         {
-
-        }
-        else if(view == buttonMode )
-        {
-
-        }
-
-        if(mSpeedMph != mSpeedMphPrev){
             try {
-                ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
-                fecpController.addCmd(tempCommand);
+                this.fecpController.addCmd(this.taskInfoCmd);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        mSpeedMphPrev = mSpeedMph;
+        else if(view == buttonMode )
+        {
+            //set a single command to change the mode.
+            this.fecpController.removeCmd(this.taskInfoCmd);
+        }
     }
 
     @Override
@@ -222,34 +233,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
             return inflater.inflate(R.layout.fragment_main, container, false);
         }
     }
-
-    /**
-     * m_updateUi
-     * Updates the GUI.
-     */
-    Runnable m_updateUi = new Runnable()
-    {
-        int m_intervalUi = 100;
-        private Calendar timeNow;
-        long diff;
-        float perSecond;
-        long now, then;
-
-        @Override
-        public void run() {
-            textViewTxCount.setText("TX Count: " + txCount);
-            //textViewRxCount.setText("RX Count: " + usbComm.getEp1_RX_Count());
-
-            timeNow = Calendar.getInstance();
-            now = timeNow.getTimeInMillis();
-            then = timeWhenCleared.getTimeInMillis();
-            diff = now - then;
-            perSecond = (float) ((1000.0 * txCount) / diff);
-            textViewPerSecond.setText("TX/RX per second: " + perSecond);
-
-            m_handlerUi.postDelayed(m_updateUi, m_intervalUi);
-        }
-    };
 
     /**
      * initLayout

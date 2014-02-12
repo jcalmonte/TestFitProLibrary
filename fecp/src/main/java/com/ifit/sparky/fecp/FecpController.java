@@ -133,6 +133,26 @@ public class FecpController{
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
 
+
+    /**
+     * Removes a command from the list to send
+     * @param cmd the command you wish to remove
+     */
+    public void removeCmd(FecpCommand cmd)
+    {
+        this.mCmdHandleInterface.removeFecpCommand(cmd);
+    }
+
+    /**
+     * Removes all of the commands with the same device Id and Command Id
+     * @param devId the device you wish to remove the command from
+     * @param cmdId the command from the device that you wish to remove.
+     */
+    public void removeCmd(DeviceId devId, CommandId cmdId)
+    {
+        this.mCmdHandleInterface.removeFecpCommand(devId, cmdId);
+    }
+
     private Device getSubDevice(DeviceId devId) throws Exception
     {
         Device dev = new Device(devId);//
