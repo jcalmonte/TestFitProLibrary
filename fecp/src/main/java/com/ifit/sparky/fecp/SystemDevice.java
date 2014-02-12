@@ -240,4 +240,22 @@ public class SystemDevice extends Device{
     public void setConsoleName(String consoleName) {
         this.mConsoleName = consoleName;
     }
+
+    @Override
+    public String toString() {
+        String resultStr;
+
+
+        resultStr = super.toString();
+        resultStr += "config" + mConfig.getDescription() +
+                ", mModel=" + mModel +
+                ", mPartNumber=" + mPartNumber +
+                ", mCpuUse=%" + mCpuUse +
+                ", mNumberOfTasks=" + mNumberOfTasks +
+                ", mIntervalTime=" + mIntervalTime + "uSec"+
+                ", mCpuFrequency=" + mCpuFrequency + "hz" +
+                ", mMcuName='" + mMcuName +
+                ", mConsoleName='" + mConsoleName;
+        return resultStr;
+    }
 }

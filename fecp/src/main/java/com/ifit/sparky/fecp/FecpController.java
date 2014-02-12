@@ -19,6 +19,7 @@ import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
 import com.ifit.sparky.fecp.interpreter.command.GetSubDevicesCmd;
 import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
+import com.ifit.sparky.fecp.interpreter.command.GetTaskInfoCmd;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
@@ -76,14 +77,14 @@ public class FecpController{
             sysInfoCmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
 
             this.mSysDev.setConfig(((GetSysInfoSts)sysInfoCmd.getStatus()).getConfig());
-            this.mSysDev.setModel(((GetSysInfoSts)sysInfoCmd.getStatus()).getModel());
-            this.mSysDev.setPartNumber(((GetSysInfoSts)sysInfoCmd.getStatus()).getPartNumber());
-            this.mSysDev.setCpuUse(((GetSysInfoSts)sysInfoCmd.getStatus()).getCpuUse());
-            this.mSysDev.setNumberOfTasks(((GetSysInfoSts)sysInfoCmd.getStatus()).getNumberOfTasks());
-            this.mSysDev.setIntervalTime(((GetSysInfoSts)sysInfoCmd.getStatus()).getIntervalTime());
-            this.mSysDev.setCpuFrequency(((GetSysInfoSts)sysInfoCmd.getStatus()).getCpuFrequency());
-            this.mSysDev.setMcuName(((GetSysInfoSts)sysInfoCmd.getStatus()).getMcuName());
-            this.mSysDev.setConsoleName(((GetSysInfoSts)sysInfoCmd.getStatus()).getConsoleName());
+            this.mSysDev.setModel(((GetSysInfoSts) sysInfoCmd.getStatus()).getModel());
+            this.mSysDev.setPartNumber(((GetSysInfoSts) sysInfoCmd.getStatus()).getPartNumber());
+            this.mSysDev.setCpuUse(((GetSysInfoSts) sysInfoCmd.getStatus()).getCpuUse());
+            this.mSysDev.setNumberOfTasks(((GetSysInfoSts) sysInfoCmd.getStatus()).getNumberOfTasks());
+            this.mSysDev.setIntervalTime(((GetSysInfoSts) sysInfoCmd.getStatus()).getIntervalTime());
+            this.mSysDev.setCpuFrequency(((GetSysInfoSts) sysInfoCmd.getStatus()).getCpuFrequency());
+            this.mSysDev.setMcuName(((GetSysInfoSts) sysInfoCmd.getStatus()).getMcuName());
+            this.mSysDev.setConsoleName(((GetSysInfoSts) sysInfoCmd.getStatus()).getConsoleName());
 
             //two references to the same object with different responsibilities
             this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
@@ -194,6 +195,15 @@ public class FecpController{
             //not implemented yet
             throw new Exception("Command not supported yet");
         }
+        else if(CommandId.GET_SYSTEM_INFO == cmdId)
+        {
+            return new GetSysInfoCmd(devId);
+        }
+        else if(CommandId.GET_TASK_INFO == cmdId)
+        {
+            return new GetTaskInfoCmd(devId);
+        }
+          
         return null;//nothing supported yet
     }
 

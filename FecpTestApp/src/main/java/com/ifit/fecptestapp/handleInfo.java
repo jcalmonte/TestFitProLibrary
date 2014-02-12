@@ -49,7 +49,7 @@ public class HandleInfo implements CommandCallback, Runnable {
             {
 
                 try {
-                    mResultStr = "Speed="+((SpeedConverter)commandData.get(BitFieldId.KPH).getData()).getSpeed();
+                    mResultStr = "kph="+((SpeedConverter)commandData.get(BitFieldId.KPH).getData()).getSpeed();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -59,7 +59,7 @@ public class HandleInfo implements CommandCallback, Runnable {
             {
 
                 try {
-                    mResultStr += "Mode=" + ((ByteConverter)commandData.get(BitFieldId.WORKOUT_MODE).getData()).getValue();
+                   // mResultStr += "Mode=" + ((ByteConverter)commandData.get(BitFieldId.WORKOUT_MODE).getData()).getValue();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

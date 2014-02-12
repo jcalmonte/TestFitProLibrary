@@ -166,6 +166,11 @@ public class Device {
      */
     public void addCommand(Command cmd) throws InvalidCommandException
     {
+        if(cmd == null)
+        {
+
+           throw new InvalidCommandException(0);//null
+        }
         if(this.mCommandMap.containsKey(cmd.getCmdId()))
         {
             throw new InvalidCommandException(cmd);

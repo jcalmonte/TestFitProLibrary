@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Main Device"
-        android:id="@+id/textView"
+        android:id="@+id/textViewMain"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
 
@@ -18,235 +18,73 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="TX Period: 1000 ms"
-        android:id="@+id/textViewPeriodMs"
-        android:layout_marginTop="31dp"
-        android:layout_below="@+id/textView"
+        android:text="Mode:"
+        android:id="@+id/textViewMode"
+        android:layout_marginLeft="42dp"
+        android:layout_alignBottom="@+id/editSpeedText"
+        android:layout_toRightOf="@+id/textViewCurrentSpeed" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Main"
+        android:id="@+id/buttonMain"
+        android:layout_below="@+id/textViewMain"
         android:layout_alignParentStart="true" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="-1 ms"
-        android:id="@+id/buttonDec1ms"
-        android:layout_alignTop="@+id/buttonDec10ms"
-        android:layout_toRightOf="@+id/buttonDec10ms" />
+        android:id="@+id/buttonTask"
+        android:text="Task"
+        android:layout_alignTop="@+id/buttonMain"
+        android:layout_toRightOf="@+id/buttonMain" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="-10 ms"
-        android:id="@+id/buttonDec10ms"
-        android:layout_alignBottom="@+id/textViewPeriodMs"
-        android:layout_toRightOf="@+id/buttonDec100ms" />
+        android:text="Mode"
+        android:id="@+id/buttonMode"
+        android:layout_alignTop="@+id/buttonTask"
+        android:layout_toRightOf="@+id/buttonTask" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="+1 ms"
-        android:id="@+id/buttonInc1ms"
-        android:layout_alignTop="@+id/buttonDec1ms"
-        android:layout_toRightOf="@+id/buttonDec1ms" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="+10 ms"
-        android:id="@+id/buttonInc10ms"
-        android:layout_alignTop="@+id/buttonInc1ms"
-        android:layout_toRightOf="@+id/buttonInc1ms" />
+        android:id="@+id/editSpeedText"
+        android:phoneNumber="false"
+        android:numeric="decimal"
+        android:text="speed"
+        android:layout_alignTop="@+id/buttonMode"
+        android:layout_toRightOf="@+id/speedLabel" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="TX count"
-        android:id="@+id/textViewTxCount"
-        android:layout_below="@+id/buttonDec10ms"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="-100 ms"
-        android:id="@+id/buttonDec100ms"
-        android:layout_alignTop="@+id/buttonDec10ms"
-        android:layout_toRightOf="@+id/textViewPeriodMs"
-        android:layout_marginLeft="50dp" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="+100 ms"
-        android:id="@+id/buttonInc100ms"
-        android:layout_alignTop="@+id/buttonInc10ms"
-        android:layout_toRightOf="@+id/buttonInc10ms" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Clear TX Count"
-        android:id="@+id/buttonClearTxCount"
-        android:layout_below="@+id/textViewTxCount"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="RX Count"
-        android:id="@+id/textViewRxCount"
-        android:layout_below="@+id/buttonDec100ms"
-        android:layout_alignStart="@+id/buttonDec100ms" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="TX/RX per second"
-        android:id="@+id/textViewPerSecond"
-        android:layout_below="@+id/buttonInc1ms"
-        android:layout_alignStart="@+id/buttonInc1ms" />
+        android:text="data"
+        android:id="@+id/textViewData"
+        android:layout_below="@+id/buttonTask"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Speed: 0 MPH"
-        android:id="@+id/textViewSpeed"
-        android:layout_alignParentStart="true"
-        android:layout_above="@+id/buttonSpeedDec"
-        android:layout_alignParentLeft="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="-"
-        android:id="@+id/buttonSpeedDec"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="1"
-        android:id="@+id/buttonSpeed1"
-        android:layout_alignTop="@+id/buttonSpeed2"
-        android:layout_toRightOf="@+id/buttonSpeedDec" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="2"
-        android:id="@+id/buttonSpeed2"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed1" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="3"
-        android:id="@+id/buttonSpeed3"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed2" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="4"
-        android:id="@+id/buttonSpeed4"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed3" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="5"
-        android:id="@+id/buttonSpeed5"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed4" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="6"
-        android:id="@+id/buttonSpeed6"
-        android:layout_alignTop="@+id/buttonSpeed5"
-        android:layout_toRightOf="@+id/buttonSpeed5" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="7"
-        android:id="@+id/buttonSpeed7"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed6" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="8"
-        android:id="@+id/buttonSpeed8"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed7" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="9"
-        android:id="@+id/buttonSpeed9"
-        android:layout_alignTop="@+id/buttonSpeed8"
-        android:layout_toRightOf="@+id/buttonSpeed8" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="10"
-        android:id="@+id/buttonSpeed10"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed9" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="11"
-        android:id="@+id/buttonSpeed11"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed10" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="12"
-        android:id="@+id/buttonSpeed12"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/buttonSpeed11" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="+"
-        android:id="@+id/buttonSpeedInc"
-        android:layout_alignTop="@+id/buttonSpeed12"
-        android:layout_toRightOf="@+id/buttonSpeed12" />
+        android:text="Speed"
+        android:id="@+id/speedLabel"
+        android:layout_alignBaseline="@+id/editSpeedText"
+        android:layout_alignBottom="@+id/editSpeedText"
+        android:layout_toRightOf="@+id/buttonMode" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
-        android:id="@+id/deviceInfoTextView"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/buttonSpeedInc"
-        android:layout_toLeftOf="@+id/buttonSpeed4"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/buttonSpeedDec" />
+        android:text="kph"
+        android:id="@+id/textViewCurrentSpeed"
+        android:layout_alignBottom="@+id/speedLabel"
+        android:layout_toRightOf="@+id/editSpeedText" />
 
 </RelativeLayout>

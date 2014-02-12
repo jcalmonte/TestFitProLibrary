@@ -67,7 +67,7 @@ public enum CommandId {
         //go through all command ids and if it equals then return it.
         for (CommandId cmdId : CommandId.values())
         {
-            if(id == cmdId.getVal())
+            if((id & 0xFF) == cmdId.getVal())
             {
                 return cmdId;
             }

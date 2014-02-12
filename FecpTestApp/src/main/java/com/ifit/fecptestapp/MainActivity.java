@@ -11,15 +11,18 @@ package com.ifit.fecptestapp;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.ifit.sparky.fecp.FecpCommand;
@@ -34,49 +37,24 @@ import com.ifit.sparky.fecp.interpreter.device.Device;
 
 import java.util.Calendar;
 
-public class MainActivity extends Activity implements View.OnClickListener{
+public class MainActivity extends Activity implements View.OnClickListener, DialogInterface.OnKeyListener{
 
     //UsbComm usbComm;
 
     private Handler m_handler, m_handlerUi;
-    private int m_interval = 1000; // ms of delay
-    private int txCount = 0;
     private double mSpeedMph = 0;
     private double mSpeedMphPrev = 0;
-    private final double mMaxSpeed = 12.0f;
 
     //Layout variables
-    private Button buttonDecPeriod100;
-    private Button buttonDecPeriod10;
-    private Button buttonDecPeriod1;
-    private Button buttonIncPeriod1;
-    private Button buttonIncPeriod10;
-    private Button buttonIncPeriod100;
-    private Button buttonClearTxCount;
+    private TextView textViewMain;
+    private TextView textViewMode;
+    private TextView textViewData;
+    private TextView textViewCurrentSpeed;
 
-    private Button buttonSpeedDec;
-    private Button buttonSpeed1;
-    private Button buttonSpeed2;
-    private Button buttonSpeed3;
-    private Button buttonSpeed4;
-    private Button buttonSpeed5;
-    private Button buttonSpeed6;
-    private Button buttonSpeed7;
-    private Button buttonSpeed8;
-    private Button buttonSpeed9;
-    private Button buttonSpeed10;
-    private Button buttonSpeed11;
-    private Button buttonSpeed12;
-    private Button buttonSpeedInc;
-
-    private TextView textViewSpeed;
-
-    private TextView textViewPeriod;
-    private TextView mainDeviceTextView;
-    private TextView textViewTxCount;
-    private TextView textViewRxCount;
-    private TextView textViewPerSecond;
-    private TextView deviceInfoText;
+    private Button buttonMain;
+    private Button buttonTask;//info on all of the tasks
+    private Button buttonMode;//toggles which mode we are in
+    private EditText editSpeedText;//toggles which mode we are in
 
     private Calendar timeWhenCleared;
 
@@ -111,7 +89,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
             MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
 
             //How to create a Callback handler that implements CommandCallback
-            handleInfoCmd = new HandleInfo(this, textViewSpeed);
+            handleInfoCmd = new HandleInfo(this, textViewCurrentSpeed);
 
             //create command by passing the command of the specific device you want to use.
             //NOTE do not create a command, always use FecpCommand. If you use command it can corrupt data.
@@ -131,16 +109,16 @@ public class MainActivity extends Activity implements View.OnClickListener{
             this.fecpController.addCmd(infoCommand);//gets speed and mode and calls callback every 1 second
 
         }catch (Exception ex){
-            Log.e("Device Info fail", ex.getMessage());
+            Log.e("Device Info fail", ex.getLocalizedMessage());
         }
 
-        mainDeviceTextView.setText(MainDevice.toString());
+        textViewMain.setText("Main " + MainDevice.getInfo().getDevId().getDescription());
 
         for(Device tempDev : MainDevice.getSubDeviceList())
         {
             devInfoStr += tempDev.toString() +"\n";
         }
-        deviceInfoText.setText(devInfoStr);
+        textViewData.setText(devInfoStr);
 
     }
 
@@ -178,64 +156,19 @@ public class MainActivity extends Activity implements View.OnClickListener{
     @Override
     public void onClick(View view) {
 
-        if(view == buttonDecPeriod100 && m_interval >= 100){
-            m_interval -= 100;
-        }else if(view == buttonDecPeriod10 && m_interval >= 10){
-            m_interval -= 10;
-        }else if(view == buttonDecPeriod1 && m_interval >= 1){
-            m_interval -= 1;
-        }else if(view == buttonIncPeriod1){
-            m_interval += 1;
-        }else if(view == buttonIncPeriod10){
-            m_interval += 10;
-        }else if(view == buttonIncPeriod100){
-            m_interval += 100;
-        }else if(view == buttonClearTxCount){
-            txCount = 0;
-            //usbComm.clear_usb_counters();
-            timeWhenCleared = Calendar.getInstance();
-        }else if(view == buttonSpeedDec){
-            if(mSpeedMph > .6){
-                mSpeedMph -= .1;
-            }else{
-                mSpeedMph = 0;
-            }
-        }else if(view == buttonSpeed1){
-            mSpeedMph = 1.0f;
-        }else if(view == buttonSpeed2){
-            mSpeedMph = 2.0f;
-        }else if(view == buttonSpeed3){
-            mSpeedMph = 3.0f;
-        }else if(view == buttonSpeed4){
-            mSpeedMph = 4.0f;
-        }else if(view == buttonSpeed5){
-            mSpeedMph = 5.0f;
-        }else if(view == buttonSpeed6){
-            mSpeedMph = 6.0f;
-        }else if(view == buttonSpeed7){
-            mSpeedMph = 7.0f;
-        }else if(view == buttonSpeed8){
-            mSpeedMph = 8.0f;
-        }else if(view == buttonSpeed9){
-            mSpeedMph = 9.0f;
-        }else if(view == buttonSpeed10){
-            mSpeedMph = 10.0f;
-        }else if(view == buttonSpeed11){
-            mSpeedMph = 11.0f;
-        }else if(view == buttonSpeed12){
-            mSpeedMph = 12.0f;
-        }else if(view == buttonSpeedInc){
-            mSpeedMph += .1;
-            if(mSpeedMph > mMaxSpeed){
-                mSpeedMph = mMaxSpeed;
-            }
-        }
 
-        if(m_interval < 0)
+        if(view == buttonMain )
         {
-            m_interval = 0;
+            //get info on the main Device and display it
         }
-        textViewPeriod.setText("TX Period: " + m_interval + " ms");
+        else if(view == buttonTask)
+        {
+
+        }
+        else if(view == buttonMode )
+        {
+
+        }
 
         if(mSpeedMph != mSpeedMphPrev){
             try {
@@ -246,6 +179,32 @@ public class MainActivity extends Activity implements View.OnClickListener{
             }
         }
         mSpeedMphPrev = mSpeedMph;
+    }
+
+    @Override
+    public boolean onKey(DialogInterface dialogInterface, int code, KeyEvent keyEvent) {
+
+        // if keydown and "enter" is pressed
+        if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN)
+                && (code == KeyEvent.KEYCODE_ENTER)) {
+
+            if(mSpeedMph != mSpeedMphPrev){
+                try {
+                    ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
+                    fecpController.addCmd(tempCommand);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            mSpeedMphPrev = mSpeedMph;
+
+            // display a floating message
+            //get the value from the text edit box and send it
+            return true;
+
+        }
+
+        return false;
     }
 
     /**
@@ -299,59 +258,33 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private void initLayout(){
         timeWhenCleared = Calendar.getInstance();
 
-        buttonDecPeriod100 = (Button) findViewById(R.id.buttonDec100ms);
-        buttonDecPeriod100.setOnClickListener(this);
-        buttonDecPeriod10 = (Button) findViewById(R.id.buttonDec10ms);
-        buttonDecPeriod10.setOnClickListener(this);
-        buttonDecPeriod1 = (Button) findViewById(R.id.buttonDec1ms);
-        buttonDecPeriod1.setOnClickListener(this);
-        buttonIncPeriod1 = (Button) findViewById(R.id.buttonInc1ms);
-        buttonIncPeriod1.setOnClickListener(this);
-        buttonIncPeriod10 = (Button) findViewById(R.id.buttonInc10ms);
-        buttonIncPeriod10.setOnClickListener(this);
-        buttonIncPeriod100 = (Button) findViewById(R.id.buttonInc100ms);
-        buttonIncPeriod100.setOnClickListener(this);
-        buttonClearTxCount = (Button) findViewById(R.id.buttonClearTxCount);
-        buttonClearTxCount.setOnClickListener(this);
+        buttonMain = (Button) findViewById(R.id.buttonMain);
+        buttonMain.setOnClickListener(this);
+        buttonTask = (Button) findViewById(R.id.buttonTask);
+        buttonTask.setOnClickListener(this);
+        buttonMode = (Button) findViewById(R.id.buttonMode);
+        buttonMode.setOnClickListener(this);
 
-        textViewPeriod = (TextView) findViewById(R.id.textViewPeriodMs);
-        textViewTxCount = (TextView) findViewById(R.id.textViewTxCount);
-        textViewRxCount = (TextView) findViewById(R.id.textViewRxCount);
-        textViewPerSecond = (TextView) findViewById(R.id.textViewPerSecond);
-        mainDeviceTextView = (TextView) findViewById(R.id.textView);
-        deviceInfoText = (TextView)findViewById(R.id.deviceInfoTextView);
-        //deviceList = (ListView) findViewById(R.id.deviceListView);
+        editSpeedText = (EditText) findViewById(R.id.editSpeedText);
+        editSpeedText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int code, KeyEvent keyEvent) {
+                // if keydown and "enter" is pressed
+                if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN)
+                        && (code == KeyEvent.KEYCODE_ENTER)) {
+                    //do something
+                    //get the value from the text edit box and send it
+                    return true;
+                }
+                return false;
+            }
+        });
 
-        buttonSpeedDec = (Button) findViewById(R.id.buttonSpeedDec);
-        buttonSpeedDec.setOnClickListener(this);
-        buttonSpeed1 = (Button) findViewById(R.id.buttonSpeed1);
-        buttonSpeed1.setOnClickListener(this);
-        buttonSpeed2 = (Button) findViewById(R.id.buttonSpeed2);
-        buttonSpeed2.setOnClickListener(this);
-        buttonSpeed3 = (Button) findViewById(R.id.buttonSpeed3);
-        buttonSpeed3.setOnClickListener(this);
-        buttonSpeed4 = (Button) findViewById(R.id.buttonSpeed4);
-        buttonSpeed4.setOnClickListener(this);
-        buttonSpeed5 = (Button) findViewById(R.id.buttonSpeed5);
-        buttonSpeed5.setOnClickListener(this);
-        buttonSpeed6 = (Button) findViewById(R.id.buttonSpeed6);
-        buttonSpeed6.setOnClickListener(this);
-        buttonSpeed7 = (Button) findViewById(R.id.buttonSpeed7);
-        buttonSpeed7.setOnClickListener(this);
-        buttonSpeed8 = (Button) findViewById(R.id.buttonSpeed8);
-        buttonSpeed8.setOnClickListener(this);
-        buttonSpeed9 = (Button) findViewById(R.id.buttonSpeed9);
-        buttonSpeed9.setOnClickListener(this);
-        buttonSpeed10 = (Button) findViewById(R.id.buttonSpeed10);
-        buttonSpeed10.setOnClickListener(this);
-        buttonSpeed11 = (Button) findViewById(R.id.buttonSpeed11);
-        buttonSpeed11.setOnClickListener(this);
-        buttonSpeed12 = (Button) findViewById(R.id.buttonSpeed12);
-        buttonSpeed12.setOnClickListener(this);
-        buttonSpeedInc = (Button) findViewById(R.id.buttonSpeedInc);
-        buttonSpeedInc.setOnClickListener(this);
+        textViewData = (TextView) findViewById(R.id.textViewData);
+        textViewMain = (TextView) findViewById(R.id.textViewMain);
+        textViewMode = (TextView) findViewById(R.id.textViewMode);
+        textViewCurrentSpeed = (TextView) findViewById(R.id.textViewCurrentSpeed);
 
-        textViewSpeed = (TextView) findViewById(R.id.textViewSpeed);
     }
 
 }
