@@ -25,8 +25,6 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
 
     private CommInterface mCommController;
     private Vector<FecpCommand> mProcessCmds;
-//    private ArrayList<FecpCommand> mProcessCmds;
-    //private ArrayList<FecpCommand> mPeriodicCmds;//this will use the thread scheduler
     private Vector<FecpCommand> mPeriodicCmds;//this will use the thread scheduler
     private ScheduledExecutorService mThreadManager = Executors.newSingleThreadScheduledExecutor();//this will keep track of all the threads
     private Thread mCurrentThread;//this thread will be recreated when needed.
@@ -56,6 +54,11 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     @Override
     public void addFecpCommand(FecpCommand cmd) throws Exception
     {
+        if(this.mPeriodicCmds.contains(cmd))
+        {
+            return;//already in the list. don't add
+        }
+
         //check if thread is set
         cmd.setSendHandler(this);
         //check if the thread is running
@@ -178,7 +181,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         try
         {
             while(this.mProcessCmds.size() > 0)
-                {
+            {
                 FecpCommand tempCmd = this.mProcessCmds.get(0);
                 this.sendCommand(tempCmd);
                 //if there is a callback call it
@@ -191,7 +194,6 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
                 //remove from this it will add it later when it needs to.
                 this.mProcessCmds.remove(0);
             }
-            //kill this thread
         }
         catch (Exception ex)
         {

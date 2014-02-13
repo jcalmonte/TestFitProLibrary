@@ -92,7 +92,6 @@ public class FecpController{
                 ((GetTaskInfoSts)this.mSysDev.getCommand(CommandId.GET_TASK_INFO).getStatus()).getTask().setMainClkFrequency(this.mSysDev.getCpuFrequency());
             }
 
-
             //two references to the same object with different responsibilities
             this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
         }

@@ -16,6 +16,8 @@ import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
+import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 
 import java.util.TreeMap;
@@ -65,7 +67,11 @@ public class HandleInfo implements CommandCallback, Runnable {
                 }
             }
 
-           // this.mInfoView.setText(resultStr);
+            this.mAct.runOnUiThread(new Thread(this));
+        }
+        else if(cmd.getCmdId() == CommandId.GET_SYSTEM_INFO)
+        {
+            mResultStr = " cpu(%"+String.format("%.1f",((GetSysInfoSts)cmd.getStatus()).getCpuUse()* 100)+")";
             this.mAct.runOnUiThread(new Thread(this));
         }
     }

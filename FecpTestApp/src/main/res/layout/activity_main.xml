@@ -91,4 +91,13 @@
         android:layout_alignBottom="@+id/speedLabel"
         android:layout_toRightOf="@+id/editSpeedText" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="cpu"
+        android:id="@+id/textViewCpu"
+        android:layout_above="@+id/buttonTask"
+        android:layout_toRightOf="@+id/textViewMain" />
+
 </RelativeLayout>
