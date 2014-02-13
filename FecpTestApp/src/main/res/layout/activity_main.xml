@@ -54,9 +54,12 @@
         android:id="@+id/editSpeedText"
         android:phoneNumber="false"
         android:numeric="decimal"
-        android:text="speed"
         android:layout_alignTop="@+id/buttonMode"
-        android:layout_toRightOf="@+id/speedLabel" />
+        android:layout_toRightOf="@+id/speedLabel"
+        android:hint="Speed"
+        android:singleLine="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -76,7 +79,8 @@
         android:id="@+id/speedLabel"
         android:layout_alignBaseline="@+id/editSpeedText"
         android:layout_alignBottom="@+id/editSpeedText"
-        android:layout_toRightOf="@+id/buttonMode" />
+        android:layout_toRightOf="@+id/buttonMode"
+        android:singleLine="false" />
 
     <TextView
         android:layout_width="wrap_content"

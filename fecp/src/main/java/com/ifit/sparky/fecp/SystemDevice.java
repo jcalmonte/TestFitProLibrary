@@ -247,10 +247,10 @@ public class SystemDevice extends Device{
 
 
         resultStr = super.toString();
-        resultStr += "config" + mConfig.getDescription() +
+        resultStr += " config=" + mConfig.toString() +
                 ", mModel=" + mModel +
                 ", mPartNumber=" + mPartNumber +
-                ", mCpuUse=%" + mCpuUse +
+                ", mCpuUse=%" + (mCpuUse*100) +
                 ", mNumberOfTasks=" + mNumberOfTasks +
                 ", mIntervalTime=" + mIntervalTime + "uSec"+
                 ", mCpuFrequency=" + mCpuFrequency + "hz" +

@@ -9,7 +9,7 @@ package com.ifit.sparky.fecp.interpreter.status;
 
 import java.nio.ByteBuffer;
 
-public class CpuTask {
+public class CpuTask implements Comparable<CpuTask> {
 
     //items dealing with the CPU
     private int mTaskIndex;
@@ -21,6 +21,7 @@ public class CpuTask {
     private int mNumberOfCalls;
     private int mNumberOfMisses;
     private String mName;
+    private double mMainClkFrequency;
 
     /**
      * default constructor
@@ -38,6 +39,25 @@ public class CpuTask {
         this.mNumberOfMisses = 0;
         this.mNumberOfMisses = 0;
         this.mName = "";
+        this.mMainClkFrequency = 0;
+    }
+
+    /**
+     * Copy Constructor
+     * @param originalTask the task you wish to copy
+     */
+    public CpuTask(CpuTask originalTask)
+    {
+        this.mTaskIndex = originalTask.getTaskIndex();
+        this.mInterval = originalTask.getInterval();
+        this.mExecutFlag = originalTask.getExecutFlag();
+        this.mRecentTime = originalTask.getRecentTime();
+        this.mWorseTime = originalTask.getWorseTime();
+        this.mBestTime = originalTask.getBestTime();
+        this.mNumberOfCalls = originalTask.getNumberOfCalls();
+        this.mNumberOfMisses = originalTask.getNumberOfMisses();
+        this.mName = originalTask.getTaskName();
+        this.mMainClkFrequency = originalTask.getMainClkFrequency();
     }
 
     /**
@@ -114,6 +134,14 @@ public class CpuTask {
     }
 
     /**
+     * Gets the Main frequency of the clock
+     * @return the frequency in Hz
+     */
+    public double getMainClkFrequency() {
+        return mMainClkFrequency;
+    }
+
+    /**
      * Sets the index of the task.
      * @param taskIndex the task index
      */
@@ -184,8 +212,20 @@ public class CpuTask {
     public void setTaskName(String name) {
         this.mName = name;
     }
-    //parse the buffer for this
 
+
+    /**
+     * Sets the Frequency of the main clock used for calculating the approximate time of each task.
+     * @param mainClkFrequency the main clk speed for the Brain Board MCU in Hz
+     */
+    public void setMainClkFrequency(double mainClkFrequency) {
+        this.mMainClkFrequency = mainClkFrequency;
+    }
+
+    /**
+     * Handles the buffer from the system
+     * @param buff buffer of formatted data position at the correct location.
+     */
     public  void handleTaskBuff(ByteBuffer buff)
     {
         //buffer will start at the top of the data that pertains to the task
@@ -217,14 +257,22 @@ public class CpuTask {
 
     @Override
     public String toString() {
+        //time of one cycle
+        double cycleTime = 1/this.mMainClkFrequency;
         return  "Task=" + mTaskIndex +
-                ", mInterval=" + mInterval +
-                ", mExecutFlag=" + mExecutFlag +
-                ", mRecentTime=" + mRecentTime +
-                ", mWorseTime=" + mWorseTime +
-                ", mBestTime=" + mBestTime +
+                ", Interval=" + mInterval +"uSec"+
+                ", ExeFlag=" + mExecutFlag +
+                ", Recent=" + String.format("%.3f",(mRecentTime * cycleTime)) + "uSec" +
+                ", Worse=" + String.format("%.3f",(mWorseTime * cycleTime)) + "uSec" +
+                ", mBestTime=" + String.format("%.3f",(mBestTime * cycleTime)) + "uSec" +
                 ", mNumberOfCalls=" + mNumberOfCalls +
                 ", mNumberOfMisses=" + mNumberOfMisses +
                 ", mName='" + mName + '\n';
+    }
+
+
+    @Override
+    public int compareTo(CpuTask cpuTask) {
+        return Double.compare(this.getTaskIndex(), cpuTask.getTaskIndex());
     }
 }

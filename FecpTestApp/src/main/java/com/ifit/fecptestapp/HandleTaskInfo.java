@@ -21,6 +21,8 @@ import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.TreeMap;
 
 public class HandleTaskInfo implements CommandCallback, Runnable {
@@ -28,8 +30,6 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
     private int mNumOfTasks;
     private int mCurrentTask;//this will be used to keep track of which task we still need to query.
     private ArrayList<CpuTask> taskList;
-
-
 
     private TextView mInfoView;
     private MainActivity mAct;
@@ -54,8 +54,8 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
         if(cmd.getCmdId() == CommandId.GET_TASK_INFO)
         {
 
-            task = ((GetTaskInfoSts)cmd.getStatus()).getTask();
-
+            task = new CpuTask(((GetTaskInfoSts) cmd.getStatus()).getTask());
+ 
             for(CpuTask tempTask : this.taskList)
             {
                 if(tempTask.getTaskIndex() == task.getTaskIndex())
@@ -85,6 +85,8 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
     public void run() {
         //add to the data text
         String str = "";
+        //sort based on the task index
+        Collections.sort(this.taskList);
         for(CpuTask task : this.taskList)
         {
             str += task.toString();
@@ -109,4 +111,5 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
     public void setNumOfTasks(int numOfTasks) {
         this.mNumOfTasks = numOfTasks;
     }
+
 }

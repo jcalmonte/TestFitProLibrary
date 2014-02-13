@@ -105,6 +105,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
 
             this.taskInfoCmd = new FecpCommand(MainDevice.getCommand(CommandId.GET_TASK_INFO),this.handleTaskCmd,0, 100);//rotates through
 
+
             tempCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
 
             mainCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));//displays the system
@@ -116,9 +117,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
 
             // Create a single fire command with no callback
 
-
             //add the commands to the system
-            this.fecpController.addCmd(tempCommand);//does nothing
             this.fecpController.addCmd(infoCommand);//gets speed and mode and calls callback every 1 second
 
         }catch (Exception ex){
@@ -241,6 +240,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
     private void initLayout(){
         timeWhenCleared = Calendar.getInstance();
 
+
         buttonMain = (Button) findViewById(R.id.buttonMain);
         buttonMain.setOnClickListener(this);
         buttonTask = (Button) findViewById(R.id.buttonTask);
@@ -252,17 +252,48 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
         editSpeedText.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int code, KeyEvent keyEvent) {
+                String inputText;
                 // if keydown and "enter" is pressed
                 if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN)
                         && (code == KeyEvent.KEYCODE_ENTER)) {
                     //do something
                     //get the value from the text edit box and send it
+                    inputText = editSpeedText.getText().toString();
+                    mSpeedMph = Double.parseDouble(inputText);
+                    if(mSpeedMph != mSpeedMphPrev){
+                        try {
+                            ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
+                            fecpController.addCmd(tempCommand);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    mSpeedMphPrev = mSpeedMph;
                     return true;
                 }
                 return false;
             }
         });
 
+        editSpeedText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus)
+                {
+                    //add command with the speed to the system.
+                    if(mSpeedMph != mSpeedMphPrev){
+                        try {
+                            ((WriteReadDataCmd)tempCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
+                            fecpController.addCmd(tempCommand);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    mSpeedMphPrev = mSpeedMph;
+                }
+
+            }
+        });
         textViewData = (TextView) findViewById(R.id.textViewData);
         textViewMain = (TextView) findViewById(R.id.textViewMain);
         textViewMode = (TextView) findViewById(R.id.textViewMode);

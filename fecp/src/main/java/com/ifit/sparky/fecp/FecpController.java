@@ -27,6 +27,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 import com.ifit.sparky.fecp.interpreter.status.GetCmdsSts;
 import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
+import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 
 import java.util.Set;
@@ -85,6 +86,12 @@ public class FecpController{
             this.mSysDev.setCpuFrequency(((GetSysInfoSts) sysInfoCmd.getStatus()).getCpuFrequency());
             this.mSysDev.setMcuName(((GetSysInfoSts) sysInfoCmd.getStatus()).getMcuName());
             this.mSysDev.setConsoleName(((GetSysInfoSts) sysInfoCmd.getStatus()).getConsoleName());
+            if(this.mSysDev.getCommandSet().containsKey(CommandId.GET_TASK_INFO))
+            {
+                //add the Cpu Frequency to the command
+                ((GetTaskInfoSts)this.mSysDev.getCommand(CommandId.GET_TASK_INFO).getStatus()).getTask().setMainClkFrequency(this.mSysDev.getCpuFrequency());
+            }
+
 
             //two references to the same object with different responsibilities
             this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
@@ -132,7 +139,6 @@ public class FecpController{
     {
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
-
 
     /**
      * Removes a command from the list to send
