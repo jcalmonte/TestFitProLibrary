@@ -15,6 +15,8 @@ import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -22,16 +24,18 @@ import java.util.concurrent.TimeUnit;
 public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
 
     private CommInterface mCommController;
-    private ArrayList<FecpCommand> mProcessCmds;
-    private ArrayList<FecpCommand> mPeriodicCmds;//this will use the thread scheduler
+    private Vector<FecpCommand> mProcessCmds;
+//    private ArrayList<FecpCommand> mProcessCmds;
+    //private ArrayList<FecpCommand> mPeriodicCmds;//this will use the thread scheduler
+    private Vector<FecpCommand> mPeriodicCmds;//this will use the thread scheduler
     private ScheduledExecutorService mThreadManager = Executors.newSingleThreadScheduledExecutor();//this will keep track of all the threads
     private Thread mCurrentThread;//this thread will be recreated when needed.
 
     public FecpCmdHandler(CommInterface commController)
     {
         this.mCommController = commController;
-        this.mProcessCmds = new ArrayList<FecpCommand>();
-        this.mPeriodicCmds = new ArrayList<FecpCommand>();
+        this.mProcessCmds =new Vector<FecpCommand>();
+        this.mPeriodicCmds = new Vector<FecpCommand>();
     }
 
     /**

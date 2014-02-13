@@ -29,8 +29,17 @@ public class GetTaskInfoSts extends Status implements StatusInterface {
         this.mTask = new CpuTask();
     }
 
+    /**
+     * Gets the Task from the response
+     * @return CpuTask with stats on the task
+     */
     public CpuTask getTask() {
         return mTask;
+    }
+
+    public void setTask(CpuTask task)
+    {
+        this.mTask = task;
     }
     /**
      * Handles the message that is coming across the usb. It handles raw data, and it

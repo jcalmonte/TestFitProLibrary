@@ -9,6 +9,7 @@
 package com.ifit.sparky.fecp.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.CpuTask;
 import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 
 import java.nio.ByteBuffer;
@@ -79,8 +80,11 @@ public class GetTaskInfoCmd extends Command implements CommandInterface{
      */
     @Override
     public Command getCommandCopy() throws Exception {
+        CpuTask tempTask;
         Command tempCmd = new GetTaskInfoCmd(this.getDevId());
         ((GetTaskInfoCmd)tempCmd).setTaskIndex(this.mTaskIndex);
+        tempTask = ((GetTaskInfoSts)this.getStatus()).getTask();
+        ((GetTaskInfoSts)tempCmd.getStatus()).setTask(new CpuTask(tempTask));
         return tempCmd;
     }
 }

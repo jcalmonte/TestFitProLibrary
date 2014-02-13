@@ -258,16 +258,24 @@ public class CpuTask implements Comparable<CpuTask> {
     @Override
     public String toString() {
         //time of one cycle
-        double cycleTime = 1/this.mMainClkFrequency;
-        return  "Task=" + mTaskIndex +
+        double cycleTime = (1000/this.mMainClkFrequency);
+        String tempStr = "Task=" + mTaskIndex +
                 ", Interval=" + mInterval +"uSec"+
-                ", ExeFlag=" + mExecutFlag +
                 ", Recent=" + String.format("%.3f",(mRecentTime * cycleTime)) + "uSec" +
                 ", Worse=" + String.format("%.3f",(mWorseTime * cycleTime)) + "uSec" +
                 ", mBestTime=" + String.format("%.3f",(mBestTime * cycleTime)) + "uSec" +
                 ", mNumberOfCalls=" + mNumberOfCalls +
-                ", mNumberOfMisses=" + mNumberOfMisses +
-                ", mName='" + mName + '\n';
+                ", mNumberOfMisses=" + mNumberOfMisses;
+        if(this.mName.length() != 0)
+        {
+            tempStr += ", mName='" + mName;
+        }
+        if(this.mExecutFlag)
+        {
+            tempStr += ", EXE";
+        }
+        tempStr += '\n';
+        return tempStr;
     }
 
 
