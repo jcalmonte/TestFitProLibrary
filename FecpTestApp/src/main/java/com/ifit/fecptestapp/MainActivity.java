@@ -37,7 +37,7 @@ import com.ifit.sparky.fecp.interpreter.device.Device;
 
 import java.util.Calendar;
 
-public class MainActivity extends Activity implements View.OnClickListener, DialogInterface.OnKeyListener{
+public class MainActivity extends Activity implements View.OnClickListener{
 
     //UsbComm usbComm;
 
@@ -167,30 +167,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Dial
         }
     }
 
-    @Override
-    public boolean onKey(DialogInterface dialogInterface, int code, KeyEvent keyEvent) {
-
-        // if keydown and "enter" is pressed
-        if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN)
-                && (code == KeyEvent.KEYCODE_ENTER)) {
-
-            if(mSpeedMph != mSpeedMphPrev){
-                try {
-                    ((WriteReadDataCmd) speedCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
-                    fecpController.addCmd(speedCommand);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            mSpeedMphPrev = mSpeedMph;
-
-            // display a floating message
-            //get the value from the text edit box and send it
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * PlaceholderFragment
