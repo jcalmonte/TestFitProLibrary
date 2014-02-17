@@ -7,9 +7,6 @@
  */
 package com.ifit.fecptestapp;
 
-import android.content.AsyncTaskLoader;
-import android.os.AsyncTask;
-import android.os.Looper;
 import android.widget.TextView;
 
 import com.ifit.sparky.fecp.CommandCallback;
@@ -19,6 +16,8 @@ import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
+import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 
 import java.util.TreeMap;
@@ -52,7 +51,7 @@ public class HandleInfo implements CommandCallback, Runnable {
             {
 
                 try {
-                    mResultStr = "Speed="+((SpeedConverter)commandData.get(BitFieldId.KPH).getData()).getSpeed();
+                    mResultStr = "kph="+((SpeedConverter)commandData.get(BitFieldId.KPH).getData()).getSpeed();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -62,13 +61,17 @@ public class HandleInfo implements CommandCallback, Runnable {
             {
 
                 try {
-                    mResultStr += "Mode=" + ((ByteConverter)commandData.get(BitFieldId.WORKOUT_MODE).getData()).getValue();
+                   // mResultStr += "Mode=" + ((ByteConverter)commandData.get(BitFieldId.WORKOUT_MODE).getData()).getValue();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
-           // this.mInfoView.setText(resultStr);
+            this.mAct.runOnUiThread(new Thread(this));
+        }
+        else if(cmd.getCmdId() == CommandId.GET_SYSTEM_INFO)
+        {
+            mResultStr = " cpu(%"+String.format("%.1f",((GetSysInfoSts)cmd.getStatus()).getCpuUse()* 100)+")";
             this.mAct.runOnUiThread(new Thread(this));
         }
     }

@@ -161,6 +161,11 @@ public class Status implements StatusInterface{
     @Override
     public void handleStsMsg(ByteBuffer buff) throws Exception {
         //goes through all the major items, but doesn't handle the specifics
+        if(buff == null)
+        {
+            this.setStsId(StatusId.FAILED);
+            return;
+        }
         byte checkSum;
         byte actualByte;
         buff.position(0);

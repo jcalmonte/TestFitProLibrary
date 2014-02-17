@@ -24,47 +24,47 @@ public class TestType extends TestIntegration{
     //to choose what test to run
     public char getType() throws  Exception{
         char machineType = 'x';
-        //if machine type is x we could not get the machine type
-        //legend: t represents treadmill
-        //        e represents elliptical
-        //        b represents bike
-        //        x represents unknown device
-        Device machineName = new Device(DeviceId.valueOf());
-        machineName.getCommand();
-        Command cmd = new InfoCmd(DeviceId.valueOf());
-        //try to access the fecp system
-        String machine;
-        //try to put the type into a string to compare it
-        machine = DeviceId.getDeviceId();
-        FecpCommand machineCommand = null;
-        //attempt to initialize a connection with the FECP controller
-        //access the FECP library
-        try{
-            FecpController fecpController = new FecpController(TestType.this, getIntent(), CommType.USB_COMMUNICATION, null);}
-            fecpController.initializeConnection();
-            catch (Exception e)
-            {
-                    Log.e("Device failed", e.getMessage()));
-            try {
-                machineCommand = new FecpCommand(); getIntent(), CommType.USB_COMMUNICATION, null);
-
-            }catch (Exception exit){
-
-                //could not pull the info check to make sure device is connected
-                //perhaps wait and try again?
-            exit.printStackTrace();
-        }
-
-            //the device can not be both tread and trainer therefore XOR gate
-            if((machine.equals("TREADMILL"))^(machine.equals("INCLINE_TRAINER")))
-                machineType = 't';
-            if(machine.equals("ELLIPTICAL"))
-                machineType = 'e';
-            if(machine.equals("BIKE"))
-            machineType = 'b';
+//        //if machine type is x we could not get the machine type
+//        //legend: t represents treadmill
+//        //        e represents elliptical
+//        //        b represents bike
+//        //        x represents unknown device
+//        Device machineName = new Device(DeviceId.valueOf());
+//        machineName.getCommand();
+//        Command cmd = new InfoCmd(DeviceId.valueOf());
+//        //try to access the fecp system
+//        String machine;
+//        //try to put the type into a string to compare it
+//        machine = DeviceId.getDeviceId();
+//        FecpCommand machineCommand = null;
+//        //attempt to initialize a connection with the FECP controller
+//        //access the FECP library
+//        try{
+//            FecpController fecpController = new FecpController(TestType.this, getIntent(), CommType.USB_COMMUNICATION, null);}
+//            fecpController.initializeConnection();
+//            catch (Exception e)
+//            {
+//                    Log.e("Device failed", e.getMessage()));
+//            try {
+//                machineCommand = new FecpCommand(); getIntent(), CommType.USB_COMMUNICATION, null);
+//
+//            }catch (Exception exit){
+//
+//                //could not pull the info check to make sure device is connected
+//                //perhaps wait and try again?
+//            exit.printStackTrace();
+//        }
+//
+//            //the device can not be both tread and trainer therefore XOR gate
+//            if((machine.equals("TREADMILL"))^(machine.equals("INCLINE_TRAINER")))
+//                machineType = 't';
+//            if(machine.equals("ELLIPTICAL"))
+//                machineType = 'e';
+//            if(machine.equals("BIKE"))
+//            machineType = 'b';
 
         return machineType;
-    }
+
     }
     public void chooseType() throws Exception{
         char treadmill = 't';

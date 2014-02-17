@@ -26,6 +26,7 @@ public enum DeviceId {
     ANT_PLUS_HRM(0x37, "Ant Plus Heart Rate Monitor"),
     AUDIO(0x40, "Audio Controller"),
     SPEED(0X41, "Speed Controller"),
+    INCLINE(0X42, "Incline Controller"),
     WATTS(0X43, "Watts Controller"),
     TORQUE(0X44, "Torque Controller"),
     RESISTANCE(0X45, "Resistance Controller"),
