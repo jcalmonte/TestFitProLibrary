@@ -20,9 +20,9 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Mode:"
         android:id="@+id/textViewMode"
-        android:layout_marginLeft="42dp"
-        android:layout_alignBottom="@+id/editSpeedText"
-        android:layout_toRightOf="@+id/textViewCurrentSpeed" />
+        android:layout_marginLeft="41dp"
+        android:layout_alignTop="@+id/textViewIncline"
+        android:layout_toRightOf="@+id/textViewIncline" />
 
     <Button
         android:layout_width="wrap_content"
@@ -45,8 +45,8 @@
         android:layout_height="wrap_content"
         android:text="Mode"
         android:id="@+id/buttonMode"
-        android:layout_alignTop="@+id/buttonTask"
-        android:layout_toRightOf="@+id/buttonTask" />
+        android:layout_below="@+id/textViewCpu"
+        android:layout_toRightOf="@+id/buttonIncline" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -99,5 +99,71 @@
         android:id="@+id/textViewCpu"
         android:layout_above="@+id/buttonTask"
         android:layout_toRightOf="@+id/textViewMain" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/InclineLabel"
+        android:text="Incline"
+        android:layout_alignTop="@+id/textViewCurrentSpeed"
+        android:layout_toRightOf="@+id/textViewCurrentSpeed"
+        android:layout_marginLeft="26dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editInclineText"
+        android:hint="incline"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:numeric="decimal"
+        android:singleLine="true"
+        android:layout_alignBottom="@+id/textViewMode"
+        android:layout_toRightOf="@+id/InclineLabel" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="%"
+        android:id="@+id/textViewIncline"
+        android:layout_alignTop="@+id/InclineLabel"
+        android:layout_toRightOf="@+id/editInclineText" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Incline"
+        android:id="@+id/buttonIncline"
+        android:layout_above="@+id/textViewData"
+        android:layout_toRightOf="@+id/buttonTask" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=" Dist="
+        android:id="@+id/textViewDistance"
+        android:layout_above="@+id/buttonMode"
+        android:layout_toRightOf="@+id/textViewCpu" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="runTime= "
+        android:id="@+id/textViewUserTime"
+        android:layout_alignTop="@+id/textViewDistance"
+        android:layout_toRightOf="@+id/textViewDistance" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="tabletStartTime="
+        android:id="@+id/textViewTabletTime"
+        android:layout_alignTop="@+id/textViewUserTime"
+        android:layout_toRightOf="@+id/textViewUserTime" />
 
 </RelativeLayout>
