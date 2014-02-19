@@ -85,6 +85,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
     private HandleInfo handleInfoCmd;
     private HandleTaskInfo handleTaskCmd;
     private long startTime;
+    private int currentMode;
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -176,6 +177,23 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         }
         else if(view == buttonMode )
         {
+            if(currentMode == 8)
+            {
+                currentMode = 0;
+            }
+            else
+            {
+                currentMode++;
+            }
+            try
+            {
+                ((WriteReadDataCmd)this.modeCommand.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, currentMode);
+                this.fecpController.addCmd(this.modeCommand);
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
             //set a single command to change the mode.
             this.fecpController.removeCmd(this.taskInfoCmd);
         }
@@ -474,6 +492,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
             this.inclineCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
 
             speedCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
+            modeCommand  = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
 
             //update the cpu every 2 seconds
             cpuInfoCommand = new FecpCommand(MainDevice.getCommand(CommandId.GET_SYSTEM_INFO), this, 0, 2000);
