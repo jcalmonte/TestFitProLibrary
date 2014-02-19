@@ -34,6 +34,7 @@ import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.InclineConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -60,6 +61,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
     private TextView textViewCurrentSpeed;
     private TextView textViewCpu;
     private TextView textViewIncline;
+    private TextView textViewDistance;
+    private TextView textViewUserTime;
+    private TextView textViewTabletTime;
 
     private Button buttonMain;
     private Button buttonTask;//info on all of the tasks
@@ -80,6 +84,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
     private SystemDevice MainDevice;
     private HandleInfo handleInfoCmd;
     private HandleTaskInfo handleTaskCmd;
+    private long startTime;
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -112,6 +117,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         }
 
         textViewMain.setText("Main " + MainDevice.getInfo().getDevId().getDescription());
+        startTime = System.currentTimeMillis();
 
         for(Device tempDev : MainDevice.getSubDeviceList())
         {
@@ -278,6 +284,30 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
             }
         }
 
+        if(commandData.containsKey(BitFieldId.DISTANCE))
+        {
+            try
+            {
+                this.textViewDistance.setText(" Dist=" + ((LongConverter) commandData.get(BitFieldId.DISTANCE).getData()).getValue());
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+        if(commandData.containsKey(BitFieldId.RUNNING_TIME))
+        {
+            try
+            {
+                this.textViewUserTime.setText(" runTime=" + ((LongConverter) commandData.get(BitFieldId.RUNNING_TIME).getData()).getValue());
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        this.textViewTabletTime.setText(" tabletStartTime =" +((System.currentTimeMillis() - startTime)/1000));
     }
 
 
@@ -336,15 +366,13 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
                     {
                         numEx.printStackTrace();
                     }
-                    if(mSpeedMph != mSpeedMphPrev){
-                        try {
-                            ((WriteReadDataCmd) speedCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
-                            fecpController.addCmd(speedCommand);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+
+                    try {
+                        ((WriteReadDataCmd) speedCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
+                        fecpController.addCmd(speedCommand);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    mSpeedMphPrev = mSpeedMph;
                     return true;
                 }
                 return false;
@@ -357,15 +385,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
                 if(!hasFocus)
                 {
                     //add command with the speed to the system.
-                    if(mSpeedMph != mSpeedMphPrev){
-                        try {
-                            ((WriteReadDataCmd) speedCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
-                            fecpController.addCmd(speedCommand);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        ((WriteReadDataCmd) speedCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
+                        fecpController.addCmd(speedCommand);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    mSpeedMphPrev = mSpeedMph;
                 }
 
             }
@@ -430,6 +455,10 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         textViewCpu = (TextView) findViewById(R.id.textViewCpu);
         textViewIncline = (TextView) findViewById(R.id.textViewIncline);
         textViewCurrentSpeed = (TextView) findViewById(R.id.textViewCurrentSpeed);
+
+        textViewDistance = (TextView) findViewById(R.id.textViewDistance);
+        textViewUserTime = (TextView) findViewById(R.id.textViewUserTime);
+        textViewTabletTime = (TextView) findViewById(R.id.textViewTabletTime);
 
     }
 

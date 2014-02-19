@@ -139,4 +139,31 @@
         android:layout_above="@+id/textViewData"
         android:layout_toRightOf="@+id/buttonTask" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=" Dist="
+        android:id="@+id/textViewDistance"
+        android:layout_above="@+id/buttonMode"
+        android:layout_toRightOf="@+id/textViewCpu" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="runTime= "
+        android:id="@+id/textViewUserTime"
+        android:layout_alignTop="@+id/textViewDistance"
+        android:layout_toRightOf="@+id/textViewDistance" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="tabletStartTime="
+        android:id="@+id/textViewTabletTime"
+        android:layout_alignTop="@+id/textViewUserTime"
+        android:layout_toRightOf="@+id/textViewUserTime" />
+
 </RelativeLayout>
