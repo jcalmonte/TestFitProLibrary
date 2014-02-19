@@ -13,6 +13,7 @@ import com.ifit.sparky.fecp.CommandCallback;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.InclineConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -52,6 +53,15 @@ public class HandleInfo implements CommandCallback, Runnable {
 
                 try {
                     mResultStr = "kph="+((SpeedConverter)commandData.get(BitFieldId.KPH).getData()).getSpeed();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(commandData.containsKey(BitFieldId.INCLINE))
+            {
+                try {
+                    mResultStr = "%"+((InclineConverter)commandData.get(BitFieldId.KPH).getData()).getIncline();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

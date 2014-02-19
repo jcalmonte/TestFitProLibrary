@@ -11,7 +11,6 @@ package com.ifit.fecptestapp;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -25,19 +24,28 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.ifit.sparky.fecp.CommandCallback;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.CmdHandlerType;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.InclineConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
+import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
+import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
+import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 
 import java.util.Calendar;
+import java.util.TreeMap;
 
-public class MainActivity extends Activity implements View.OnClickListener{
+public class MainActivity extends Activity implements View.OnClickListener, CommandCallback, Runnable{
 
     //UsbComm usbComm;
 
@@ -51,27 +59,27 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private TextView textViewData;
     private TextView textViewCurrentSpeed;
     private TextView textViewCpu;
+    private TextView textViewIncline;
 
     private Button buttonMain;
     private Button buttonTask;//info on all of the tasks
     private Button buttonMode;//toggles which mode we are in
+    private Button buttonIncline;
     private EditText editSpeedText;//toggles which mode we are in
+    private EditText editInclineText;//toggles which mode we are in
 
-    private Calendar timeWhenCleared;
 
     private FecpController fecpController;
-    private FecpCommand mainCommand;//gets the info for the main command
     private FecpCommand cpuInfoCommand;//gets info for the CPU
     private FecpCommand modeCommand;//toggles the mode
+    private FecpCommand inclineCommand;//Changes the incline
     private FecpCommand taskInfoCmd;//toggles the mode
 
     private FecpCommand speedCommand;
     private FecpCommand infoCommand;//gets info on the whole system
     private SystemDevice MainDevice;
     private HandleInfo handleInfoCmd;
-    private HandleInfo handleCpu;
     private HandleTaskInfo handleTaskCmd;
-
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -144,8 +152,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * @param view which button was pressed
      */
     @Override
-    public void onClick(View view) {
-
+    public void onClick(View view)
+    {
         if(view == buttonMain )
         {
             //get info on the main Device and display it
@@ -165,6 +173,111 @@ public class MainActivity extends Activity implements View.OnClickListener{
             //set a single command to change the mode.
             this.fecpController.removeCmd(this.taskInfoCmd);
         }
+        else if(view == buttonIncline)
+        {
+            //set a single command to change the mode.
+            this.fecpController.removeCmd(this.taskInfoCmd);
+        }
+    }
+
+    /**
+     * Handles the reply from the device
+     *
+     * @param cmd the command that was sent.
+     */
+    @Override
+    public void msgHandler(Command cmd)
+    {
+        TreeMap<BitFieldId, BitfieldDataConverter> commandData;
+        if(cmd.getCmdId() == CommandId.WRITE_READ_DATA)
+        {
+            commandData = ((WriteReadDataSts)cmd.getStatus()).getResultData();
+
+            if(commandData.containsKey(BitFieldId.KPH))
+            {
+
+                try {
+                   // mResultStr = "kph="+((SpeedConverter)commandData.get(BitFieldId.KPH).getData()).getSpeed();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(commandData.containsKey(BitFieldId.INCLINE))
+            {
+                try {
+                    //mResultStr = "%"+((InclineConverter)commandData.get(BitFieldId.KPH).getData()).getIncline();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(commandData.containsKey(BitFieldId.WORKOUT_MODE))
+            {
+
+                try {
+                    // mResultStr += "Mode=" + ((ByteConverter)commandData.get(BitFieldId.WORKOUT_MODE).getData()).getValue();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            this.runOnUiThread(new Thread(this));
+        }
+        else if(cmd.getCmdId() == CommandId.GET_SYSTEM_INFO)
+        {
+           // mResultStr = " cpu(%"+String.format("%.1f",((GetSysInfoSts)cmd.getStatus()).getCpuUse()* 100)+")";
+            //this.runOnUiThread(new Thread(this));
+        }
+
+        this.runOnUiThread(new Thread(this));
+    }
+
+    @Override
+    public void run()
+    {
+        //update all of the info we need to display
+
+        TreeMap<BitFieldId, BitfieldDataConverter> commandData;
+
+        this.textViewCpu.setText( " cpu(%"+String.format("%.1f",((GetSysInfoSts)cpuInfoCommand.getCommand().getStatus()).getCpuUse()* 100)+")");
+
+        commandData = ((WriteReadDataSts)this.infoCommand.getCommand().getStatus()).getResultData();
+
+        if(commandData.containsKey(BitFieldId.KPH))
+        {
+            try
+            {
+                this.textViewCurrentSpeed.setText("kph=" + ((SpeedConverter) commandData.get(BitFieldId.KPH).getData()).getSpeed());
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        if(commandData.containsKey(BitFieldId.INCLINE))
+        {
+            try
+            {
+                this.textViewIncline.setText("%" + ((InclineConverter) commandData.get(BitFieldId.INCLINE).getData()).getIncline());
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        if(commandData.containsKey(BitFieldId.WORKOUT_MODE))
+        {
+            try
+            {
+                this.textViewMode.setText("Mode=" + ((ByteConverter) commandData.get(BitFieldId.WORKOUT_MODE).getData()).getValue());
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
     }
 
 
@@ -189,8 +302,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
      * Initialize the GUI elements
      */
     private void initLayout(){
-        timeWhenCleared = Calendar.getInstance();
-
 
         buttonMain = (Button) findViewById(R.id.buttonMain);
         buttonMain.setOnClickListener(this);
@@ -198,6 +309,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
         buttonTask.setOnClickListener(this);
         buttonMode = (Button) findViewById(R.id.buttonMode);
         buttonMode.setOnClickListener(this);
+
+        buttonIncline = (Button) findViewById(R.id.buttonIncline);
+        buttonIncline.setOnClickListener(this);
 
         editSpeedText = (EditText) findViewById(R.id.editSpeedText);
         editSpeedText.setOnKeyListener(new View.OnKeyListener() {
@@ -256,10 +370,65 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
             }
         });
+
+        editInclineText = (EditText) findViewById(R.id.editInclineText);
+        editInclineText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int code, KeyEvent keyEvent) {
+
+                double tempEditTextVal = 0.0;
+                String inputText;
+                // if keydown and "enter" is pressed
+                if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN)
+                        && (code == KeyEvent.KEYCODE_ENTER)) {
+                    //do something
+                    //get the value from the text edit box and send it
+                    inputText = editInclineText.getText().toString();
+                    if(inputText.isEmpty())
+                    {
+                        return false;//invalid data
+                    }
+                    try
+                    {
+                        tempEditTextVal = Double.parseDouble(inputText);
+                    }
+                    catch (NumberFormatException numEx)
+                    {
+                        numEx.printStackTrace();
+                    }
+                        try {
+                            ((WriteReadDataCmd) inclineCommand.getCommand()).addWriteData(BitFieldId.INCLINE, tempEditTextVal);
+                            fecpController.addCmd(inclineCommand);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        editInclineText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus)
+                {
+                    //add command with the speed to the system.
+                     try {
+                            ((WriteReadDataCmd) inclineCommand.getCommand()).addWriteData(BitFieldId.KPH, mSpeedMph);
+                            fecpController.addCmd(inclineCommand);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                }
+
+            }
+        });
         textViewData = (TextView) findViewById(R.id.textViewData);
         textViewMain = (TextView) findViewById(R.id.textViewMain);
         textViewMode = (TextView) findViewById(R.id.textViewMode);
         textViewCpu = (TextView) findViewById(R.id.textViewCpu);
+        textViewIncline = (TextView) findViewById(R.id.textViewIncline);
         textViewCurrentSpeed = (TextView) findViewById(R.id.textViewCurrentSpeed);
 
     }
@@ -268,23 +437,44 @@ public class MainActivity extends Activity implements View.OnClickListener{
     {
         try
         {
-        //create command by passing the command of the specific device you want to use.
-        //NOTE do not create a command, always use FecpCommand. If you use command it can corrupt data.
-        //                              command,                                       callback,   timeout, frequency
-        infoCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), handleInfoCmd, 0, 1000);//every 1 second
-        this.taskInfoCmd = new FecpCommand(MainDevice.getCommand(CommandId.GET_TASK_INFO),this.handleTaskCmd,0, 100);//rotates through
+            //create command by passing the command of the specific device you want to use.
+            //NOTE do not create a command, always use FecpCommand. If you use command it can corrupt data.
+            //                              command,                                       callback,   timeout, frequency
+            infoCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), this, 0, 1000);//every 1 second
+            this.taskInfoCmd = new FecpCommand(MainDevice.getCommand(CommandId.GET_TASK_INFO),this.handleTaskCmd,0, 100);//rotates through
+            this.inclineCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
 
-        speedCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
-        mainCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));//displays the system
+            speedCommand = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA));
 
-        //update the cpu every 2 seconds
-        cpuInfoCommand = new FecpCommand(MainDevice.getCommand(CommandId.GET_SYSTEM_INFO), handleCpu, 0, 2000);
+            //update the cpu every 2 seconds
+            cpuInfoCommand = new FecpCommand(MainDevice.getCommand(CommandId.GET_SYSTEM_INFO), this, 0, 2000);
 
-        //typecast the command that you want to customize, and add what ever data you want to the specific command
-        //we want to read the mode,Speed,etc..
-        ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
-        ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.KPH);
+            //typecast the command that you want to customize, and add what ever data you want to the specific command
+            //we want to read the mode,Speed,etc..
+            if(this.MainDevice.getInfo().getSupportedBitfields().contains(BitFieldId.WORKOUT_MODE))
+            {
+                ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
+            }
 
+            if(this.MainDevice.getInfo().getSupportedBitfields().contains(BitFieldId.KPH))
+            {
+                ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.KPH);
+            }
+
+            if(this.MainDevice.getInfo().getSupportedBitfields().contains(BitFieldId.INCLINE))
+            {
+                ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.INCLINE);
+            }
+
+            if(this.MainDevice.getInfo().getSupportedBitfields().contains(BitFieldId.DISTANCE))
+            {
+                ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.DISTANCE);
+            }
+
+            if(this.MainDevice.getInfo().getSupportedBitfields().contains(BitFieldId.RUNNING_TIME))
+            {
+                ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.RUNNING_TIME);
+            }
 
             //add the Periodic commands to the system
             this.fecpController.addCmd(infoCommand);//gets speed and mode and calls callback every 1 second
@@ -300,9 +490,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private void initHandlers()
     {
         //How to create a Callback handler that implements CommandCallback
-        handleInfoCmd = new HandleInfo(this, textViewCurrentSpeed);
+       // handleInfoCmd = new HandleInfo(this, textViewCurrentSpeed);
         this.handleTaskCmd = new HandleTaskInfo(this, this.textViewData);//upload all the data into the data section.
         this.handleTaskCmd.setNumOfTasks(this.MainDevice.getNumberOfTasks());
-        handleCpu = new HandleInfo(this, textViewCpu);
+        //handleCpu = new HandleInfo(this, textViewCpu);
     }
 }
