@@ -24,7 +24,7 @@ public enum BitFieldId {
     VOLUME(9, 1, false, new ByteConverter(), "Volume"),
     PULSE(10, 1, true, new ByteConverter(), "Pulse"),
     RUNNING_TIME(11, 4, true, new LongConverter(), "Running Time"),
-    WORKOUT_MODE(12, 1, false, new ByteConverter(), "Workout Mode"),
+    WORKOUT_MODE(12, 1, false, new ModeConverter(), "Workout Mode"),
     CALORIES(13, 2, true, new ShortConverter(), "Calories"),
     AUDIO_SOURCE(14, 1, false, new ByteConverter(), "Audio Source"),
     ANDROID_KEYS(15, 1, true, new ByteConverter(), "Android Keys"),
