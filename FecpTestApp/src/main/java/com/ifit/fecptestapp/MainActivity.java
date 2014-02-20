@@ -35,6 +35,7 @@ import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.InclineConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -261,7 +262,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
     public void run()
     {
         //update all of the info we need to display
-
+        int tempTime;
         TreeMap<BitFieldId, BitfieldDataConverter> commandData;
 
         this.textViewCpu.setText( " cpu(%"+String.format("%.1f",((GetSysInfoSts)cpuInfoCommand.getCommand().getStatus()).getCpuUse()* 100)+")");
@@ -294,7 +295,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         {
             try
             {
-                this.textViewMode.setText("Mode=" + ((ByteConverter) commandData.get(BitFieldId.WORKOUT_MODE).getData()).getValue());
+                this.textViewMode.setText("Mode=" + ((ModeConverter) commandData.get(BitFieldId.WORKOUT_MODE).getData()).getMode().getDescription());
             }
             catch (Exception ex)
             {
@@ -306,7 +307,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         {
             try
             {
-                this.textViewDistance.setText(" Dist=" + ((LongConverter) commandData.get(BitFieldId.DISTANCE).getData()).getValue());
+                this.textViewDistance.setText(" Dist=" + ((LongConverter) commandData.get(BitFieldId.DISTANCE).getData()).getValue() + "meters");
             }
             catch (Exception ex)
             {
@@ -318,14 +319,18 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         {
             try
             {
-                this.textViewUserTime.setText(" runTime=" + ((LongConverter) commandData.get(BitFieldId.RUNNING_TIME).getData()).getValue());
+                tempTime = ((LongConverter) commandData.get(BitFieldId.RUNNING_TIME).getData()).getValue();
+
+                this.textViewUserTime.setText(" runTime=" + (tempTime/60)+":"+(tempTime%60));
             }
             catch (Exception ex)
             {
                 ex.printStackTrace();
             }
         }
-        this.textViewTabletTime.setText(" tabletStartTime =" +((System.currentTimeMillis() - startTime)/1000));
+
+        tempTime = (int)((System.currentTimeMillis() - startTime)/1000);
+        this.textViewTabletTime.setText(" tabletStartTime =" + (tempTime/60)+":"+(tempTime%60));
     }
 
 
