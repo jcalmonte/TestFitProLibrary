@@ -44,6 +44,11 @@ public class ModeConverter extends BitfieldDataConverter {
         {
             this.mMode = ModeId.values()[(Integer)obj];
         }
+        else if(obj.getClass() == Double.class)
+        {
+            Double temp = (Double)obj;
+            this.mMode = ModeId.values()[temp.intValue()];
+        }
         else
         {
             throw new InvalidBitFieldException( ModeId.class, obj );
