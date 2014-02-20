@@ -136,8 +136,8 @@
         android:layout_height="wrap_content"
         android:text="Incline"
         android:id="@+id/buttonIncline"
-        android:layout_above="@+id/textViewData"
-        android:layout_toRightOf="@+id/buttonTask" />
+        android:layout_alignTop="@+id/buttonKeyPress"
+        android:layout_toRightOf="@+id/buttonKeyPress" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -165,5 +165,13 @@
         android:id="@+id/textViewTabletTime"
         android:layout_alignTop="@+id/textViewUserTime"
         android:layout_toRightOf="@+id/textViewUserTime" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Keys"
+        android:id="@+id/buttonKeyPress"
+        android:layout_alignTop="@+id/buttonTask"
+        android:layout_toRightOf="@+id/buttonTask" />
 
 </RelativeLayout>

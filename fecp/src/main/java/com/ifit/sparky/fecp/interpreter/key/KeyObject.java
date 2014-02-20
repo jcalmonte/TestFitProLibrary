@@ -133,7 +133,16 @@ public class KeyObject {
 
     public String toString()
     {
-        return this.mCode.name();//todo add to this.
+        //Format the data about the keypress
+        String result = "Key ";
+        result += "cooked " + this.mCode.name();
+        result += ", category " + this.mCode.getCategory();
+        result += ", value " + this.mCode.getVal() + "\n";
+        result += "rawCode " + String.format("%08X",this.mRawKeyCode) + "\n";
+        result += "timeHeld " + this.mTimeHeld +"\n";
+        result += "timePressed " + this.mTimePressed;
+
+        return result;
     }
 
 }
