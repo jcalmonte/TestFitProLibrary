@@ -443,7 +443,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(4, bit.getBit());
         assertEquals(1, bit.getSize());
         assertEquals(false, bit.getReadOnly());
-        assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
+        assertEquals(ModeId.DEBUG, ((ModeConverter)bit.getData(buff1)).getMode());
         resultBuff1.clear();
         resultBuff1.put((byte) 5);
         assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
