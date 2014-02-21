@@ -306,6 +306,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
             }
         }
 
+        commandData = ((WriteReadDataSts)this.keyInfoCmd.getCommand().getStatus()).getResultData();
+
         if(commandData.containsKey(BitFieldId.KEY_OBJECT))
         {
             try
