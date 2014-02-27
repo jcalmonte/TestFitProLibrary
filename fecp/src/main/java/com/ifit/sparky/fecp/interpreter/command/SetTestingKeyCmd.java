@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 
 public class SetTestingKeyCmd extends Command implements CommandInterface{
 
-    private static final int CMD_LENGTH = 11;
+    private static final int CMD_LENGTH = 10;
     private boolean mKeyOverride;
     private boolean mIsSingleClick;
     private int mTimeHeld;
@@ -28,6 +28,7 @@ public class SetTestingKeyCmd extends Command implements CommandInterface{
     public SetTestingKeyCmd() throws Exception
     {
         super();
+        this.setDevId(DeviceId.KEY_PRESS);//only device this can go to.
         this.setCmdId(CommandId.SET_TESTING_KEY);
         this.setStatus(new SetTestingKeySts(this.getDevId()));
         this.setLength(CMD_LENGTH);
@@ -43,6 +44,10 @@ public class SetTestingKeyCmd extends Command implements CommandInterface{
     public SetTestingKeyCmd(DeviceId devId) throws Exception
     {
         super(new SetTestingKeySts(devId),CMD_LENGTH,CommandId.SET_TESTING_KEY,devId);
+        this.mKeyOverride = false;
+        this.mIsSingleClick = false;
+        this.mTimeHeld = 0;
+        this.mKeyCode = KeyCodes.NO_KEY;
     }
 
     public boolean isKeyOverride() {
