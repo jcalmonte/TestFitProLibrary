@@ -41,6 +41,7 @@ import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
@@ -111,6 +112,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
             //initialize connection, and get the system Device
             MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
+            if(this.MainDevice.getInfo().getDevId() == DeviceId.NONE)
+            {
+                //set data notifying that there isn't a device.
+                this.textViewData.setText("No USB Device Sorry");
+                return;
+            }
             // Create a single fire command with no callback
             initHandlers();
             initFecpCmds();

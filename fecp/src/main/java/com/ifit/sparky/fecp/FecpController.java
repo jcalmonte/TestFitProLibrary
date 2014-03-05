@@ -74,7 +74,13 @@ public class FecpController{
         {
             this.mCommController = new UsbComm(this.mContext, this.mIntent, 100);
             this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
+
+            if(this.mSysDev.getInfo().getDevId() == DeviceId.NONE)
+            {
+                return this.mSysDev;//return null if no device is present.
+            }
             sysInfoCmd = new GetSysInfoCmd(this.mSysDev.getInfo().getDevId());
+
             sysInfoCmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
 
             this.mSysDev.setConfig(((GetSysInfoSts)sysInfoCmd.getStatus()).getConfig());
