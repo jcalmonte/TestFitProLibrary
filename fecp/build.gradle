@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.7.+'
+        classpath 'com.android.tools.build:gradle:0.9.+'
     }
 }
 apply plugin: 'android-library'
@@ -22,11 +22,11 @@ android {
         targetSdkVersion 17
         testPackageName "com.ifit.sparky.fecp.tests"
     }
-    release {
-        runProguard false
-        proguardFile 'proguard-rules.txt'
-        proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
-    }
+//    release {
+//        runProguard false
+//        proguardFile 'proguard-rules.txt'
+//        proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
+//    }
 }
 
 dependencies {
