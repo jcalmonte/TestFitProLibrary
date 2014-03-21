@@ -23,6 +23,7 @@ import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.TreeMap;
 
 public class HandleTaskInfo implements CommandCallback, Runnable {
@@ -30,6 +31,7 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
     private int mNumOfTasks;
     private int mCurrentTask;//this will be used to keep track of which task we still need to query.
     private ArrayList<CpuTask> taskList;
+    private String taskString;
 
     private TextView mInfoView;
     private MainActivity mAct;
@@ -77,6 +79,14 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
             //set the task to be the task that we want next time.
             ((GetTaskInfoCmd)cmd).setTaskIndex(this.mCurrentTask);
 
+            //sort based on the task index
+            Collections.sort(this.taskList);
+            String taskString_temp = "";
+            for (Iterator<CpuTask> it = this.taskList.iterator(); it.hasNext();) {
+                taskString_temp += it.next().toString();
+            }
+            taskString = taskString_temp;
+
             this.mAct.runOnUiThread(new Thread(this));//update the gui
         }
     }
@@ -84,15 +94,7 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
     @Override
     public void run() {
         //add to the data text
-        String str = "";
-        //sort based on the task index
-        Collections.sort(this.taskList);
-        for(CpuTask task : this.taskList)
-        {
-            str += task.toString();
-        }
-
-        this.mInfoView.setText(str);
+        this.mInfoView.setText(taskString);
     }
 
     public int getNumOfTasks() {

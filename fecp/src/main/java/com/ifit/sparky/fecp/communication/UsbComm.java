@@ -376,6 +376,10 @@ public class UsbComm extends Activity implements CommInterface {
                 {
                     replyMessage[0] = 0;//indicator that the message was bad
                 }
+                else
+                {
+                    delayCount = COMM_ERROR_CONST;
+                }
 
                 this.ep1_RX_Count++;
                 replyBuffer.put(replyMessage);
