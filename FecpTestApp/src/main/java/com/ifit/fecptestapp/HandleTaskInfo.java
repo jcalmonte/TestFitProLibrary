@@ -33,9 +33,6 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
     private ArrayList<CpuTask> taskList;
     private String taskString;
 
-    private boolean isSorting = false;
-    private boolean isRunning = false;
-
     private TextView mInfoView;
     private MainActivity mAct;
     public HandleTaskInfo(MainActivity act, TextView infoView)
@@ -83,14 +80,12 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
             ((GetTaskInfoCmd)cmd).setTaskIndex(this.mCurrentTask);
 
             //sort based on the task index
-            while(isRunning);
-            isSorting = true;
             Collections.sort(this.taskList);
-            taskString = "";
+            String taskString_temp = "";
             for (Iterator<CpuTask> it = this.taskList.iterator(); it.hasNext();) {
-                taskString += it.next().toString();
+                taskString_temp += it.next().toString();
             }
-            isSorting = false;
+            taskString = taskString_temp;
 
             this.mAct.runOnUiThread(new Thread(this));//update the gui
         }
@@ -99,10 +94,7 @@ public class HandleTaskInfo implements CommandCallback, Runnable {
     @Override
     public void run() {
         //add to the data text
-        while(isSorting);
-        isRunning = true;
         this.mInfoView.setText(taskString);
-        isRunning = false;
     }
 
     public int getNumOfTasks() {
