@@ -72,6 +72,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
     private Button buttonMode;//toggles which mode we are in
     private Button buttonIncline;
     private Button buttonKeyPress;
+    private Button buttonReconnect;
     private EditText editSpeedText;//toggles which mode we are in
     private EditText editInclineText;//toggles which mode we are in
 
@@ -88,8 +89,11 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
     private SystemDevice MainDevice;
     private HandleInfo handleInfoCmd;
     private HandleTaskInfo handleTaskCmd;
+    private ConnectionStatus connectionCallback;
+
     private long startTime;
     private int currentMode;
+    private int connectCount;
     //private SystemStatusCallback systemStatusCallback;
 
     /**
@@ -99,42 +103,26 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String devInfoStr = "";
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        connectCount = 0;
 
         initLayout();
         m_handler = new Handler();
         m_handlerUi = new Handler();
-
-        try{
-            //create FecpController
-            fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, null);
-            //initialize connection, and get the system Device
-            MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
-            if(this.MainDevice.getInfo().getDevId() == DeviceId.NONE)
-            {
-                //set data notifying that there isn't a device.
-                this.textViewData.setText("No USB Device Sorry");
-                return;
-            }
-            // Create a single fire command with no callback
-            initHandlers();
-            initFecpCmds();
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-            Log.e("Device Info fail", ex.getLocalizedMessage());
-        }
-
-        textViewMain.setText("Main " + MainDevice.getInfo().getDevId().getDescription());
-        startTime = System.currentTimeMillis();
-
-        for(Device tempDev : MainDevice.getSubDeviceList())
+        this.connectionCallback = new ConnectionStatus();
+        //attempt to connect on startup
+        if(this.ConnectToDevice())
         {
-            devInfoStr += tempDev.toString() +"\n";
+            //set button to be invisible
+            this.buttonReconnect.setVisibility(View.INVISIBLE);
         }
-        textViewData.setText(devInfoStr);
+        else
+        {
+            //set button to be invisible
+            this.buttonReconnect.setVisibility(View.VISIBLE);
+
+        }
     }
 
     /**
@@ -229,6 +217,22 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
                 ex.printStackTrace();
             }
         }
+        else if(view == buttonReconnect)
+        {
+
+            //attempt to connect on startup
+            if(this.ConnectToDevice())
+            {
+                //set button to be invisible
+                this.buttonReconnect.setVisibility(View.INVISIBLE);
+            }
+            else
+            {
+                //set button to be invisible
+                this.buttonReconnect.setVisibility(View.VISIBLE);
+
+            }
+        }
     }
 
     /**
@@ -315,7 +319,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
 
         commandData = ((WriteReadDataSts)this.keyInfoCmd.getCommand().getStatus()).getResultData();
 
-        if(commandData.containsKey(BitFieldId.KEY_OBJECT))
+        if(commandData.containsKey(BitFieldId.KEY_OBJECT) && this.keyInfoCmd.getCmdIndexNum() != 0)
         {
             try
             {
@@ -333,6 +337,42 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         this.textViewTabletTime.setText(" tabletStartTime =" + (tempTime/60)+":"+(tempTime%60));
     }
 
+    private boolean ConnectToDevice()
+    {
+        String devInfoStr = "";
+        this.connectCount++;
+
+        try{
+            //create FecpController
+            fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, this.connectionCallback);
+            //initialize connection, and get the system Device
+            MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
+            if(this.MainDevice.getInfo().getDevId() == DeviceId.NONE)
+            {
+                //set data notifying that there isn't a device.
+                this.textViewData.setText("No USB Device Sorry connect attempt:"+ this.connectCount + ".");
+                return false;//connect failed
+            }
+            // Create a single fire command with no callback
+            initHandlers();
+            initFecpCmds();
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+            Log.e("Device Info fail", ex.getLocalizedMessage());
+            return false;
+        }
+
+        textViewMain.setText("Main " + MainDevice.getInfo().getDevId().getDescription());
+        startTime = System.currentTimeMillis();
+
+        for(Device tempDev : MainDevice.getSubDeviceList())
+        {
+            devInfoStr += tempDev.toString() +"\n";
+        }
+        textViewData.setText(devInfoStr);
+        return true;
+    }
 
     /**
      * PlaceholderFragment
@@ -367,6 +407,10 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         buttonIncline.setOnClickListener(this);
         buttonKeyPress = (Button) findViewById(R.id.buttonKeyPress);
         buttonKeyPress.setOnClickListener(this);
+        buttonReconnect = (Button) findViewById(R.id.reconnectButton);
+        buttonReconnect.setOnClickListener(this);
+        this.buttonReconnect.setVisibility(View.INVISIBLE);
+
 
         //initialize editText items
         editSpeedText = (EditText) findViewById(R.id.editSpeedText);

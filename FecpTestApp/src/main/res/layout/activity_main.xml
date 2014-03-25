@@ -174,4 +174,14 @@
         android:layout_alignTop="@+id/buttonTask"
         android:layout_toRightOf="@+id/buttonTask" />
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reconnect"
+        android:id="@+id/reconnectButton"
+        android:layout_alignTop="@+id/textViewData"
+        android:layout_toRightOf="@+id/textViewData"
+        android:visibility="visible" />
+
 </RelativeLayout>

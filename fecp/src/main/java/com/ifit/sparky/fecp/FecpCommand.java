@@ -20,6 +20,7 @@ public class FecpCommand extends Thread{
     private int mFrequency;//time in between each call.
     private int mCmdSentCounter;
     private int mCmdReceivedCounter;
+    private int mCmdIndexNum;//this is used by the command handler when it is added, and removed from the system.
     private long mCommSendReceiveTime;
     private FecpCmdHandleInterface mSendHandler;
     private ScheduledFuture<?> mFutureScheduleTask;
@@ -162,6 +163,14 @@ public class FecpCommand extends Thread{
         return mFutureScheduleTask;
     }
 
+    /**
+     * Gets the id number of the Command in the Command handler
+     * @return 0 if it isn't in the command handler
+     */
+    public int getCmdIndexNum() {
+        return mCmdIndexNum;
+    }
+
     /*************
      *  SETTERS
      ************/
@@ -244,6 +253,14 @@ public class FecpCommand extends Thread{
     public void setFutureScheduleTask(ScheduledFuture<?> scheduledFut)
     {
         this.mFutureScheduleTask = scheduledFut;
+    }
+
+    /**
+     * Gets the id of the command in the command handler 0 means it isn't apart of it
+     * @param cmdIndexNum id of the command
+     */
+    public void setCmdIndexNum(int cmdIndexNum) {
+        this.mCmdIndexNum = cmdIndexNum;
     }
 
     @Override
