@@ -11,6 +11,7 @@ package com.ifit.fecptestapp;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -39,9 +40,12 @@ import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.SetTestingKeyCmd;
+import com.ifit.sparky.fecp.interpreter.command.SetTestingTachCmd;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.key.KeyCodes;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
@@ -73,8 +77,13 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
     private Button buttonIncline;
     private Button buttonKeyPress;
     private Button buttonReconnect;
+    private Button buttonErrorLogMenu;
+    private Button buttonSendStopKey;
+    private Button buttonWriteTach;
+
     private EditText editSpeedText;//toggles which mode we are in
     private EditText editInclineText;//toggles which mode we are in
+    private EditText editTextTachNumber;//toggles which mode we are in
 
 
     private FecpController fecpController;
@@ -83,9 +92,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
     private FecpCommand inclineCommand;//Changes the incline
     private FecpCommand taskInfoCmd;//toggles the mode
     private FecpCommand keyInfoCmd;//Gets the info about the current key being pressed
-
+    private FecpCommand sendKeyCmd;
+    private FecpCommand sendTachCmd;
     private FecpCommand speedCommand;
     private FecpCommand infoCommand;//gets info on the whole system
+
+
     private SystemDevice MainDevice;
     private HandleInfo handleInfoCmd;
     private HandleTaskInfo handleTaskCmd;
@@ -121,7 +133,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         {
             //set button to be invisible
             this.buttonReconnect.setVisibility(View.VISIBLE);
-
         }
     }
 
@@ -233,6 +244,24 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
 
             }
         }
+        else if(view == buttonErrorLogMenu)
+        {
+            //set a single command to change the mode.
+            Intent i = new Intent(this, ErrorlogMenuActivity.class);
+            startActivity(i);
+
+        }
+        else if(view == buttonSendStopKey && this.sendKeyCmd != null)
+        {
+            //set a single command to change the mode.
+            try {
+                this.fecpController.addCmd(this.sendKeyCmd);//add command to send
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     /**
@@ -257,7 +286,20 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
 
         commandData = ((WriteReadDataSts)this.infoCommand.getCommand().getStatus()).getResultData();
 
-        if(commandData.containsKey(BitFieldId.KPH))
+        if(commandData.containsKey(BitFieldId.KPH) && commandData.containsKey(BitFieldId.ACTUAL_KPH))
+        {
+            try
+            {
+                this.textViewCurrentSpeed.setText("kph=" +
+                        ((SpeedConverter) commandData.get(BitFieldId.KPH).getData()).getSpeed()
+                        + "," + ((SpeedConverter) commandData.get(BitFieldId.ACTUAL_KPH).getData()).getSpeed());
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        else if(commandData.containsKey(BitFieldId.KPH))
         {
             try
             {
@@ -411,6 +453,14 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
         buttonReconnect.setOnClickListener(this);
         this.buttonReconnect.setVisibility(View.INVISIBLE);
 
+        buttonErrorLogMenu = (Button) findViewById(R.id.buttonErrorMenu);
+        buttonErrorLogMenu.setOnClickListener(this);
+
+        buttonSendStopKey = (Button) findViewById(R.id.buttonSendStopKey);
+        buttonSendStopKey.setOnClickListener(this);
+
+        buttonWriteTach = (Button) findViewById(R.id.buttonWriteTach);
+        buttonWriteTach.setOnClickListener(this);
 
         //initialize editText items
         editSpeedText = (EditText) findViewById(R.id.editSpeedText);
@@ -520,6 +570,45 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
             }
         });
 
+        editTextTachNumber = (EditText) findViewById(R.id.editTextTachNumber);
+        editTextTachNumber.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                String inputText;
+                int tachSpeed = 0;
+                if ((event.getAction() == KeyEvent.ACTION_DOWN)
+                        && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    //do something
+                    //get the value from the text edit box and send it
+                    inputText = editTextTachNumber.getText().toString();
+                    if(inputText.isEmpty())
+                    {
+                        return false;//invalid data
+                    }
+                    try
+                    {
+                        tachSpeed = Integer.parseInt(inputText);
+                    }
+                    catch (NumberFormatException numEx)
+                    {
+                        numEx.printStackTrace();
+                    }
+
+                    try {
+                        //update sendTachCmd for sending
+
+                        ((SetTestingTachCmd)sendTachCmd.getCommand()).setTachTime((short)tachSpeed);
+                        ((SetTestingTachCmd)sendTachCmd.getCommand()).setTachOverride(true);
+                        fecpController.addCmd(sendTachCmd);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
         //initialize textview items
         textViewData = (TextView) findViewById(R.id.textViewData);
         textViewMain = (TextView) findViewById(R.id.textViewMain);
@@ -564,6 +653,11 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
                 ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.KPH);
             }
 
+            if(this.MainDevice.getInfo().getSupportedBitfields().contains(BitFieldId.ACTUAL_KPH))
+            {
+                ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.ACTUAL_KPH);
+            }
+
             if(this.MainDevice.getInfo().getSupportedBitfields().contains(BitFieldId.INCLINE))
             {
                 ((WriteReadDataCmd)infoCommand.getCommand()).addReadBitField(BitFieldId.INCLINE);
@@ -582,6 +676,25 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
             if(this.MainDevice.getInfo().getSupportedBitfields().contains(BitFieldId.KEY_OBJECT))
             {
                 ((WriteReadDataCmd)keyInfoCmd.getCommand()).addReadBitField(BitFieldId.KEY_OBJECT);
+            }
+
+            Device keyPressTemp = this.MainDevice.getSubDevice(DeviceId.KEY_PRESS);
+            if(keyPressTemp != null)
+            {
+                Command writeKeyPressCmd = keyPressTemp.getCommand(CommandId.SET_TESTING_KEY);
+                if(writeKeyPressCmd != null)
+                {
+                    sendKeyCmd = new FecpCommand(writeKeyPressCmd, this);
+                    ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyCode(KeyCodes.STOP);
+                    ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyOverride(true);
+                    ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setTimeHeld(1000);
+                    ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setIsSingleClick(true);
+                }
+
+            }
+            if(this.MainDevice.getCommandSet().containsKey(CommandId.SET_TESTING_TACH))
+            {
+                sendTachCmd = new FecpCommand(this.MainDevice.getCommand(CommandId.SET_TESTING_TACH), this);
             }
 
             //add the Periodic commands to the system

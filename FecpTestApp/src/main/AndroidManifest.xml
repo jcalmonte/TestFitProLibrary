@@ -36,6 +36,10 @@
             android:name="com.ifit.fecptestapp.usbDetached"
             android:label="@string/title_activity_usb_detached" >
         </activity>
+        <activity
+            android:name="com.ifit.fecptestapp.ErrorlogMenuActivity"
+            android:label="@string/title_activity_error_log" >
+        </activity>
     </application>
 
 </manifest>

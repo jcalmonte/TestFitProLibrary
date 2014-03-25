@@ -22,6 +22,7 @@ import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
 import com.ifit.sparky.fecp.interpreter.command.GetTaskInfoCmd;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import com.ifit.sparky.fecp.interpreter.command.SetTestingKeyCmd;
+import com.ifit.sparky.fecp.interpreter.command.SetTestingTachCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
@@ -224,6 +225,8 @@ public class FecpController {
             return new GetTaskInfoCmd(devId);
         } else if (CommandId.SET_TESTING_KEY == cmdId) {
             return new SetTestingKeyCmd(devId);
+        } else if (CommandId.SET_TESTING_TACH == cmdId) {
+            return new SetTestingTachCmd(devId);
         }
 
         return null;//nothing supported yet
