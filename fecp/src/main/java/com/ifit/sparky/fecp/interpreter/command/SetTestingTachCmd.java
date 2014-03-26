@@ -38,7 +38,9 @@ public class SetTestingTachCmd extends Command implements CommandInterface{
     }
 
     /**
-     * default constructor
+     * Creates a Testing Tach Command for writing the system's tach.
+     * @param devId The device id which the command is being sent to.
+     * @throws Exception invalid commands, and device ids
      */
     public SetTestingTachCmd(DeviceId devId) throws Exception
     {
