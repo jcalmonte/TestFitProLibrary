@@ -17,6 +17,8 @@ public enum CommandId {
     DISCONNECT(0x05, "Disconnects from the device."),
     CALIBRATE(0x06, "Calibrates the device."),
     WRITE_DATA(0x0B, "Write Data."),
+    SET_TESTING_KEY(0x70, "Sets a key for testing."),
+    SET_TESTING_TACH(0x71, "Sets a tach for testing."),
     GET_SUPPORTED_DEVICES(0x80, "Get Supported Devices."),
     GET_INFO(0x81, "Get Device Info."),
     GET_SYSTEM_INFO(0x82, "Get System Info."),

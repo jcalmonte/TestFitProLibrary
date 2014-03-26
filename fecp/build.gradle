@@ -12,6 +12,8 @@ repositories {
     mavenCentral()
 }
 
+
+
 android {
     compileSdkVersion 19
     buildToolsVersion '19.0.3'
@@ -20,13 +22,11 @@ android {
         targetSdkVersion 17
         testPackageName "com.ifit.sparky.fecp.tests"
     }
-    buildTypes{
-        release {
-            runProguard false
-            proguardFile 'proguard-rules.txt'
-            proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
-        }
-    }
+//    release {
+//        runProguard false
+//        proguardFile 'proguard-rules.txt'
+//        proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
+//    }
 }
 
 dependencies {

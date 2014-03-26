@@ -14,8 +14,6 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,10 +26,12 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     private Vector<FecpCommand> mPeriodicCmds;//this will use the thread scheduler
     private ScheduledExecutorService mThreadManager = Executors.newSingleThreadScheduledExecutor();//this will keep track of all the threads
     private Thread mCurrentThread;//this thread will be recreated when needed.
+    private int idAssigner;
 
     public FecpCmdHandler(CommInterface commController)
     {
         this.mCommController = commController;
+        this.idAssigner = 1;//start with 1
         this.mProcessCmds =new Vector<FecpCommand>();
         this.mPeriodicCmds = new Vector<FecpCommand>();
     }
@@ -54,7 +54,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     @Override
     public void addFecpCommand(FecpCommand cmd) throws Exception
     {
-        if(this.mPeriodicCmds.contains(cmd))
+        if(cmd.getCmdIndexNum() != 0)
         {
             return;//already in the list. don't add
         }
@@ -64,7 +64,11 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         //check if the thread is running
         if(cmd.getFrequency() != 0)
         {
+            cmd.setCmdIndexNum(this.idAssigner++);//unique
             this.mPeriodicCmds.add(cmd);
+            if(this.idAssigner == Integer.MAX_VALUE) {
+                this.idAssigner = 1;//roll over gracefully
+            }
             cmd.setFutureScheduleTask(this.mThreadManager.scheduleAtFixedRate(cmd, 0, cmd.getFrequency(), TimeUnit.MILLISECONDS));
         }
         else
@@ -92,6 +96,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
             {
                 cmd.getFutureScheduleTask().cancel(false);//cancels
                 this.mPeriodicCmds.remove(cmd);
+                cmd.setCmdIndexNum(0);
                 result = true;
             }
         }
@@ -106,11 +111,17 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     @Override
     public boolean removeFecpCommand(FecpCommand cmd) {
 
-        if(this.mPeriodicCmds.contains(cmd))
-        {
-            this.mPeriodicCmds.remove(cmd);
-            cmd.getFutureScheduleTask().cancel(false);//stop calling it
-            return true;
+        //check if the cmd has the same command id, device id, time, and if databitfield the same also
+
+        for (FecpCommand mPeriodicCmd : this.mPeriodicCmds) {
+            if(mPeriodicCmd.getCmdIndexNum() == cmd.getCmdIndexNum()) {
+
+                this.mPeriodicCmds.remove(mPeriodicCmd);
+                cmd.setCmdIndexNum(0);
+                mPeriodicCmd.setCmdIndexNum(0);//set both just in case
+                mPeriodicCmd.getFutureScheduleTask().cancel(false);//stop calling it
+                return true;
+            }
         }
         return false;
     }

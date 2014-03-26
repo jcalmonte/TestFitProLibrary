@@ -174,4 +174,51 @@
         android:layout_alignTop="@+id/buttonTask"
         android:layout_toRightOf="@+id/buttonTask" />
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reconnect"
+        android:id="@+id/reconnectButton"
+        android:layout_alignTop="@+id/textViewData"
+        android:layout_toRightOf="@+id/textViewData"
+        android:visibility="visible" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="error log"
+        android:id="@+id/buttonErrorMenu"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Stop Key"
+        android:id="@+id/buttonSendStopKey"
+        android:layout_alignBottom="@+id/textViewData"
+        android:layout_toRightOf="@+id/buttonErrorMenu" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Write Tach"
+        android:id="@+id/buttonWriteTach"
+        android:layout_alignBottom="@+id/textViewData"
+        android:layout_toRightOf="@+id/buttonSendStopKey" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberSigned"
+        android:ems="10"
+        android:id="@+id/editTextTachNumber"
+        android:layout_alignTop="@+id/buttonWriteTach"
+        android:layout_toRightOf="@+id/buttonWriteTach"
+        android:hint="Tach/Sec"
+        android:phoneNumber="false"
+        android:numeric="integer" />
+
 </RelativeLayout>
