@@ -1,1 +1,1 @@
-include ':fecp',':fecpTestApp'
+include ':fecp',':fecpTestApp', ':SparkyDevApp'
