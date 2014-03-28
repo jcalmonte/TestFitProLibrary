@@ -29,6 +29,7 @@ import android.content.IntentFilter;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.app.Activity;
+import android.widget.Toast;
 
 
 public class UsbComm extends Activity implements CommInterface {
@@ -65,6 +66,7 @@ public class UsbComm extends Activity implements CommInterface {
     private UsbRequest request_ep3 = new UsbRequest();
 
     private ArrayList<ByteBuffer> buffList_ep1 = new ArrayList<ByteBuffer>();
+    private ArrayList<ByteBuffer> buffList_ep3 = new ArrayList<ByteBuffer>();
 
     private boolean waitingForEp1Data = false;
     private boolean waitingForEp3Data = false;
@@ -242,8 +244,32 @@ public class UsbComm extends Activity implements CommInterface {
             if(waitingForEp1Data){
                 request_ep1_RX();
             }
+            waitingForEp3Data = true;
             if(waitingForEp3Data){
                 request_ep3_RX();
+            }
+
+            if(buffList_ep3.size() > 0) {
+                ByteBuffer buffer_temp = buffList_ep3.get(0);
+                int errNum = buffer_temp.get(1) + buffer_temp.get(2) * 0x100;
+                int lineNumber = buffer_temp.get(3) + buffer_temp.get(4) * 0x100;
+                int j = 0;
+                for (int i = 5; i < 50; i++) {
+                    if(buffer_temp.get(i) == 0){
+                        j = i-5;
+                        break;
+                    }
+                }
+                char []tempBuff = new char[j];
+                for (int i = 5; i < j+5; i++) {
+                    tempBuff[i-5] += buffer_temp.get(i);
+                    if(buffer_temp.get(i) == 0){
+                        break;
+                    }
+                }
+                String temp = new String(tempBuff);
+                Log.e(TAG, "Error " + errNum + ", Line " + lineNumber + ", File/Function " + temp);
+                buffList_ep3.remove(0);
             }
 
         }else if(connectionState == ConnectionState.CONNECTION_JUST_DROPPED){
@@ -314,6 +340,10 @@ public class UsbComm extends Activity implements CommInterface {
         if (mConnection.requestWait() == request_ep3) {
             waitingForEp3Data = false;
             ep3_RX_Count++;
+
+            buffList_ep3.add(buffer_ep3);
+            while(buffList_ep3.size() > 100)
+                buffList_ep3.remove(0);
         }
     }
 
