@@ -36,7 +36,8 @@ public enum DeviceId {
     FAN(0x4A, "Fan Controller"),
     MODE(0x4C, "Mode Controller"),
     DISTANCE(0X4D, "Distance Controller"),
-    USER_TIME(0X4E, "User Time Controller");
+    USER_TIME(0X4E, "User Time Controller"),
+    AGE(0x4F, "User Age");
 
     private int mId;
     private String mDescription;
