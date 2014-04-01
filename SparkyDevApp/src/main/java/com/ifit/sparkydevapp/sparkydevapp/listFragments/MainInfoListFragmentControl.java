@@ -1,4 +1,4 @@
-package com.ifit.sparkydevapp.sparkydevapp;
+package com.ifit.sparkydevapp.sparkydevapp.listFragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -7,19 +7,20 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.ifit.sparkydevapp.sparkydevapp.fragments.BaseInfoFragment;
 
-import com.ifit.sparkydevapp.sparkydevapp.dummy.DummyContent;
+import java.util.ArrayList;
 
 /**
  * A list fragment representing a list of Items. This fragment
  * also supports tablet devices by allowing list items to be given an
  * 'activated' state upon selection. This helps indicate which item is
- * currently being viewed in a {@link ItemDetailFragment}.
+ * currently being viewed in a {@link com.ifit.sparkydevapp.sparkydevapp.ItemDetailFragment}.
  * <p>
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
-public class ItemListFragment extends ListFragment {
+public class MainInfoListFragmentControl extends ListFragment {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -38,6 +39,7 @@ public class ItemListFragment extends ListFragment {
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
+    private ArrayList<BaseInfoFragment> mSupportedFragments;
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
@@ -64,7 +66,7 @@ public class ItemListFragment extends ListFragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ItemListFragment() {
+    public MainInfoListFragmentControl() {
     }
 
     @Override
@@ -72,11 +74,16 @@ public class ItemListFragment extends ListFragment {
         super.onCreate(savedInstanceState);
 
         // TODO: replace with a real list adapter.
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(
-                getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                DummyContent.ITEMS));
+//        ListAdapter tempAdapter = new ArrayAdapter<FecpFragmentCmdHandler>(getActivity(),
+//                android.R.layout.simple_list_item_activated_1,
+//                R.id.textViewMainDevice);
+//
+//        setListAdapter(tempAdapter);
+//        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(
+//                getActivity(),
+//                android.R.layout.simple_list_item_activated_1,
+//                android.R.id.text1));
+//                //DummyContent.ITEMS));
     }
 
     @Override
@@ -116,7 +123,12 @@ public class ItemListFragment extends ListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        if(position == 0)
+        {
+          //do something
+        }
+        mCallbacks.onItemSelected(this.mSupportedFragments.get(position).getIdString());
+        //mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
     }
 
     @Override
@@ -148,5 +160,16 @@ public class ItemListFragment extends ListFragment {
         }
 
         mActivatedPosition = position;
+    }
+
+    public void addSupportedFragments(ArrayList<BaseInfoFragment> supportFrags){
+
+        this.mSupportedFragments = supportFrags;
+        setListAdapter(new ArrayAdapter<BaseInfoFragment>(
+                getActivity(),
+                android.R.layout.simple_list_item_activated_1,
+                android.R.id.text1,
+                supportFrags));
+
     }
 }
