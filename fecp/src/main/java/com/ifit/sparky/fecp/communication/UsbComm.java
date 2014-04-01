@@ -242,12 +242,12 @@ public class UsbComm extends Activity implements CommInterface {
         if(mConnection != null){    /* normal operation */
 
             /* check to see if data has been received */
-            if(waitingForEp1Data){
-                request_ep1_RX();
-            }
-            if(waitingForEp3Data){
-                request_ep3_RX();
-            }
+            //if(waitingForEp1Data){
+            //    request_ep1_RX();
+            //}
+            //if(waitingForEp3Data){
+            //    request_ep3_RX();
+            //}
 
         }else if(connectionState == ConnectionState.CONNECTION_JUST_DROPPED){
             connectionState = ConnectionState.CONNECTION_DROPPED;
