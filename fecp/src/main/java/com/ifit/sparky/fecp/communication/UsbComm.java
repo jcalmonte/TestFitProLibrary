@@ -73,6 +73,7 @@ public class UsbComm extends Activity implements CommInterface {
 
     // Counters
     private long ep1_RX_Count = 0;
+    private long ep2_TX_Count = 0;
     private long ep3_RX_Count = 0;
     private long drop_Count = 0;
     private long delayCount = 10000;	//this timer decrements, set to 10000 initially to give about 10 seconds for things to settle on start up
@@ -244,32 +245,8 @@ public class UsbComm extends Activity implements CommInterface {
             if(waitingForEp1Data){
                 request_ep1_RX();
             }
-            waitingForEp3Data = true;
             if(waitingForEp3Data){
                 request_ep3_RX();
-            }
-
-            if(buffList_ep3.size() > 0) {
-                ByteBuffer buffer_temp = buffList_ep3.get(0);
-                int errNum = buffer_temp.get(1) + buffer_temp.get(2) * 0x100;
-                int lineNumber = buffer_temp.get(3) + buffer_temp.get(4) * 0x100;
-                int j = 0;
-                for (int i = 5; i < 50; i++) {
-                    if(buffer_temp.get(i) == 0){
-                        j = i-5;
-                        break;
-                    }
-                }
-                char []tempBuff = new char[j];
-                for (int i = 5; i < j+5; i++) {
-                    tempBuff[i-5] += buffer_temp.get(i);
-                    if(buffer_temp.get(i) == 0){
-                        break;
-                    }
-                }
-                String temp = new String(tempBuff);
-                Log.e(TAG, "Error " + errNum + ", Line " + lineNumber + ", File/Function " + temp);
-                buffList_ep3.remove(0);
             }
 
         }else if(connectionState == ConnectionState.CONNECTION_JUST_DROPPED){
@@ -341,7 +318,9 @@ public class UsbComm extends Activity implements CommInterface {
             waitingForEp3Data = false;
             ep3_RX_Count++;
 
-            buffList_ep3.add(buffer_ep3);
+            if(buffer_ep3.get(0) == 0) {    //a valid error's first byte will be 0
+                buffList_ep3.add(buffer_ep3);
+            }
             while(buffList_ep3.size() > 100)
                 buffList_ep3.remove(0);
         }
@@ -400,6 +379,8 @@ public class UsbComm extends Activity implements CommInterface {
                     return replyBuffer;//error sending
                 }
 
+                this.ep2_TX_Count++;
+
                 sendStatus = this.mConnection.bulkTransfer(this.mEndpointInterRead1, replyMessage, replyMessage.length, timeout);
                 //error sending the data
                 if(sendStatus < 0)
@@ -409,14 +390,48 @@ public class UsbComm extends Activity implements CommInterface {
                 else
                 {
                     delayCount = COMM_ERROR_CONST;
+                    this.ep1_RX_Count++;
                 }
 
-                this.ep1_RX_Count++;
+                checkForErrorMessage();
+
+                //Log.i(TAG, "RX: " + this.ep1_RX_Count + " TX: " + this.ep2_TX_Count + " %" + (float)100 *this.ep1_RX_Count/this.ep2_TX_Count);
                 replyBuffer.put(replyMessage);
                 return replyBuffer;
             }
         }
         return null;
+    }
+
+    private void checkForErrorMessage()
+    {
+        waitingForEp3Data = true;
+        if(waitingForEp3Data){
+            request_ep3_RX();
+        }
+
+        if(buffList_ep3.size() > 0) {
+            ByteBuffer buffer_temp = buffList_ep3.get(0);
+            int errNum = buffer_temp.get(1) + buffer_temp.get(2) * 0x100;
+            int lineNumber = buffer_temp.get(3) + buffer_temp.get(4) * 0x100;
+            int j = 0;
+            for (int i = 5; i < 50; i++) {
+                if(buffer_temp.get(i) == 0){
+                    j = i-5;
+                    break;
+                }
+            }
+            char []tempBuff = new char[j];
+            for (int i = 5; i < j+5; i++) {
+                tempBuff[i-5] += buffer_temp.get(i);
+                if(buffer_temp.get(i) == 0){
+                    break;
+                }
+            }
+            String temp = new String(tempBuff);
+            Log.e(TAG, "Error " + errNum + ", Line " + lineNumber + ", File/Function " + temp);
+            buffList_ep3.remove(0);
+        }
     }
 
     /**
