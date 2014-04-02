@@ -14,26 +14,17 @@ import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ConnectionActivity;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.BaseInfoFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.InclineDeviceFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.MainDeviceInfoFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.SpeedDeviceFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.TaskInfoFragment;
+import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentControl;
 
+import java.util.ArrayList;
 
-/**
- * An activity representing a list of Items. This activity
- * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link ItemDetailActivity} representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
- * <p>
- * The activity makes heavy use of fragments. The list of items is a
- * {@link ItemListFragment} and the item details
- * (if present) is a {@link ItemDetailFragment}.
- * <p>
- * This activity also implements the required
- * {@link ItemListFragment.Callbacks} interface
- * to listen for item selections.
- */
 public class ItemListActivity extends FragmentActivity
-        implements ItemListFragment.Callbacks, SystemStatusCallback {
+        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -44,11 +35,13 @@ public class ItemListActivity extends FragmentActivity
     private boolean mConnected;
     private ProgressThread mProgressThread;
     private SystemDevice mMainDevice;
+    private ArrayList<BaseInfoFragment> baseInfoFragments;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_item_list);
+        setContentView(R.layout.activity_item_twopane);
+
         this.mConnected = false;
         //while connecting show progress bar.
 
@@ -72,6 +65,7 @@ public class ItemListActivity extends FragmentActivity
                 Intent ConnectionActivity = new Intent(this.getApplicationContext(), ConnectionActivity.class);
                 startActivity(ConnectionActivity);
                 finish();
+                return;
             }
             this.mProgressThread.stopProgress();
             Toast.makeText(this,"Connection Successful",Toast.LENGTH_LONG).show();
@@ -79,14 +73,39 @@ public class ItemListActivity extends FragmentActivity
         catch (Exception ex)
         {
             ex.printStackTrace();
+            //if usb permission, ask for permission
         }
 
+        //get supported list of item we will be supporting
+        this.baseInfoFragments = new ArrayList<BaseInfoFragment>();
+
+        //always support main info, error, task
+        baseInfoFragments.add(new MainDeviceInfoFragment(this.mFecpCntrl));
+        baseInfoFragments.add(new TaskInfoFragment(this.mFecpCntrl));
+
+        if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
+        {
+            baseInfoFragments.add(new InclineDeviceFragment(this.mFecpCntrl));
+        }
+        if(this.mMainDevice.containsDevice(DeviceId.SPEED))
+        {
+            baseInfoFragments.add(new SpeedDeviceFragment(this.mFecpCntrl));
+        }
+
+        //add supported Fragments here.
         if (findViewById(R.id.item_detail_container) != null) {
 
+            //MainDeviceInfoFragment mainFrag = new MainDeviceInfoFragment();
+            //mainFrag.setArguments(getIntent().getExtras());
 
-            // In two-pane mode, list items should be given the
-            // 'activated' state when touched.
-            ((ItemListFragment) getSupportFragmentManager()
+            //getSupportFragmentManager().beginTransaction().add(R.id.item_detail_container, mainFrag).commit();
+
+            ((MainInfoListFragmentControl)getSupportFragmentManager()
+                    .findFragmentById(R.id.main_device_fragment))
+                    .addSupportedFragments(baseInfoFragments);
+
+
+            ((MainInfoListFragmentControl) getSupportFragmentManager()
                     .findFragmentById(R.id.main_device_fragment))
                     .setActivateOnItemClick(true);
         }
@@ -94,7 +113,7 @@ public class ItemListActivity extends FragmentActivity
     }
 
     /**
-     * Callback method from {@link ItemListFragment.Callbacks}
+     * Callback method from {@link MainInfoListFragmentControl.Callbacks}
      * indicating that the item with the given ID was selected.
      */
     @Override
@@ -102,15 +121,43 @@ public class ItemListActivity extends FragmentActivity
 
         //load the fragment that we want to see. //pass a reference to the Fecp Controller
 
-
-
         // fragment transaction.
         Bundle arguments = new Bundle();
-        arguments.putString(ItemDetailFragment.ARG_ITEM_ID, id);
-        ItemDetailFragment fragment = new ItemDetailFragment();
-        fragment.setArguments(arguments);
+        BaseInfoFragment currentFrag = null;
+
+        for (BaseInfoFragment baseInfoFragment : this.baseInfoFragments) {
+            if(id == baseInfoFragment.getIdString())
+            {
+                currentFrag = baseInfoFragment;
+            }
+        }
+        if(currentFrag == null)
+        {
+            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
+        }
+
+//        if (id == MainDeviceInfoFragment.ARG_ITEM_ID) {
+//            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
+//        }
+//        else if (id == TaskInfoFragment.ARG_ITEM_ID) {
+//            currentFrag = new TaskInfoFragment(this.mFecpCntrl);
+//        }
+//        else if (id == InclineDeviceFragment.ARG_ITEM_ID) {
+//            currentFrag = new InclineDeviceFragment(this.mFecpCntrl);
+//        }
+//        else if (id == SpeedDeviceFragment.ARG_ITEM_ID) {
+//            currentFrag = new SpeedDeviceFragment(this.mFecpCntrl);
+//        }
+//        else
+//        {
+//            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
+//        }
+
+        arguments.putString(currentFrag.toString(), id);
+        currentFrag.setArguments(arguments);
+
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.item_detail_container, fragment)
+                .replace(R.id.item_detail_container, currentFrag)
                 .commit();
 
     }

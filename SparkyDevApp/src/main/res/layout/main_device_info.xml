@@ -10,4 +10,5 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Main Device"
         android:id="@+id/textViewMainDevice" />
+
 </LinearLayout>

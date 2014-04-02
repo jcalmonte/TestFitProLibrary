@@ -10,13 +10,13 @@ import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparkydevapp.sparkydevapp.R;
 
 
-public class MainDeviceInfoFragment extends BaseInfoFragment {
+public class TaskInfoFragment extends BaseInfoFragment {
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    public static final String ARG_ITEM_ID = "main_info_id";
-    public static final String DISPLAY_STRING = "Main Device Info";
+    public static final String ARG_ITEM_ID = "task_info_id";
+    public static final String DISPLAY_STRING = "Task Info";
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -24,8 +24,8 @@ public class MainDeviceInfoFragment extends BaseInfoFragment {
      *
      * @param fecpCntrl
      */
-    public MainDeviceInfoFragment(FecpController fecpCntrl) {
-        super(fecpCntrl, MainDeviceInfoFragment.DISPLAY_STRING, MainDeviceInfoFragment.ARG_ITEM_ID);
+    public TaskInfoFragment(FecpController fecpCntrl) {
+        super(fecpCntrl, TaskInfoFragment.DISPLAY_STRING, TaskInfoFragment.ARG_ITEM_ID);
     }
 
     @Override
@@ -37,10 +37,10 @@ public class MainDeviceInfoFragment extends BaseInfoFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.main_device_info, container, false);
+        View rootView = inflater.inflate(R.layout.system_task_info, container, false);
 
         // Show the dummy content as text in a TextView.
-        ((TextView) rootView.findViewById(R.id.textViewMainDevice)).setText(this.mFecpCntrl.getSysDev().toString());
+        ((TextView) rootView.findViewById(R.id.textViewSystemTask)).setText("Tasks: " + this.mFecpCntrl.getSysDev().getNumberOfTasks());
 
         return rootView;
     }
@@ -50,8 +50,7 @@ public class MainDeviceInfoFragment extends BaseInfoFragment {
      */
     @Override
     public void addFragmentFecpCommands() {
-        //cpu
-        // any other main system information that we would need.
+
     }
 
     /**
