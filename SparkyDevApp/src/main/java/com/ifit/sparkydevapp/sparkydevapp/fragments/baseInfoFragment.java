@@ -32,6 +32,12 @@ public abstract class BaseInfoFragment extends Fragment {
 
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        this.deleteFragmentFecpCommands();
+    }
+
     /**
      * These are the commands that we will be using on the startup
      */
