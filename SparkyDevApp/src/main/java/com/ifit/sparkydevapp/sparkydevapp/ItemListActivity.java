@@ -17,6 +17,7 @@ import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.BaseInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.InclineDeviceFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.MainDeviceInfoFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.SpeedDeviceFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.TaskInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentControl;
 
@@ -34,6 +35,7 @@ public class ItemListActivity extends FragmentActivity
     private boolean mConnected;
     private ProgressThread mProgressThread;
     private SystemDevice mMainDevice;
+    private ArrayList<BaseInfoFragment> baseInfoFragments;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +77,7 @@ public class ItemListActivity extends FragmentActivity
         }
 
         //get supported list of item we will be supporting
-        ArrayList<BaseInfoFragment> baseInfoFragments = new ArrayList<BaseInfoFragment>();
+        this.baseInfoFragments = new ArrayList<BaseInfoFragment>();
 
         //always support main info, error, task
         baseInfoFragments.add(new MainDeviceInfoFragment(this.mFecpCntrl));
@@ -84,6 +86,10 @@ public class ItemListActivity extends FragmentActivity
         if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
         {
             baseInfoFragments.add(new InclineDeviceFragment(this.mFecpCntrl));
+        }
+        if(this.mMainDevice.containsDevice(DeviceId.SPEED))
+        {
+            baseInfoFragments.add(new SpeedDeviceFragment(this.mFecpCntrl));
         }
 
         //add supported Fragments here.
@@ -117,21 +123,35 @@ public class ItemListActivity extends FragmentActivity
 
         // fragment transaction.
         Bundle arguments = new Bundle();
-        BaseInfoFragment currentFrag;
+        BaseInfoFragment currentFrag = null;
 
-        if (id == MainDeviceInfoFragment.ARG_ITEM_ID) {
-            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
+        for (BaseInfoFragment baseInfoFragment : this.baseInfoFragments) {
+            if(id == baseInfoFragment.getIdString())
+            {
+                currentFrag = baseInfoFragment;
+            }
         }
-        else if (id == TaskInfoFragment.ARG_ITEM_ID) {
-            currentFrag = new TaskInfoFragment(this.mFecpCntrl);
-        }
-        else if (id == InclineDeviceFragment.ARG_ITEM_ID) {
-            currentFrag = new InclineDeviceFragment(this.mFecpCntrl);
-        }
-        else
+        if(currentFrag == null)
         {
             currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
         }
+
+//        if (id == MainDeviceInfoFragment.ARG_ITEM_ID) {
+//            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
+//        }
+//        else if (id == TaskInfoFragment.ARG_ITEM_ID) {
+//            currentFrag = new TaskInfoFragment(this.mFecpCntrl);
+//        }
+//        else if (id == InclineDeviceFragment.ARG_ITEM_ID) {
+//            currentFrag = new InclineDeviceFragment(this.mFecpCntrl);
+//        }
+//        else if (id == SpeedDeviceFragment.ARG_ITEM_ID) {
+//            currentFrag = new SpeedDeviceFragment(this.mFecpCntrl);
+//        }
+//        else
+//        {
+//            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
+//        }
 
         arguments.putString(currentFrag.toString(), id);
         currentFrag.setArguments(arguments);
