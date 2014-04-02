@@ -119,6 +119,7 @@ public class TestDevice extends TestCase {
         assertNotNull(deviceObjOne.getSubDevice(DeviceId.TREADMILL));
         assertNotNull(deviceObjOne.getSubDevice(0x05));//incline trainer
         assertEquals(3, deviceObjOne.getSubDeviceList().size());
+        assertTrue(deviceObjOne.containsDevice(DeviceId.TREADMILL));
 
         //Test set command
         assertEquals(6,deviceObjOne.getCommandSet().size());
@@ -131,5 +132,6 @@ public class TestDevice extends TestCase {
         //test the getInfo
         deviceObjOne.setDeviceInfo(info);
         assertEquals(DeviceId.NONE, deviceObjOne.getInfo().getDevId());
+
     }
 }

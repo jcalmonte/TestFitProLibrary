@@ -240,6 +240,22 @@ public class Device {
         this.addCommand(new WriteReadDataCmd(this.mInfo.getDevId()));
     }
 
+    /**
+     * determines whether the device is supported with this device
+     * @param id the DeviceId
+     * @return true if in sub device list, false if not
+     */
+    public boolean containsDevice(DeviceId id)
+    {
+        for (Device device : this.getSubDeviceList()) {
+            if(device.getInfo().getDevId() == id)
+            {
+                return true;
+            }
+        }
+        return  false;
+    }
+
     @Override
     public String toString() {
         //get a list of

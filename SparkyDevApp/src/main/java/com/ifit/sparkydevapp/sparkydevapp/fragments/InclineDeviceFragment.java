@@ -2,6 +2,7 @@ package com.ifit.sparkydevapp.sparkydevapp.fragments;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +28,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 
-public class InclineDeviceFragment extends BaseInfoFragment implements CommandCallback, Runnable{
+public class InclineDeviceFragment extends BaseInfoFragment implements CommandCallback, Runnable, View.OnKeyListener, View.OnFocusChangeListener{
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -44,6 +45,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
     private TextView mTextViewInclineDevice;
     private TextView mTextViewInclineDetails;
     private EditText mEditInclineText;
+    private double mTargetIncline;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -53,6 +55,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
      */
     public InclineDeviceFragment(FecpController fecpCntrl) {
         super(fecpCntrl, InclineDeviceFragment.DISPLAY_STRING, InclineDeviceFragment.ARG_ITEM_ID);
+        this.mTargetIncline = 0.0;
     }
 
     @Override
@@ -71,7 +74,8 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
         this.mTextViewInclineValues = ((TextView) rootView.findViewById(R.id.textViewInclineValues));
         this.mTextViewInclineDetails = ((TextView) rootView.findViewById(R.id.textViewInclineDetails));
         this.mEditInclineText = ((EditText) rootView.findViewById(R.id.editInclineText));
-
+        this.mEditInclineText.setOnKeyListener(this);
+        this.mEditInclineText.setOnFocusChangeListener(this);
 
         this.mInclineDev = this.mFecpCntrl.getSysDev().getSubDevice(DeviceId.INCLINE);
         Set<BitFieldId> supportedBitfields;
@@ -84,6 +88,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
             if(supportedBitfields.contains(BitFieldId.INCLINE))
             {
                 ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addReadBitField(BitFieldId.INCLINE);
+                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
             }
 
             if(supportedBitfields.contains(BitFieldId.MAX_INCLINE))
@@ -152,14 +157,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
      */
     @Override
     public void msgHandler(Command cmd) {
-        //check for the max and min incline
-
-        //((TextView) this.mRootView.findViewById(R.id.textViewInclineDetails)).setText(this.mInclineDev.toString());
-        //check for the current incline
-
-        //check for the trans max
-        //check for actual incline
-        //
+        this.getActivity().runOnUiThread(new Thread(this));
     }
 
     /**
@@ -174,6 +172,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
 
         commandData = ((WriteReadDataSts)this.mInclineInfoCmd.getCommand().getStatus()).getResultData();
         String valueString = "Current Incline= %";
+        String detailString = "Details, ";
         if(commandData.containsKey(BitFieldId.INCLINE))
         {
 
@@ -217,7 +216,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
 
             try
             {
-                valueString += "Trans Max= " +((InclineConverter) commandData.get(BitFieldId.MAX_INCLINE).getData()).getIncline() + "\n";
+                detailString += "Max= %" +((InclineConverter) commandData.get(BitFieldId.MAX_INCLINE).getData()).getIncline() + " ";
             }
             catch (Exception ex)
             {
@@ -230,7 +229,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
 
             try
             {
-                valueString += "Trans Max= " +((InclineConverter) commandData.get(BitFieldId.MIN_INCLINE).getData()).getIncline() + "\n";
+                detailString += "Min= %" +((InclineConverter) commandData.get(BitFieldId.MIN_INCLINE).getData()).getIncline();
             }
             catch (Exception ex)
             {
@@ -238,5 +237,65 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
             }
         }
 
+        //set the display values
+        this.mTextViewInclineDetails.setText(detailString);
+        this.mTextViewInclineValues.setText(valueString);
+    }
+
+    /**
+     * Called when a hardware key is dispatched to a view. This allows listeners to
+     * get a chance to respond before the target view.
+     * <p>Key presses in software keyboards will generally NOT trigger this method,
+     * although some may elect to do so in some situations. Do not assume a
+     * software input method has to be key-based; even if it is, it may use key presses
+     * in a different way than you expect, so there is no way to reliably catch soft
+     * input key presses.
+     *
+     * @param v       The view the key has been dispatched to.
+     * @param keyCode The code for the physical key that was pressed
+     * @param event   The KeyEvent object containing full information about
+     *                the event.
+     * @return True if the listener has consumed the event, false otherwise.
+     */
+    @Override
+    public boolean onKey(View v, int keyCode, KeyEvent event) {
+
+        if(event.getAction() == KeyEvent.ACTION_DOWN && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+            try {
+                String inputStr = "";
+                inputStr = this.mEditInclineText.getText().toString();
+                if (inputStr.isEmpty()) {
+                    return false;
+                }
+                this.mTargetIncline = Double.parseDouble(inputStr);
+            }
+            catch (NumberFormatException numEx) {
+                numEx.printStackTrace();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Called when the focus state of a view has changed.
+     *
+     * @param v        The view whose state has changed.
+     * @param hasFocus The new focus state of v.
+     */
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(!hasFocus)
+        {
+            try{
+
+                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
+            }
+            catch (Exception ex)
+            {
+                Log.e("Update Target Incline Commands Failed", ex.getLocalizedMessage());
+
+            }
+        }
     }
 }

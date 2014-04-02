@@ -15,6 +15,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ConnectionActivity;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.BaseInfoFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.InclineDeviceFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.MainDeviceInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.TaskInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentControl;
@@ -80,9 +81,9 @@ public class ItemListActivity extends FragmentActivity
         baseInfoFragments.add(new MainDeviceInfoFragment(this.mFecpCntrl));
         baseInfoFragments.add(new TaskInfoFragment(this.mFecpCntrl));
 
-        if(this.mMainDevice.getSubDeviceList().contains(DeviceId.INCLINE))
+        if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
         {
-
+            baseInfoFragments.add(new InclineDeviceFragment(this.mFecpCntrl));
         }
 
         //add supported Fragments here.
@@ -101,8 +102,6 @@ public class ItemListActivity extends FragmentActivity
             ((MainInfoListFragmentControl) getSupportFragmentManager()
                     .findFragmentById(R.id.main_device_fragment))
                     .setActivateOnItemClick(true);
-
-
         }
 
     }
@@ -125,6 +124,9 @@ public class ItemListActivity extends FragmentActivity
         }
         else if (id == TaskInfoFragment.ARG_ITEM_ID) {
             currentFrag = new TaskInfoFragment(this.mFecpCntrl);
+        }
+        else if (id == InclineDeviceFragment.ARG_ITEM_ID) {
+            currentFrag = new InclineDeviceFragment(this.mFecpCntrl);
         }
         else
         {
