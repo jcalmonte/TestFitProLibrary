@@ -162,14 +162,14 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
         TreeMap<BitFieldId, BitfieldDataConverter> commandData;
 
         commandData = ((WriteReadDataSts)this.mSpeedInfoCmd.getCommand().getStatus()).getResultData();
-        String valueString = "Current Speed= %";
+        String valueString = "Current Speed= ";
         String detailString = "Details, ";
         if(commandData.containsKey(BitFieldId.KPH))
         {
 
             try
             {
-                valueString += ((SpeedConverter) commandData.get(BitFieldId.KPH).getData()).getSpeed() + "\n";
+                valueString += ((SpeedConverter) commandData.get(BitFieldId.KPH).getData()).getSpeed() + " kph\n";
             }
             catch (Exception ex)
             {
@@ -182,7 +182,7 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
 
             try
             {
-                valueString += "Actual Speed= %" +((SpeedConverter) commandData.get(BitFieldId.ACTUAL_KPH).getData()).getSpeed() + "\n";
+                valueString += "Actual Speed= " +((SpeedConverter) commandData.get(BitFieldId.ACTUAL_KPH).getData()).getSpeed() + " kph\n";
             }
             catch (Exception ex)
             {
@@ -195,7 +195,7 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
 
             try
             {
-                detailString += "Max= %" +((SpeedConverter) commandData.get(BitFieldId.MAX_KPH).getData()).getSpeed() + " ";
+                detailString += "Max= " +((SpeedConverter) commandData.get(BitFieldId.MAX_KPH).getData()).getSpeed() + " kph ";
             }
             catch (Exception ex)
             {
@@ -208,7 +208,7 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
 
             try
             {
-                detailString += "Min= %" +((SpeedConverter) commandData.get(BitFieldId.MIN_KPH).getData()).getSpeed();
+                detailString += "Min= " +((SpeedConverter) commandData.get(BitFieldId.MIN_KPH).getData()).getSpeed() + " kph ";
             }
             catch (Exception ex)
             {
