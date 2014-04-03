@@ -10,11 +10,14 @@ import com.ifit.sparky.fecp.CmdHandlerType;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.error.ErrorEventListener;
+import com.ifit.sparky.fecp.error.SystemError;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ConnectionActivity;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.BaseInfoFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.ErrorFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.InclineDeviceFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.MainDeviceInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.SpeedDeviceFragment;
@@ -24,7 +27,7 @@ import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentCont
 import java.util.ArrayList;
 
 public class ItemListActivity extends FragmentActivity
-        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback {
+        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -73,8 +76,17 @@ public class ItemListActivity extends FragmentActivity
         catch (Exception ex)
         {
             ex.printStackTrace();
-            //if usb permission, ask for permission
+            //Log.e("Connection Error", ex.getMessage());
+            Toast.makeText(this,"Connection Failed",Toast.LENGTH_LONG).show();
+            this.mProgressThread.stopProgress();
+            //change intent back to the connect main menu
+            Intent ConnectionActivity = new Intent(this.getApplicationContext(), ConnectionActivity.class);
+            startActivity(ConnectionActivity);
+            finish();
+            return;
         }
+
+        this.mFecpCntrl.addOnErrorEventListener(this);//notify users of any errors
 
         //get supported list of item we will be supporting
         this.baseInfoFragments = new ArrayList<BaseInfoFragment>();
@@ -82,6 +94,7 @@ public class ItemListActivity extends FragmentActivity
         //always support main info, error, task
         baseInfoFragments.add(new MainDeviceInfoFragment(this.mFecpCntrl));
         baseInfoFragments.add(new TaskInfoFragment(this.mFecpCntrl));
+        baseInfoFragments.add(new ErrorFragment(this.mFecpCntrl));
 
         if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
         {
@@ -94,11 +107,6 @@ public class ItemListActivity extends FragmentActivity
 
         //add supported Fragments here.
         if (findViewById(R.id.item_detail_container) != null) {
-
-            //MainDeviceInfoFragment mainFrag = new MainDeviceInfoFragment();
-            //mainFrag.setArguments(getIntent().getExtras());
-
-            //getSupportFragmentManager().beginTransaction().add(R.id.item_detail_container, mainFrag).commit();
 
             ((MainInfoListFragmentControl)getSupportFragmentManager()
                     .findFragmentById(R.id.main_device_fragment))
@@ -178,5 +186,15 @@ public class ItemListActivity extends FragmentActivity
     public void systemDisconnected() {
         this.mConnected = false;
         Toast.makeText(this,"Connection Lost",Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * This will notify anyone that an error has occurred with the system
+     *
+     * @param error the error that occurred.
+     */
+    @Override
+    public void onErrorEventListener(SystemError error) {
+        Toast.makeText(this,error.toString(),Toast.LENGTH_LONG).show();
     }
 }

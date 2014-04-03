@@ -10,6 +10,7 @@ package com.ifit.sparky.fecp.error;
 import android.text.format.DateFormat;
 
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class SystemError {
 
@@ -41,7 +42,7 @@ public class SystemError {
     /**
      * System error with only error codes
      * @param msgType Type of Message
-     * @param code
+     * @param code Error Number
      */
     public SystemError(ErrorMsgType msgType, ErrorCode code)
     {
@@ -100,6 +101,8 @@ public class SystemError {
         this.mFileName = filename;
         this.mFunctionName = functionName;
         this.mErrorNumber = 0;
+        this.mErrorTime = new GregorianCalendar();
+        this.mErrorTime.setTimeInMillis(0);
 
     }
 

@@ -415,8 +415,9 @@ public class UsbComm extends Activity implements CommInterface {
 
         if(buffList_ep3.size() > 0) {
             ByteBuffer buffer_temp = buffList_ep3.get(0);
-
-            this.mErrorReporter.sendErrorObject(buffer_temp);
+            if (this.mErrorReporter != null) {
+                this.mErrorReporter.sendErrorObject(buffer_temp);
+            }
             int errNum = buffer_temp.get(1) + buffer_temp.get(2) * 0x100;
             int lineNumber = buffer_temp.get(3) + buffer_temp.get(4) * 0x100;
             int j = 0;

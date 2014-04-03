@@ -19,10 +19,13 @@ public class ErrorCntrl implements ErrorReporting{
     private LinkedList<SystemError> mSystemErrors;
     private FecpController mSystem;//use for reporting error data
     private int mErrorCount;
+    private LinkedList<ErrorEventListener> mErrorEventListeners;
+
     public ErrorCntrl (FecpController system)
     {
         this.mSystem = system;
         this.mSystemErrors = new LinkedList<SystemError>();
+        this.mErrorEventListeners = new LinkedList<ErrorEventListener>();
         this.mErrorCount = 0;//todo change to be from a file.
 
     }
@@ -74,13 +77,18 @@ public class ErrorCntrl implements ErrorReporting{
         {
 
         }
-
         //the list only holds the last 10 errors
         //todo figure a solution for more errors
         if(this.mSystemErrors.size() > 10)
         {
             this.mSystemErrors.removeFirst();
         }
+
+        //notify Higher ups
+        for (ErrorEventListener listener : this.mErrorEventListeners) {
+            listener.onErrorEventListener(sysError);
+        }
+
     }
 
     @Override
@@ -94,4 +102,36 @@ public class ErrorCntrl implements ErrorReporting{
 
         return errorList;
     }
+
+    /**
+     * Adds a listener to the system so we can determine if there are any errors
+     * @param errListener the listener that will be called when an error occurs
+     */
+    @Override
+    public void addOnErrorEventListener(ErrorEventListener errListener)
+    {
+        this.mErrorEventListeners.add(errListener);
+    }
+
+    /**
+     * Removes the listener from the system. so that it won't be called anymore
+     * @param errListener the listener that you wish to remove
+     */
+    @Override
+    public void removeOnErrorEventListener(ErrorEventListener errListener)
+    {
+        if(this.mErrorEventListeners.contains(errListener)) {
+            this.mErrorEventListeners.remove(errListener);
+        }
+    }
+
+    /**
+     * Clears the Listers from the system
+     */
+    @Override
+    public void clearOnErrorEventListener()
+    {
+        this.mErrorEventListeners.clear();
+    }
+
 }
