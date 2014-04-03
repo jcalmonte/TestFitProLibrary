@@ -92,7 +92,6 @@ public class ErrorCntrl implements ErrorReporting{
             errorList += error.toString() +"\n";
         }
 
-
         return errorList;
     }
 }
