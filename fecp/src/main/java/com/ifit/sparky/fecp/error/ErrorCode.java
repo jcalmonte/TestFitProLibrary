@@ -31,4 +31,17 @@ public enum ErrorCode {
     {
         return this.mErrorNumber;
     }
+    static public ErrorCode getErrorCode(short errCodeNum)
+    {
+        //go through all device ids and if it equals then return it.
+        for (ErrorCode errCode : ErrorCode.values())
+        {
+            if(errCodeNum == (short)errCode.getErrorNumber())
+            {
+                return errCode; // the Device ID
+            }
+        }
+
+        return ErrorCode.NONE;//resort to default
+    }
 }

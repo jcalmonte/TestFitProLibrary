@@ -7,10 +7,16 @@
  */
 package com.ifit.sparky.fecp.error;
 
+import java.nio.ByteBuffer;
+
 public interface ErrorReporting {
 
     //sends error Function
 
-    void sendErrorObject(SystemError error);
+    /**
+     * Sends the buffer that matches the online profile for Error messages
+     * @param buffer buffer that is pointing to the start of the message.
+     */
+    void sendErrorObject(ByteBuffer buffer);
 
 }

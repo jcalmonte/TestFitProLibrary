@@ -13,6 +13,7 @@ import android.content.Intent;
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.UsbComm;
+import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -45,6 +46,7 @@ public class FecpController {
     private Intent mIntent;
     private CommInterface mCommController;
     private FecpCmdHandleInterface mCmdHandleInterface;
+    private ErrorCntrl mSysErrorControl;
 
     /**
      * Sets up the controller, and all the facets dealing with the controller
@@ -100,6 +102,7 @@ public class FecpController {
             //two references to the same object with different responsibilities
             this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
         }
+        this.mSysErrorControl = new ErrorCntrl(this);
         //connected to the system
         this.statusCallback.systemConnected();
         return this.mSysDev;
