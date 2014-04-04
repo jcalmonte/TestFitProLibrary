@@ -4,15 +4,22 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.ifit.sparky.fecp.CmdHandlerType;
+import com.ifit.sparky.fecp.CommandCallback;
+import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.SystemError;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.command.Command;
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ConnectionActivity;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
@@ -27,7 +34,7 @@ import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentCont
 import java.util.ArrayList;
 
 public class ItemListActivity extends FragmentActivity
-        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener {
+        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, CommandCallback {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -39,6 +46,7 @@ public class ItemListActivity extends FragmentActivity
     private ProgressThread mProgressThread;
     private SystemDevice mMainDevice;
     private ArrayList<BaseInfoFragment> baseInfoFragments;
+    private FecpCommand mKeepAlive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +94,16 @@ public class ItemListActivity extends FragmentActivity
             return;
         }
 
+
+        try {
+            this.mKeepAlive = new FecpCommand(this.mFecpCntrl.getSysDev().getCommand(CommandId.WRITE_READ_DATA),this,0,2000);
+            ((WriteReadDataCmd)this.mKeepAlive.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
+            this.mFecpCntrl.addCmd(this.mKeepAlive);
+        }
+        catch (Exception ex)
+        {
+            Log.e("keepAlive error", ex.getMessage());
+        }
         this.mFecpCntrl.addOnErrorEventListener(this);//notify users of any errors
 
         //get supported list of item we will be supporting
@@ -196,5 +214,15 @@ public class ItemListActivity extends FragmentActivity
     @Override
     public void onErrorEventListener(SystemError error) {
         Toast.makeText(this,error.toString(),Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * Handles the reply from the device
+     *
+     * @param cmd the command that was sent.
+     */
+    @Override
+    public void msgHandler(Command cmd) {
+        //currently do nothing
     }
 }

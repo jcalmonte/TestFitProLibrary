@@ -49,8 +49,7 @@ public class ErrorFragment extends BaseInfoFragment implements ErrorEventListene
 
         this.mTextViewErrorInfo = ((TextView) rootView.findViewById(R.id.textViewErrorInfo));
         // Show the dummy content as text in a TextView.
-        ((TextView) rootView.findViewById(R.id.textViewErrorInfo)).setText(this.mFecpCntrl.getSysDev().toString());
-
+        this.mTextViewErrorInfo.setText("Errors ");
         this.addFragmentFecpCommands();
         return rootView;
     }
