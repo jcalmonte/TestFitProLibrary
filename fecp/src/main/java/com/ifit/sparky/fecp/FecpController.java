@@ -13,6 +13,9 @@ import android.content.Intent;
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.UsbComm;
+import com.ifit.sparky.fecp.error.ErrorCntrl;
+import com.ifit.sparky.fecp.error.ErrorEventListener;
+import com.ifit.sparky.fecp.error.ErrorReporting;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -32,9 +35,10 @@ import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 
+import java.nio.ByteBuffer;
 import java.util.Set;
 
-public class FecpController {
+public class FecpController implements ErrorReporting {
     //Fecp System Version number
     private final int VERSION = 1;
     private CommType mCommType;
@@ -45,6 +49,7 @@ public class FecpController {
     private Intent mIntent;
     private CommInterface mCommController;
     private FecpCmdHandleInterface mCmdHandleInterface;
+    private ErrorCntrl mSysErrorControl;
 
     /**
      * Sets up the controller, and all the facets dealing with the controller
@@ -61,6 +66,8 @@ public class FecpController {
         this.mIsConnected = false;
         this.mContext = context;
         this.mIntent = intent;
+
+        this.mSysErrorControl = new ErrorCntrl(this);
     }
 
     /**
@@ -100,6 +107,7 @@ public class FecpController {
             //two references to the same object with different responsibilities
             this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
         }
+        this.mCommController.setupErrorReporting(this.mSysErrorControl);
         //connected to the system
         this.statusCallback.systemConnected();
         return this.mSysDev;
@@ -232,4 +240,42 @@ public class FecpController {
         return null;//nothing supported yet
     }
 
+    /**
+     * Sends the buffer that matches the online profile for Error messages
+     * Don't use if you don't now what it does
+     * @param buffer buffer that is pointing to the start of the message.
+     */
+    @Override
+    public void sendErrorObject(ByteBuffer buffer) {
+        this.mSysErrorControl.sendErrorObject(buffer);
+    }
+
+    /**
+     * Adds a listener to the system so we can determine if there are any errors
+     *
+     * @param errListener the listener that will be called when an error occurs
+     */
+    @Override
+    public void addOnErrorEventListener(ErrorEventListener errListener) {
+        this.mSysErrorControl.addOnErrorEventListener(errListener);
+    }
+
+    /**
+     * Removes the listener from the system. so that it won't be called anymore
+     *
+     * @param errListener the listener that you wish to remove
+     */
+    @Override
+    public void removeOnErrorEventListener(ErrorEventListener errListener) {
+        this.mSysErrorControl.removeOnErrorEventListener(errListener);
+    }
+
+    /**
+     * Clears the Listers from the system
+     */
+    @Override
+    public void clearOnErrorEventListener() {
+        this.mSysErrorControl.clearOnErrorEventListener();
+
+    }
 }

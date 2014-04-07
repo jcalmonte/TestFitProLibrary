@@ -10,6 +10,7 @@ package com.ifit.sparky.fecp.tests.brute;
 import android.util.Log;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
+import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
 
@@ -41,6 +42,16 @@ public class TestToolDummyCom implements CommInterface {
             Log.e("Sleep fail", ex.getMessage());
         }
         return this.mSendBuffer;
+    }
+
+    /**
+     * Needs to report error with the err
+     *
+     * @param errReporterCallBack needs to be called to handle errors
+     */
+    @Override
+    public void setupErrorReporting(ErrorReporting errReporterCallBack) {
+
     }
 
     /**
