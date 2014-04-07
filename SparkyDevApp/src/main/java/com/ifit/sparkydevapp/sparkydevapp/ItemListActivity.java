@@ -4,17 +4,27 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.ifit.sparky.fecp.CmdHandlerType;
+import com.ifit.sparky.fecp.CommandCallback;
+import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.error.ErrorEventListener;
+import com.ifit.sparky.fecp.error.SystemError;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.command.Command;
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ConnectionActivity;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.BaseInfoFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.ErrorFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.InclineDeviceFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.MainDeviceInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.SpeedDeviceFragment;
@@ -24,7 +34,7 @@ import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentCont
 import java.util.ArrayList;
 
 public class ItemListActivity extends FragmentActivity
-        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback {
+        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, CommandCallback {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -36,6 +46,7 @@ public class ItemListActivity extends FragmentActivity
     private ProgressThread mProgressThread;
     private SystemDevice mMainDevice;
     private ArrayList<BaseInfoFragment> baseInfoFragments;
+    private FecpCommand mKeepAlive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +84,27 @@ public class ItemListActivity extends FragmentActivity
         catch (Exception ex)
         {
             ex.printStackTrace();
-            //if usb permission, ask for permission
+            //Log.e("Connection Error", ex.getMessage());
+            Toast.makeText(this,"Connection Failed",Toast.LENGTH_LONG).show();
+            this.mProgressThread.stopProgress();
+            //change intent back to the connect main menu
+            Intent ConnectionActivity = new Intent(this.getApplicationContext(), ConnectionActivity.class);
+            startActivity(ConnectionActivity);
+            finish();
+            return;
         }
+
+
+        try {
+            this.mKeepAlive = new FecpCommand(this.mFecpCntrl.getSysDev().getCommand(CommandId.WRITE_READ_DATA),this,0,2000);
+            ((WriteReadDataCmd)this.mKeepAlive.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
+            this.mFecpCntrl.addCmd(this.mKeepAlive);
+        }
+        catch (Exception ex)
+        {
+            Log.e("keepAlive error", ex.getMessage());
+        }
+        this.mFecpCntrl.addOnErrorEventListener(this);//notify users of any errors
 
         //get supported list of item we will be supporting
         this.baseInfoFragments = new ArrayList<BaseInfoFragment>();
@@ -82,6 +112,7 @@ public class ItemListActivity extends FragmentActivity
         //always support main info, error, task
         baseInfoFragments.add(new MainDeviceInfoFragment(this.mFecpCntrl));
         baseInfoFragments.add(new TaskInfoFragment(this.mFecpCntrl));
+        baseInfoFragments.add(new ErrorFragment(this.mFecpCntrl));
 
         if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
         {
@@ -94,11 +125,6 @@ public class ItemListActivity extends FragmentActivity
 
         //add supported Fragments here.
         if (findViewById(R.id.item_detail_container) != null) {
-
-            //MainDeviceInfoFragment mainFrag = new MainDeviceInfoFragment();
-            //mainFrag.setArguments(getIntent().getExtras());
-
-            //getSupportFragmentManager().beginTransaction().add(R.id.item_detail_container, mainFrag).commit();
 
             ((MainInfoListFragmentControl)getSupportFragmentManager()
                     .findFragmentById(R.id.main_device_fragment))
@@ -178,5 +204,25 @@ public class ItemListActivity extends FragmentActivity
     public void systemDisconnected() {
         this.mConnected = false;
         Toast.makeText(this,"Connection Lost",Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * This will notify anyone that an error has occurred with the system
+     *
+     * @param error the error that occurred.
+     */
+    @Override
+    public void onErrorEventListener(SystemError error) {
+        Toast.makeText(this,error.toString(),Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * Handles the reply from the device
+     *
+     * @param cmd the command that was sent.
+     */
+    @Override
+    public void msgHandler(Command cmd) {
+        //currently do nothing
     }
 }

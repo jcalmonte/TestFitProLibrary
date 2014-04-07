@@ -9,6 +9,8 @@
 
 package com.ifit.sparky.fecp.communication;
 
+import com.ifit.sparky.fecp.error.ErrorReporting;
+
 import java.nio.ByteBuffer;
 
 public interface CommInterface {
@@ -27,5 +29,11 @@ public interface CommInterface {
      * @return the buffer from the device 0 in the first byte for failed
      */
     ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout);
+
+    /**
+     * Needs to report error with the err
+     * @param errReporterCallBack needs to be called to handle errors
+     */
+    void setupErrorReporting(ErrorReporting errReporterCallBack);
 
 }

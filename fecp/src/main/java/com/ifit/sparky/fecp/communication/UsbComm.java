@@ -9,14 +9,12 @@
 
 package com.ifit.sparky.fecp.communication;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.Iterator;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
-import java.util.ArrayList;
+import android.content.IntentFilter;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -25,11 +23,15 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbRequest;
 import android.os.Handler;
-import android.content.IntentFilter;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.app.Activity;
-import android.widget.Toast;
+import android.util.Log;
+
+import com.ifit.sparky.fecp.error.ErrorReporting;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 
 public class UsbComm extends Activity implements CommInterface {
@@ -92,6 +94,8 @@ public class UsbComm extends Activity implements CommInterface {
         NOT_CONNECTED, CONNECTED, CONNECTION_JUST_DROPPED, CONNECTION_DROPPED
     }
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
+
+    private ErrorReporting mErrorReporter;
 
     /**
      * UsbComm - constructor
@@ -196,6 +200,16 @@ public class UsbComm extends Activity implements CommInterface {
     public ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout) {
 
         return sendAndReceiveCommand(ENDPOINT_2, buff, timeout);
+    }
+
+    /**
+     * Needs to report error with the err
+     *
+     * @param errReporterCallBack needs to be called to handle errors
+     */
+    @Override
+    public void setupErrorReporting(ErrorReporting errReporterCallBack) {
+        this.mErrorReporter = errReporterCallBack;
     }
 
     /**
@@ -401,6 +415,9 @@ public class UsbComm extends Activity implements CommInterface {
 
         if(buffList_ep3.size() > 0) {
             ByteBuffer buffer_temp = buffList_ep3.get(0);
+            if (this.mErrorReporter != null) {
+                this.mErrorReporter.sendErrorObject(buffer_temp);
+            }
             int errNum = buffer_temp.get(1) + buffer_temp.get(2) * 0x100;
             int lineNumber = buffer_temp.get(3) + buffer_temp.get(4) * 0x100;
             int j = 0;
@@ -420,6 +437,7 @@ public class UsbComm extends Activity implements CommInterface {
             String temp = new String(tempBuff);
             Log.e(TAG, "Error " + errNum + ", Line " + lineNumber + ", File/Function " + temp);
             buffList_ep3.remove(0);
+            //this will handle the buffer of error data
         }
     }
 
