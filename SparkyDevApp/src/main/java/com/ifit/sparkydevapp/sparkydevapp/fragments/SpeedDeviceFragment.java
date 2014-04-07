@@ -105,6 +105,11 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
                 ((WriteReadDataCmd)this.mSpeedInfoCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_KPH);
             }
 
+            if(supportedBitfields.contains(BitFieldId.WORKOUT_MODE))
+            {
+                ((WriteReadDataCmd)this.mSpeedInfoCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
+            }
+
         }
         catch (Exception ex)
         {
@@ -164,6 +169,18 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
         commandData = ((WriteReadDataSts)this.mSpeedInfoCmd.getCommand().getStatus()).getResultData();
         String valueString = "Current Speed= ";
         String detailString = "Details, ";
+        if(commandData.containsKey(BitFieldId.WORKOUT_MODE))
+        {
+
+            try
+            {
+                valueString += "Mode: "+((SpeedConverter) commandData.get(BitFieldId.WORKOUT_MODE).getData()).getSpeed() + "\n";
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
         if(commandData.containsKey(BitFieldId.KPH))
         {
 
