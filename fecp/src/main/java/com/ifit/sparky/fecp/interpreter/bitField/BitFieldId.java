@@ -44,7 +44,10 @@ public enum BitFieldId {
     BV_VOLUME(32, 1, false, new ByteConverter(), "Broadcast Vision Volume"),
     BV_FREQUENCY(33, 2, false, new ShortConverter(), "Broadcast Vision Frequency"),
     IDLE_TIMEOUT(34, 2, false, new ShortConverter(), "Idle Timeout"),
-    PAUSE_TIMEOUT(35, 2, false, new ShortConverter(), "Pause Timeout");
+    PAUSE_TIMEOUT(35, 2, false, new ShortConverter(), "Pause Timeout"),
+
+    AVERAGE_PULSE(48, 1, true, new ByteConverter(), "Average Pulse"),
+    MAX_PULSE(49, 1, true, new ByteConverter(), "Max Pulse");
 
     private int mValue; // indexed at 1-255
     private int mSection;
