@@ -4,7 +4,7 @@
  * @date 4/16/2014
  * @version 1
  * This Intercept callback will have to handle all commands going to the Device,
- * and fill the data with the expected response.
+ * and fill the data with the expected response, or unexpected response.
  */
 package com.ifit.sparky.fecp.testingUtil;
 
