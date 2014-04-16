@@ -26,7 +26,7 @@ public class SpeedConverter extends BitfieldDataConverter {
     public BitfieldDataConverter getData() throws Exception
     {
         this.mSpeed = (double)this.getRawToInt();
-        this.mSpeed /= 10;
+        this.mSpeed /= 100;
         return this;
     }
 
@@ -46,7 +46,7 @@ public class SpeedConverter extends BitfieldDataConverter {
         {
             throw new InvalidBitFieldException( double.class, obj );
         }
-        temp *= 10;//convert to int
+        temp *= 100;//convert to int
         return this.getRawFromData((int)temp);
     }
 
