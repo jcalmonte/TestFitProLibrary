@@ -12,6 +12,7 @@ import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
+import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
 import java.util.Vector;
@@ -27,6 +28,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     private ScheduledExecutorService mThreadManager = Executors.newSingleThreadScheduledExecutor();//this will keep track of all the threads
     private Thread mCurrentThread;//this thread will be recreated when needed.
     private int idAssigner;
+    private CmdInterceptor mInterceptor;
 
     public FecpCmdHandler(CommInterface commController)
     {
@@ -162,6 +164,11 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         cmd.incrementCmdReceivedCounter();
     }
 
+    @Override
+    public void addInterceptor(CmdInterceptor interceptor) {
+        this.mInterceptor = interceptor;
+    }
+
     /**
      * adds the command to the queue, in order to be ready to send.
      *
@@ -194,7 +201,13 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
             while(this.mProcessCmds.size() > 0)
             {
                 FecpCommand tempCmd = this.mProcessCmds.get(0);
-                this.sendCommand(tempCmd);
+                if(this.mInterceptor != null && this.mInterceptor.isInterceptorEnabled())
+                {
+                    this.mInterceptor.interceptFecpCommand(tempCmd);
+                }
+                else {
+                    this.sendCommand(tempCmd);
+                }
                 //if there is a callback call it
                 if(tempCmd.getCallback() != null
                         && (tempCmd.getCommand().getStatus().getStsId() == StatusId.DONE
