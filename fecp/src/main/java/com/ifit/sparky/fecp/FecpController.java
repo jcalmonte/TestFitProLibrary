@@ -35,6 +35,7 @@ import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
+import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
 import java.util.Set;
@@ -281,4 +282,17 @@ public class FecpController implements ErrorReporting {
         this.mSysErrorControl.clearOnErrorEventListener();
 
     }
+
+    /**
+     * Adds an interceptor to the Fecp Controller, redirecting all commands to the CmdInterceptor.
+     * This command is meant for testing Ifit code, not the fecp controller or the brain board.
+     * @param interceptor interceptor to handle all commands going to the device.
+     */
+    public void addInterceptor(CmdInterceptor interceptor)
+    {
+        this.mCmdHandleInterface.addInterceptor(interceptor);
+        //this will get the data from fecp controller that the interceptor needs
+    }
+
+
 }

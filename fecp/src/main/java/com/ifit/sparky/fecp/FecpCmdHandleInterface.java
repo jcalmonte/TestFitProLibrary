@@ -10,6 +10,7 @@ package com.ifit.sparky.fecp;
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 public interface FecpCmdHandleInterface {
 
@@ -51,5 +52,11 @@ public interface FecpCmdHandleInterface {
      */
     void sendCommand(FecpCommand cmd)throws Exception;
 
+    /**
+     * This will add the interceptor for testing to validate commands going to the
+     * System.
+     * @param interceptor interceptor for the system
+     */
+    void addInterceptor(CmdInterceptor interceptor);
 
 }
