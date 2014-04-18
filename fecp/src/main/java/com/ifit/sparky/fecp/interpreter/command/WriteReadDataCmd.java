@@ -236,6 +236,15 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
     }
 
     /**
+     * Gets the data that is being written to the System.
+     * @return list of bits, and data) that are going to be written.
+     */
+    public DataBaseCmd getWriteBitData()
+    {
+        return this.mData;
+    }
+
+    /**
      * This will setup the command to be ready to be sent.
      * It adds the number of section bytes, the bits in the sections.
      * @return the Command structured to be ready to sent.
