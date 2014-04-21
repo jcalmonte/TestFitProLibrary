@@ -40,6 +40,7 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
     private Device mSpeedDev;
 
     private FecpCommand mSpeedInfoCmd;
+    private FecpCommand mSpeedSetCmd;//only when it changes
     private FecpCommand mSpeedCalibrateCmd;
 
     private TextView mTextViewSpeedValues;
@@ -85,12 +86,13 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
         try {
 
             this.mSpeedInfoCmd = new FecpCommand(this.mSpeedDev.getCommand(CommandId.WRITE_READ_DATA), this, 0, 1000);//every 1 second
+            this.mSpeedSetCmd = new FecpCommand(this.mSpeedDev.getCommand(CommandId.WRITE_READ_DATA));//every speed change
             //check which bitfields are supported
             supportedBitfields = this.mSpeedDev.getInfo().getSupportedBitfields();
             if(supportedBitfields.contains(BitFieldId.KPH))
             {
                 ((WriteReadDataCmd)this.mSpeedInfoCmd.getCommand()).addReadBitField(BitFieldId.KPH);
-                ((WriteReadDataCmd)this.mSpeedInfoCmd.getCommand()).addWriteData(BitFieldId.KPH, this.mTargetSpeed);
+                ((WriteReadDataCmd)this.mSpeedSetCmd.getCommand()).addWriteData(BitFieldId.KPH, this.mTargetSpeed);
             }
 
             if(supportedBitfields.contains(BitFieldId.MAX_KPH))
@@ -209,7 +211,9 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
 
             try
             {
-                valueString += ((SpeedConverter) commandData.get(BitFieldId.KPH).getData()).getSpeed() + " kph\n";
+                double tempSpeed = ((SpeedConverter) commandData.get(BitFieldId.KPH).getData()).getSpeed();
+                this.mTargetSpeed =tempSpeed;
+                valueString += tempSpeed + " kph\n";
             }
             catch (Exception ex)
             {
@@ -287,8 +291,11 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
                     return false;
                 }
                 this.mTargetSpeed = Double.parseDouble(inputStr);
+
+                ((WriteReadDataCmd)this.mSpeedSetCmd.getCommand()).addWriteData(BitFieldId.KPH, this.mTargetSpeed);
+                this.mFecpCntrl.addCmd(this.mSpeedSetCmd);//send the new speed down
             }
-            catch (NumberFormatException numEx) {
+            catch (Exception numEx) {
                 numEx.printStackTrace();
             }
             return true;
@@ -308,7 +315,8 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
         {
             try{
 
-                ((WriteReadDataCmd)this.mSpeedInfoCmd.getCommand()).addWriteData(BitFieldId.KPH, this.mTargetSpeed);
+                ((WriteReadDataCmd)this.mSpeedSetCmd.getCommand()).addWriteData(BitFieldId.KPH, this.mTargetSpeed);
+                this.mFecpCntrl.addCmd(this.mSpeedSetCmd);//send the new speed down
             }
             catch (Exception ex)
             {
