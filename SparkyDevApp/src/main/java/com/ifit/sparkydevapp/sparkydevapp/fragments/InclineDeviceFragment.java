@@ -6,6 +6,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -21,6 +22,7 @@ import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 import com.ifit.sparkydevapp.sparkydevapp.R;
 
@@ -28,7 +30,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 
-public class InclineDeviceFragment extends BaseInfoFragment implements CommandCallback, Runnable, View.OnKeyListener, View.OnFocusChangeListener{
+public class InclineDeviceFragment extends BaseInfoFragment implements CommandCallback, Runnable, View.OnKeyListener, View.OnFocusChangeListener, View.OnClickListener{
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -44,8 +46,11 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
     private TextView mTextViewInclineValues;
     private TextView mTextViewInclineDevice;
     private TextView mTextViewInclineDetails;
+    private TextView mCalStsTextView;
     private EditText mEditInclineText;
+    private Button mCalibrateButton;
     private double mTargetIncline;
+    private boolean mCalibrate;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -56,6 +61,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
     public InclineDeviceFragment(FecpController fecpCntrl) {
         super(fecpCntrl, InclineDeviceFragment.DISPLAY_STRING, InclineDeviceFragment.ARG_ITEM_ID);
         this.mTargetIncline = 0.0;
+        this.mCalibrate = false;
     }
 
     @Override
@@ -67,15 +73,18 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View rootView;
-        rootView = inflater.inflate(R.layout.incline_device, container, false);
+        View rootView = super.onCreateView(inflater, container, savedInstanceState);
         //assign all of the textviews and values we need
         this.mTextViewInclineDevice = ((TextView) rootView.findViewById(R.id.textViewInclineDevice));
         this.mTextViewInclineValues = ((TextView) rootView.findViewById(R.id.textViewInclineValues));
         this.mTextViewInclineDetails = ((TextView) rootView.findViewById(R.id.textViewInclineDetails));
+        this.mCalStsTextView = ((TextView) rootView.findViewById(R.id.calStsTextView));
         this.mEditInclineText = ((EditText) rootView.findViewById(R.id.editInclineText));
+        this.mCalibrateButton = ((Button) rootView.findViewById(R.id.calibrateButton));
+
         this.mEditInclineText.setOnKeyListener(this);
         this.mEditInclineText.setOnFocusChangeListener(this);
+        this.mCalibrateButton.setOnClickListener(this);
 
         this.mInclineDev = this.mFecpCntrl.getSysDev().getSubDevice(DeviceId.INCLINE);
         Set<BitFieldId> supportedBitfields;
@@ -112,7 +121,9 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
             }
 
             if(this.mInclineDev.getCommandSet().containsKey(CommandId.CALIBRATE)) {
-                this.mInclineCalibrateCmd = new FecpCommand(this.mInclineDev.getCommand(CommandId.CALIBRATE), this);//every 1 second
+
+                this.mInclineCalibrateCmd = new FecpCommand(this.mInclineDev.getCommand(CommandId.CALIBRATE), this,0, 1000);//every 1 second
+
             }
         }
         catch (Exception ex)
@@ -132,6 +143,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
      */
     @Override
     public void addFragmentFecpCommands() {
+        super.addFragmentFecpCommands();
         try {
             this.mFecpCntrl.addCmd(this.mInclineInfoCmd);
         }
@@ -147,6 +159,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
     @Override
     public void deleteFragmentFecpCommands() {
 
+        super.deleteFragmentFecpCommands();
         this.mFecpCntrl.removeCmd(this.mInclineInfoCmd);
     }
 
@@ -157,6 +170,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
      */
     @Override
     public void msgHandler(Command cmd) {
+        super.msgHandler(cmd);
         this.getActivity().runOnUiThread(new Thread(this));
     }
 
@@ -167,12 +181,17 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
      */
     @Override
     public void run() {
+        super.run();
 
         TreeMap<BitFieldId, BitfieldDataConverter> commandData;
-
-        commandData = ((WriteReadDataSts)this.mInclineInfoCmd.getCommand().getStatus()).getResultData();
         String valueString = "Current Incline= %";
         String detailString = "Details, ";
+        String calStsString = "Calibration Sts:";
+
+
+
+        commandData = ((WriteReadDataSts)this.mInclineInfoCmd.getCommand().getStatus()).getResultData();
+
         if(commandData.containsKey(BitFieldId.INCLINE))
         {
 
@@ -237,6 +256,26 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
             }
         }
 
+        //update the calibration info
+        if(this.mCalibrate && this.mInclineCalibrateCmd != null) {
+            if (this.mInclineCalibrateCmd.getCommand().getStatus().getStsId() == StatusId.DONE) {
+                //passed
+                //remove command from the system.
+                this.mFecpCntrl.removeCmd(this.mInclineCalibrateCmd);
+                this.mCalibrate = false;
+                calStsString += " Passed";
+
+            } else if (this.mInclineCalibrateCmd.getCommand().getStatus().getStsId() == StatusId.IN_PROGRESS) {
+                // in progress
+                calStsString += " In Progress";
+            } else if (this.mInclineCalibrateCmd.getCommand().getStatus().getStsId() == StatusId.FAILED) {
+                //failed
+                this.mFecpCntrl.removeCmd(this.mInclineCalibrateCmd);//may have issues with sending it multiple times
+                this.mCalibrate = false;
+                calStsString += " Failed";
+            }
+            this.mCalStsTextView.setText(calStsString);
+        }
         //set the display values
         this.mTextViewInclineDetails.setText(detailString);
         this.mTextViewInclineValues.setText(valueString);
@@ -295,6 +334,31 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
             {
                 Log.e("Update Target Incline Commands Failed", ex.getLocalizedMessage());
 
+            }
+        }
+    }
+
+    /**
+     * Called when a view has been clicked.
+     *
+     * @param v The view that was clicked.
+     */
+    @Override
+    public void onClick(View v) {
+        //update the calibrate command
+        if(this.mCalibrate)//already calibrating
+        {
+            //don't do anything with the button
+        }
+        else
+        {
+            //add command to system.
+            this.mCalibrate = true;
+            try {
+                this.mFecpCntrl.addCmd(this.mInclineCalibrateCmd);
+                this.mCalStsTextView.setText("Calibration Sts:");
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

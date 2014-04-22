@@ -14,7 +14,6 @@ import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -26,7 +25,6 @@ import com.ifit.sparkydevapp.sparkydevapp.R;
 
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
 
 public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCallback, Runnable, View.OnKeyListener, View.OnFocusChangeListener{
@@ -173,37 +171,6 @@ public class SpeedDeviceFragment extends BaseInfoFragment implements CommandCall
         commandData = ((WriteReadDataSts)this.mSpeedInfoCmd.getCommand().getStatus()).getResultData();
         String valueString = "Current Speed= ";
         String detailString = "Details, ";
-        String systemString = "System Info, ";
-
-        //get System Information first
-        if(commandData.containsKey(BitFieldId.WORKOUT_MODE))
-        {
-            try
-            {
-                systemString  += "Mode: "+((SpeedConverter) commandData.get(BitFieldId.WORKOUT_MODE).getData()).getSpeed();
-            }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
-            }
-        }
-
-        if(commandData.containsKey(BitFieldId.RUNNING_TIME))
-        {
-            try
-            {
-                int seconds = ((LongConverter) commandData.get(BitFieldId.RUNNING_TIME).getData()).getValue();
-                int day = (int) TimeUnit.SECONDS.toDays(seconds);
-                long hours = TimeUnit.SECONDS.toHours(seconds) - (day *24);
-                long minute = TimeUnit.SECONDS.toMinutes(seconds) - (TimeUnit.SECONDS.toHours(seconds)* 60);
-                long second = TimeUnit.SECONDS.toSeconds(seconds) - (TimeUnit.SECONDS.toMinutes(seconds) *60);
-                systemString  += " time: " +hours+":"+minute+":"+ second;
-            }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
-            }
-        }
 
         commandData = ((WriteReadDataSts)this.mSpeedInfoCmd.getCommand().getStatus()).getResultData();
         if(commandData.containsKey(BitFieldId.KPH))

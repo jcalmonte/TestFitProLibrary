@@ -17,6 +17,7 @@ import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
+import com.ifit.sparky.fecp.interpreter.command.CalibrateCmd;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
@@ -227,8 +228,7 @@ public class FecpController implements ErrorReporting {
             //not implemented yet
             throw new Exception("Command not supported yet");
         } else if (CommandId.CALIBRATE == cmdId) {
-            //not implemented yet
-            throw new Exception("Command not supported yet");
+            return new CalibrateCmd(devId);
         } else if (CommandId.GET_SYSTEM_INFO == cmdId) {
             return new GetSysInfoCmd(devId);
         } else if (CommandId.GET_TASK_INFO == cmdId) {
