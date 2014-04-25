@@ -41,6 +41,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
     private Device mInclineDev;
 
     private FecpCommand mInclineInfoCmd;
+    private FecpCommand mSetInclineCmd;
     private FecpCommand mInclineCalibrateCmd;
 
     private TextView mTextViewInclineValues;
@@ -91,13 +92,14 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
         try {
 
             this.mInclineInfoCmd = new FecpCommand(this.mInclineDev.getCommand(CommandId.WRITE_READ_DATA), this, 0, 1000);//every 1 second
+            this.mSetInclineCmd = new FecpCommand(this.mInclineDev.getCommand(CommandId.WRITE_READ_DATA));
 
             //check which bitfields are supported
             supportedBitfields = this.mInclineDev.getInfo().getSupportedBitfields();
             if(supportedBitfields.contains(BitFieldId.INCLINE))
             {
                 ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addReadBitField(BitFieldId.INCLINE);
-                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
+                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
             }
 
             if(supportedBitfields.contains(BitFieldId.MAX_INCLINE))
@@ -307,8 +309,11 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
                     return false;
                 }
                 this.mTargetIncline = Double.parseDouble(inputStr);
+
+                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
+                this.mFecpCntrl.addCmd(this.mSetInclineCmd);//send the new speed down
             }
-            catch (NumberFormatException numEx) {
+            catch (Exception numEx) {
                 numEx.printStackTrace();
             }
             return true;
@@ -328,7 +333,8 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
         {
             try{
 
-                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
+                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
+                this.mFecpCntrl.addCmd(this.mSetInclineCmd);
             }
             catch (Exception ex)
             {
