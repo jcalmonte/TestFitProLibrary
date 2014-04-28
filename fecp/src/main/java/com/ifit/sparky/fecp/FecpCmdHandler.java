@@ -154,7 +154,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         }
         cmd.setCommSendReceiveTime(endTime - startTime);
         //check if there was an error with the send. if so return Failed
-        if(tempBuffer.get(0)== 0)
+        if(tempBuffer == null || tempBuffer.get(0)== 0)
         {
             //message failed
             cmd.getCommand().getStatus().setStsId(StatusId.FAILED);
