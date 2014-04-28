@@ -211,9 +211,9 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
                 //if there is a callback call it
                 if(tempCmd.getCallback() != null
                         && (tempCmd.getCommand().getStatus().getStsId() == StatusId.DONE
-                        || tempCmd.getCommand().getStatus().getStsId() == StatusId.FAILED))
+                        || tempCmd.getCommand().getStatus().getStsId() == StatusId.FAILED || tempCmd.getCommand().getStatus().getStsId() == StatusId.IN_PROGRESS))
                 {
-                    tempCmd.getCallback().msgHandler(tempCmd.getCommand());
+                    tempCmd.getCallback().msgHandler(tempCmd.getCommand());//needs to be able to handle pass failed or in progress
                 }
                 //remove from this it will add it later when it needs to.
                 this.mProcessCmds.remove(0);
