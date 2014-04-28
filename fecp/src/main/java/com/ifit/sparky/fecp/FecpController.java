@@ -12,6 +12,7 @@ import android.content.Intent;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.communication.TestComm;
 import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
@@ -109,6 +110,12 @@ public class FecpController implements ErrorReporting {
 
             //two references to the same object with different responsibilities
             this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
+        }
+        else if(this.mCommType == CommType.TESTING_COMM) {
+            this.mCommController = new TestComm();
+            //right after this. and sets the interceptor
+            this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
+
         }
         this.mCommController.setupErrorReporting(this.mSysErrorControl);
         //connected to the system
@@ -294,5 +301,13 @@ public class FecpController implements ErrorReporting {
         //this will get the data from fecp controller that the interceptor needs
     }
 
+    /**
+     * This is a loophole for Testing Ifits code. It is apart of the interceptor process.
+     * @param device The system that ifit will be communicating with.
+     */
+    public void testingSetSystemDevice(SystemDevice device)
+    {
+        this.mSysDev = device;
+    }
 
 }
