@@ -1,9 +1,9 @@
 /**
- * BriefDiscription.
+ * This is a Empty Communication specificially for testing. It prevents all communication to anything.
  * @author Levi.Balling
  * @date 4/28/2014
  * @version 1
- * Details.
+ * This puts all the system requirements on Testing, No part of the hardware will work with this.
  */
 package com.ifit.sparky.fecp.communication;
 
@@ -15,7 +15,7 @@ public class TestComm implements CommInterface {
 
     public TestComm()
     {
-        //
+        //nothing to do.
     }
     /**
      * sends the command and waits for the reply to handle the buffer
