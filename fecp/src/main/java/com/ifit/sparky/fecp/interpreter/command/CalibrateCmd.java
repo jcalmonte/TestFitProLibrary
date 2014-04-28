@@ -9,7 +9,6 @@ package com.ifit.sparky.fecp.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.CalibrateSts;
-import com.ifit.sparky.fecp.interpreter.status.UpdateSts;
 
 import java.nio.ByteBuffer;
 
@@ -26,7 +25,7 @@ public class CalibrateCmd extends Command implements CommandInterface{
     {
         super();
         this.setCmdId(CommandId.CALIBRATE);
-        this.setStatus(new UpdateSts(this.getDevId()));
+        this.setStatus(new CalibrateSts(this.getDevId()));
         this.setLength(CMD_LENGTH);
 
         this.mCalibrationType = 0;
