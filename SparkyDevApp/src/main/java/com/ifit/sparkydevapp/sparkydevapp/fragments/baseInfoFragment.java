@@ -15,7 +15,6 @@ import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeConverter;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
@@ -62,45 +61,38 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
 
         if(this.mIdString == SpeedDeviceFragment.ARG_ITEM_ID) {
             rootView = inflater.inflate(R.layout.speed_device, container, false);
-            this.mTextViewSystemInfo = ((TextView) rootView.findViewById(R.id.textViewSystemInfo));
-            try {
-
-                this.mSysInfoCmd = new FecpCommand(this.mFecpCntrl.getSysDev().getCommand(CommandId.WRITE_READ_DATA), this, 0, 1000);//every 1 second
-
-                if(this.mFecpCntrl.getSysDev().getInfo().getSupportedBitfields().contains(BitFieldId.WORKOUT_MODE))
-                {
-                    ((WriteReadDataCmd)this.mSysInfoCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
-                }
-
-                if(this.mFecpCntrl.getSysDev().getInfo().getSupportedBitfields().contains(BitFieldId.RUNNING_TIME))
-                {
-                    ((WriteReadDataCmd)this.mSysInfoCmd.getCommand()).addReadBitField(BitFieldId.RUNNING_TIME);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Log.e("Initialize Speed Commands Failed", ex.getLocalizedMessage());
-            }
-
-
-        }
-        else if(this.mIdString == ErrorFragment.ARG_ITEM_ID) {
-            rootView = inflater.inflate(R.layout.error_info, container, false);
         }
         else if(this.mIdString == InclineDeviceFragment.ARG_ITEM_ID) {
             rootView = inflater.inflate(R.layout.incline_device, container, false);
-        }
-        else if(this.mIdString == MainDeviceInfoFragment.ARG_ITEM_ID) {
-            rootView = inflater.inflate(R.layout.main_device_info, container, false);
-        }
-        else if(this.mIdString == TaskInfoFragment.ARG_ITEM_ID) {
-            rootView = inflater.inflate(R.layout.system_task_info, container, false);
         }
         else
         {
             return null;
         }
+
+        this.mTextViewSystemInfo = ((TextView) rootView.findViewById(R.id.textViewSystemInfo));
+
+        try {
+
+            this.mSysInfoCmd = new FecpCommand(this.mFecpCntrl.getSysDev().getCommand(CommandId.WRITE_READ_DATA), this, 0, 1000);//every 1 second
+
+            if(this.mFecpCntrl.getSysDev().getInfo().getSupportedBitfields().contains(BitFieldId.WORKOUT_MODE))
+            {
+                ((WriteReadDataCmd)this.mSysInfoCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
+            }
+
+            if(this.mFecpCntrl.getSysDev().getInfo().getSupportedBitfields().contains(BitFieldId.RUNNING_TIME))
+            {
+                ((WriteReadDataCmd)this.mSysInfoCmd.getCommand()).addReadBitField(BitFieldId.RUNNING_TIME);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Log.e("Initialize Speed Commands Failed", ex.getLocalizedMessage());
+        }
+
+
 
         return rootView;
     }
@@ -127,6 +119,11 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
     @Override
     public void run() {
         TreeMap<BitFieldId, BitfieldDataConverter> commandData;
+
+        if(this.mSysInfoCmd.getCommand().getCmdId() != CommandId.WRITE_READ_DATA)
+        {
+            return;//nothing to do
+        }
 
         commandData = ((WriteReadDataSts)this.mSysInfoCmd.getCommand().getStatus()).getResultData();
         String systemString = "System Info, ";
