@@ -56,10 +56,6 @@ public class FecpController implements ErrorReporting {
     private FecpCmdHandleInterface mCmdHandleInterface;
     private ErrorCntrl mSysErrorControl;
 
-    public void removeConnectionListener() {
-        mCommController.setConnectionListener(null);
-    }
-
     /**
      * Sets up the controller, and all the facets dealing with the controller
      *
@@ -321,4 +317,7 @@ public class FecpController implements ErrorReporting {
         this.mSysDev = device;
     }
 
+    public void removeConnectionListener() {
+        mCommController.setConnectionListener(null);
+    }
 }
