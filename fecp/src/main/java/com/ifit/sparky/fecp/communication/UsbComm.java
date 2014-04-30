@@ -37,6 +37,11 @@ import java.util.Iterator;
 public class UsbComm extends Activity implements CommInterface {
     private static final String TAG = "USB Host";
 
+    public interface UsbDeviceConnectionListener{
+        void onDeviceConnected(UsbDevice device);
+        void onDeviceDisconnected(UsbDevice device);
+    }
+
     private boolean isInitialized = false;
 
     //ID Constants
@@ -87,6 +92,7 @@ public class UsbComm extends Activity implements CommInterface {
     private int m_interval_local_run = 0; // ms of delay
     private Handler m_handler_1ms;
     private int mSendTimeout;
+    private UsbDeviceConnectionListener mUsbConnectionListener;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -96,6 +102,17 @@ public class UsbComm extends Activity implements CommInterface {
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
 
     private ErrorReporting mErrorReporter;
+
+    /**
+     * UsbComm - constructor
+     * @param c - the Context from the main activity
+     * @param listener - Listener to allow for callbacks on USB connection/disconnection
+     */
+    public UsbComm(Context c, Intent i, int defaultTimeout, UsbDeviceConnectionListener listener) {
+        this(c,i,defaultTimeout);
+        mUsbConnectionListener = listener;
+    }
+
 
     /**
      * UsbComm - constructor
@@ -118,6 +135,11 @@ public class UsbComm extends Activity implements CommInterface {
         mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
 
         //thread_LocalRun.start();
+        try{
+            reestablishConnection();
+        }catch (Exception e){
+            Log.e(TAG, e.toString());
+        }
 
         m_handler = new Handler();
         m_statusChecker.run();
@@ -127,10 +149,6 @@ public class UsbComm extends Activity implements CommInterface {
 
         m_handler_1ms = new Handler();
         m_1ms.run();
-
-        IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
-
-        mContext.registerReceiver(mUsbDisconnect, filter);
     }
 
     @Override
@@ -167,6 +185,9 @@ public class UsbComm extends Activity implements CommInterface {
                 Log.d(TAG, "Action: " + action );
                 Log.d(TAG, "Device Detached");
                 if (mDevice != null && mDevice.equals(device)) {
+                    if(mUsbConnectionListener != null){
+                        mUsbConnectionListener.onDeviceDisconnected(mDevice);
+                    }
                     mDevice = null; //setDevice(null);
                 }
             } else {
@@ -570,6 +591,13 @@ public class UsbComm extends Activity implements CommInterface {
 
         mDevice = device;
         if (device != null) {
+            if(mUsbConnectionListener != null){
+                mUsbConnectionListener.onDeviceConnected(device);
+            }
+
+            IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
+            mContext.registerReceiver(mUsbDisconnect, filter);
+
             UsbDeviceConnection connection = mUsbManager.openDevice(device);
             if (connection != null && connection.claimInterface(mInterface, true)) {
                 Log.d(TAG, "open SUCCESS");
@@ -621,6 +649,9 @@ public class UsbComm extends Activity implements CommInterface {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                if(mUsbConnectionListener != null){
+                    mUsbConnectionListener.onDeviceDisconnected(mDevice);
+                }
                 detach();
                 System.exit(0);
             }
@@ -634,24 +665,21 @@ public class UsbComm extends Activity implements CommInterface {
     public void reestablishConnection(){
         drop_Count++;
         UsbDevice device = getDesiredDevice();
-        if (device != null && mConnection != null) {
+        if (device != null) {
 
             isInitialized = false;
 
             PendingIntent mPermissionIntent = null;
             if(!mUsbManager.hasPermission(device)){
-                //mUsbManager = (UsbManager) context.getSystemService(ACTION_USB_PERMISSION);
                 mPermissionIntent = PendingIntent.getBroadcast(mContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
                 IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
                 mContext.registerReceiver(mUsbReceiver, filter);
 
                 mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
-            }
-
-            if(mUsbManager.hasPermission(device))
-                setDevice(device);
-            else
                 mUsbManager.requestPermission(device, mPermissionIntent);
+            }else{
+                setDevice(device);
+            }
         }
     }
 
@@ -673,7 +701,7 @@ public class UsbComm extends Activity implements CommInterface {
             while(deviceIterator != null && deviceIterator.hasNext() && (mConnection == null || mDevice == null)){
 
                 UsbDevice device = deviceIterator.next();
-                if(device != null && device.getVendorId() == VENDOR_ID && device.getProductId() == PRODUCT_ID){
+                if(device != null && device.getVendorId() == VENDOR_ID && device.getProductId() == PRODUCT_ID && mUsbManager.hasPermission(device)){
                     isInitialized = false;
                     setDevice(device);
                 }
@@ -694,6 +722,9 @@ public class UsbComm extends Activity implements CommInterface {
         connectionState = ConnectionState.CONNECTION_DROPPED;
         //Toast.makeText(context, "Device Detached", Toast.LENGTH_SHORT).show();
         //if (mDevice != null && mDevice.equals(device)) {
+        if(mUsbConnectionListener != null){
+            mUsbConnectionListener.onDeviceDisconnected(mDevice);
+        }
         mDevice = null; //setDevice(null);
         // }
         if(mConnection != null){

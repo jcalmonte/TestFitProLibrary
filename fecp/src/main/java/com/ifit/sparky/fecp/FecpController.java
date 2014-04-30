@@ -74,17 +74,22 @@ public class FecpController implements ErrorReporting {
         this.mSysErrorControl = new ErrorCntrl(this);
     }
 
+
+    public SystemDevice initializeConnection(CmdHandlerType type) throws Exception{
+        return this.initializeConnection(type, null);
+    }
+
     /**
      * Initializes the connection and sets up the communication
      *
      * @param type the type of handling the system should have
      * @return the system device
      */
-    public SystemDevice initializeConnection(CmdHandlerType type) throws Exception {
+    public SystemDevice initializeConnection(CmdHandlerType type, UsbComm.UsbDeviceConnectionListener listener) throws Exception {
         GetSysInfoCmd sysInfoCmd;
         //add as we add support for these
         if (this.mCommType == CommType.USB_COMMUNICATION) {
-            this.mCommController = new UsbComm(this.mContext, this.mIntent, 100);
+            this.mCommController = new UsbComm(this.mContext, this.mIntent, 100, listener);
             this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
 
             if (this.mSysDev.getInfo().getDevId() == DeviceId.NONE) {
