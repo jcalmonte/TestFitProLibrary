@@ -9,11 +9,19 @@
 
 package com.ifit.sparky.fecp.communication;
 
+import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
 
 public interface CommInterface {
+
+    public interface DeviceConnectionListener{
+        void onDeviceConnected();
+        void onDeviceDisconnected();
+    }
+
+    void setConnectionListener(DeviceConnectionListener listener);
 
     /**
      * sends the command and waits for the reply to handle the buffer
@@ -35,5 +43,7 @@ public interface CommInterface {
      * @param errReporterCallBack needs to be called to handle errors
      */
     void setupErrorReporting(ErrorReporting errReporterCallBack);
+
+
 
 }

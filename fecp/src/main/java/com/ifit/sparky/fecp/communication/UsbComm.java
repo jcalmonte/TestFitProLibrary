@@ -25,6 +25,7 @@ import android.hardware.usb.UsbRequest;
 import android.os.Handler;
 import android.util.Log;
 
+import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
@@ -36,11 +37,6 @@ import java.util.Iterator;
 
 public class UsbComm extends Activity implements CommInterface {
     private static final String TAG = "USB Host";
-
-    public interface UsbDeviceConnectionListener{
-        void onDeviceConnected(UsbDevice device);
-        void onDeviceDisconnected(UsbDevice device);
-    }
 
     private boolean isInitialized = false;
 
@@ -92,7 +88,7 @@ public class UsbComm extends Activity implements CommInterface {
     private int m_interval_local_run = 0; // ms of delay
     private Handler m_handler_1ms;
     private int mSendTimeout;
-    private UsbDeviceConnectionListener mUsbConnectionListener;
+    private DeviceConnectionListener mUsbConnectionListener;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -102,17 +98,6 @@ public class UsbComm extends Activity implements CommInterface {
     private ConnectionState connectionState = ConnectionState.NOT_CONNECTED;
 
     private ErrorReporting mErrorReporter;
-
-    /**
-     * UsbComm - constructor
-     * @param c - the Context from the main activity
-     * @param listener - Listener to allow for callbacks on USB connection/disconnection
-     */
-    public UsbComm(Context c, Intent i, int defaultTimeout, UsbDeviceConnectionListener listener) {
-        this(c,i,defaultTimeout);
-        mUsbConnectionListener = listener;
-    }
-
 
     /**
      * UsbComm - constructor
@@ -186,7 +171,7 @@ public class UsbComm extends Activity implements CommInterface {
                 Log.d(TAG, "Device Detached");
                 if (mDevice != null && mDevice.equals(device)) {
                     if(mUsbConnectionListener != null){
-                        mUsbConnectionListener.onDeviceDisconnected(mDevice);
+                        mUsbConnectionListener.onDeviceDisconnected();
                     }
                     mDevice = null; //setDevice(null);
                 }
@@ -196,6 +181,11 @@ public class UsbComm extends Activity implements CommInterface {
                 timeUntilClose = 2000;
             }
         }
+    }
+
+    @Override
+    public void setConnectionListener(DeviceConnectionListener listener) {
+        mUsbConnectionListener = listener;
     }
 
     /**
@@ -592,7 +582,7 @@ public class UsbComm extends Activity implements CommInterface {
         mDevice = device;
         if (device != null) {
             if(mUsbConnectionListener != null){
-                mUsbConnectionListener.onDeviceConnected(device);
+                mUsbConnectionListener.onDeviceConnected();
             }
 
             IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
@@ -650,7 +640,7 @@ public class UsbComm extends Activity implements CommInterface {
             String action = intent.getAction();
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 if(mUsbConnectionListener != null){
-                    mUsbConnectionListener.onDeviceDisconnected(mDevice);
+                    mUsbConnectionListener.onDeviceDisconnected();
                 }
                 detach();
                 System.exit(0);
@@ -722,9 +712,6 @@ public class UsbComm extends Activity implements CommInterface {
         connectionState = ConnectionState.CONNECTION_DROPPED;
         //Toast.makeText(context, "Device Detached", Toast.LENGTH_SHORT).show();
         //if (mDevice != null && mDevice.equals(device)) {
-        if(mUsbConnectionListener != null){
-            mUsbConnectionListener.onDeviceDisconnected(mDevice);
-        }
         mDevice = null; //setDevice(null);
         // }
         if(mConnection != null){

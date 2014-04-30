@@ -17,6 +17,12 @@ public class TestComm implements CommInterface {
     {
         //nothing to do.
     }
+
+    @Override
+    public void setConnectionListener(DeviceConnectionListener listener) {
+
+    }
+
     /**
      * sends the command and waits for the reply to handle the buffer
      *
