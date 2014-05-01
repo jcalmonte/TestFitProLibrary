@@ -9,6 +9,7 @@ package com.ifit.sparky.fecp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.usb.UsbDevice;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
@@ -74,17 +75,23 @@ public class FecpController implements ErrorReporting {
         this.mSysErrorControl = new ErrorCntrl(this);
     }
 
+
+    public SystemDevice initializeConnection(CmdHandlerType type) throws Exception{
+        return this.initializeConnection(type, null);
+    }
+
     /**
      * Initializes the connection and sets up the communication
      *
      * @param type the type of handling the system should have
      * @return the system device
      */
-    public SystemDevice initializeConnection(CmdHandlerType type) throws Exception {
+    public SystemDevice initializeConnection(CmdHandlerType type, CommInterface.DeviceConnectionListener listener) throws Exception {
         GetSysInfoCmd sysInfoCmd;
         //add as we add support for these
         if (this.mCommType == CommType.USB_COMMUNICATION) {
             this.mCommController = new UsbComm(this.mContext, this.mIntent, 100);
+            this.mCommController.setConnectionListener(listener);
             this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
 
             if (this.mSysDev.getInfo().getDevId() == DeviceId.NONE) {
@@ -310,4 +317,7 @@ public class FecpController implements ErrorReporting {
         this.mSysDev = device;
     }
 
+    public void removeConnectionListener() {
+        mCommController.setConnectionListener(null);
+    }
 }
