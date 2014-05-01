@@ -134,6 +134,9 @@ public class UsbComm extends Activity implements CommInterface {
 
         m_handler_1ms = new Handler();
         m_1ms.run();
+
+        IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        mContext.registerReceiver(mUsbDisconnect, filter);
     }
 
     @Override
@@ -584,9 +587,6 @@ public class UsbComm extends Activity implements CommInterface {
             if(mUsbConnectionListener != null){
                 mUsbConnectionListener.onDeviceConnected();
             }
-
-            IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
-            mContext.registerReceiver(mUsbDisconnect, filter);
 
             UsbDeviceConnection connection = mUsbManager.openDevice(device);
             if (connection != null && connection.claimInterface(mInterface, true)) {
