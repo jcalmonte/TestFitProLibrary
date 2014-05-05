@@ -34,7 +34,9 @@ public enum DeviceId {
     MODE(0x4C, "Mode Controller"),
     DISTANCE(0X4D, "Distance Controller"),
     USER_TIME(0X4E, "User Time Controller"),
-    AGE(0x4F, "User Age");
+    AGE(0x4F, "User Age"),
+    WEIGHT(0x50, "User Weight"),
+    WORKOUT_CNTRL(0x51, "Workout Controller");
 
     private int mId;
     private String mDescription;

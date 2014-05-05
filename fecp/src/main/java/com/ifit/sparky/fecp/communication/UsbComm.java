@@ -25,7 +25,6 @@ import android.hardware.usb.UsbRequest;
 import android.os.Handler;
 import android.util.Log;
 
-import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
@@ -33,6 +32,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 
 public class UsbComm extends Activity implements CommInterface {
@@ -79,16 +79,17 @@ public class UsbComm extends Activity implements CommInterface {
     private long ep2_TX_Count = 0;
     private long ep3_RX_Count = 0;
     private long drop_Count = 0;
-    private long delayCount = 10000;	//this timer decrements, set to 10000 initially to give about 10 seconds for things to settle on start up
-    private long delayMin = 10000;		//the lowest delayCount has gotten
-    private final int COMM_ERROR_CONST = 2000;	//if the communication fails for 2000 ms, we will assume it is broken
+    private long delayCount = 10;	//this timer decrements, set to 10000 initially to give about 10 seconds for things to settle on start up
+    private final int COMM_ERROR_CONST = 3;	//if the communication fails for 3000 ms, we will assume it is broken
 
     private Handler m_handler;
     private Handler m_handler_local_run;
     private int m_interval_local_run = 0; // ms of delay
     private Handler m_handler_1ms;
     private int mSendTimeout;
-    private DeviceConnectionListener mUsbConnectionListener;
+
+
+    private LinkedList<DeviceConnectionListener> mUsbConnectionListener;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -106,9 +107,10 @@ public class UsbComm extends Activity implements CommInterface {
     public UsbComm(Context c, Intent i, int defaultTimeout) {
         mContext = c;
         mIntent = i;
-        onCreateUSB();
-        onResumeUSB(mIntent);
         this.mSendTimeout = defaultTimeout;
+        if(this.mUsbConnectionListener == null) {
+            this.mUsbConnectionListener = new LinkedList<DeviceConnectionListener>();
+        }
     }
 
     /**
@@ -117,6 +119,9 @@ public class UsbComm extends Activity implements CommInterface {
      */
     private void onCreateUSB(){
         isInitialized = false;
+        if(this.mUsbConnectionListener == null) {
+            this.mUsbConnectionListener = new LinkedList<DeviceConnectionListener>();
+        }
         mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
 
         //thread_LocalRun.start();
@@ -133,7 +138,7 @@ public class UsbComm extends Activity implements CommInterface {
         m_localRun.run();
 
         m_handler_1ms = new Handler();
-        m_1ms.run();
+        m_1s.run();
 
         IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
         mContext.registerReceiver(mUsbDisconnect, filter);
@@ -174,7 +179,9 @@ public class UsbComm extends Activity implements CommInterface {
                 Log.d(TAG, "Device Detached");
                 if (mDevice != null && mDevice.equals(device)) {
                     if(mUsbConnectionListener != null){
-                        mUsbConnectionListener.onDeviceDisconnected();
+                        for (DeviceConnectionListener listener : this.mUsbConnectionListener) {
+                            listener.onDeviceDisconnected();
+                        }
                     }
                     mDevice = null; //setDevice(null);
                 }
@@ -186,9 +193,31 @@ public class UsbComm extends Activity implements CommInterface {
         }
     }
 
+    /**
+     * Initializes the connection to the communication items.
+     */
     @Override
-    public void setConnectionListener(DeviceConnectionListener listener) {
-        mUsbConnectionListener = listener;
+    public void initializeCommConnection() {
+        onCreateUSB();
+        onResumeUSB(mIntent);
+    }
+
+    /**
+     * Handles multiple listeners so we can notify both ifit and the fecp controller.
+     *
+     * @param listener the listener for the callbacks
+     */
+    @Override
+    public void addConnectionListener(DeviceConnectionListener listener) {
+        mUsbConnectionListener.add(listener);
+    }
+
+    /**
+     * Removes all the Connection listeners,
+     */
+    @Override
+    public void clearConnectionListener() {
+        mUsbConnectionListener.clear();
     }
 
     /**
@@ -456,20 +485,18 @@ public class UsbComm extends Activity implements CommInterface {
     }
 
     /**
-     * m_1ms
+     * m_1s
      * decrement delay count every millisecond
      */
-    Runnable m_1ms = new Runnable()
+    Runnable m_1s = new Runnable()
     {
         @Override
         public void run() {
             if(isInitialized){
                 if(delayCount > 0)
                     delayCount--;
-                if(delayCount < delayMin)
-                    delayMin = delayCount;
             }
-            m_handler_1ms.postDelayed(m_1ms, 1);
+            m_handler_1ms.postDelayed(m_1s, 1000);
         }
     };
 
@@ -584,9 +611,7 @@ public class UsbComm extends Activity implements CommInterface {
 
         mDevice = device;
         if (device != null) {
-            if(mUsbConnectionListener != null){
-                mUsbConnectionListener.onDeviceConnected();
-            }
+
 
             UsbDeviceConnection connection = mUsbManager.openDevice(device);
             if (connection != null && connection.claimInterface(mInterface, true)) {
@@ -608,6 +633,11 @@ public class UsbComm extends Activity implements CommInterface {
                 Log.d(TAG, "open FAIL");
                 mConnection = null;
             }
+            if(mUsbConnectionListener != null){
+                for (DeviceConnectionListener listener : this.mUsbConnectionListener) {
+                    listener.onDeviceConnected();
+                }
+            }
         }
     }
 
@@ -627,7 +657,6 @@ public class UsbComm extends Activity implements CommInterface {
     public void clear_debug_counters() {
         drop_Count = 0;
         delayCount = COMM_ERROR_CONST;
-        delayMin = COMM_ERROR_CONST;
     }
 
     /**
@@ -639,8 +668,8 @@ public class UsbComm extends Activity implements CommInterface {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-                if(mUsbConnectionListener != null){
-                    mUsbConnectionListener.onDeviceDisconnected();
+                for (DeviceConnectionListener listener : mUsbConnectionListener) {
+                    listener.onDeviceDisconnected();
                 }
                 detach();
                 System.exit(0);

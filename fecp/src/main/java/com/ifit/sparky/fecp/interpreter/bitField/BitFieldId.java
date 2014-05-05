@@ -32,6 +32,7 @@ public enum BitFieldId {
     ACTUAL_INCLINE(17, 2, true, new InclineConverter(), "Actual Incline"),
     ACTUAL_RESISTANCE(18, 2, true, new ResistanceConverter(), "Actual Resistance"),
     ACTUAL_DISTANCE(19, 4, true, new LongConverter(), "Actual Distance"),
+    WORKOUT(20, 1, false, new WorkoutConverter(), "Current Workout User Selected"),
 
     AGE(24, 1, false, new ByteConverter(), "Age"),
     WEIGHT(25, 2, false, new ShortConverter(), "Weight"),

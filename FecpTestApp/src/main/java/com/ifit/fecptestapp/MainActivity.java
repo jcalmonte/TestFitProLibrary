@@ -388,7 +388,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Comm
             //create FecpController
             fecpController = new FecpController(MainActivity.this, getIntent(), CommType.USB_COMMUNICATION, this.connectionCallback);
             //initialize connection, and get the system Device
-            MainDevice = fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
+            fecpController.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
+
             if(this.MainDevice.getInfo().getDevId() == DeviceId.NONE)
             {
                 //set data notifying that there isn't a device.
