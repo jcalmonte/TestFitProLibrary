@@ -9,9 +9,11 @@ package com.ifit.sparky.fecp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.usb.UsbDevice;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.communication.TestComm;
 import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
@@ -73,17 +75,23 @@ public class FecpController implements ErrorReporting {
         this.mSysErrorControl = new ErrorCntrl(this);
     }
 
+
+    public SystemDevice initializeConnection(CmdHandlerType type) throws Exception{
+        return this.initializeConnection(type, null);
+    }
+
     /**
      * Initializes the connection and sets up the communication
      *
      * @param type the type of handling the system should have
      * @return the system device
      */
-    public SystemDevice initializeConnection(CmdHandlerType type) throws Exception {
+    public SystemDevice initializeConnection(CmdHandlerType type, CommInterface.DeviceConnectionListener listener) throws Exception {
         GetSysInfoCmd sysInfoCmd;
         //add as we add support for these
         if (this.mCommType == CommType.USB_COMMUNICATION) {
             this.mCommController = new UsbComm(this.mContext, this.mIntent, 100);
+            this.mCommController.setConnectionListener(listener);
             this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
 
             if (this.mSysDev.getInfo().getDevId() == DeviceId.NONE) {
@@ -109,6 +117,12 @@ public class FecpController implements ErrorReporting {
 
             //two references to the same object with different responsibilities
             this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
+        }
+        else if(this.mCommType == CommType.TESTING_COMM) {
+            this.mCommController = new TestComm();
+            //right after this. and sets the interceptor
+            this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
+
         }
         this.mCommController.setupErrorReporting(this.mSysErrorControl);
         //connected to the system
@@ -294,5 +308,16 @@ public class FecpController implements ErrorReporting {
         //this will get the data from fecp controller that the interceptor needs
     }
 
+    /**
+     * This is a loophole for Testing Ifits code. It is apart of the interceptor process.
+     * @param device The system that ifit will be communicating with.
+     */
+    public void testingSetSystemDevice(SystemDevice device)
+    {
+        this.mSysDev = device;
+    }
 
+    public void removeConnectionListener() {
+        mCommController.setConnectionListener(null);
+    }
 }
