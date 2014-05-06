@@ -55,6 +55,32 @@ public class TestToolDummyCom implements CommInterface {
     }
 
     /**
+     * Initializes the connection to the communication items.
+     */
+    @Override
+    public void initializeCommConnection() {
+
+    }
+
+    /**
+     * Handles multiple listeners so we can notify both ifit and the fecp controller.
+     *
+     * @param listener the listener for the callbacks
+     */
+    @Override
+    public void addConnectionListener(DeviceConnectionListener listener) {
+
+    }
+
+    /**
+     * Removes all the Connection listeners,
+     */
+    @Override
+    public void clearConnectionListener() {
+
+    }
+
+    /**
      * sends the command and waits for the reply to handle the buffer
      *
      * @param buff the command buffer to send

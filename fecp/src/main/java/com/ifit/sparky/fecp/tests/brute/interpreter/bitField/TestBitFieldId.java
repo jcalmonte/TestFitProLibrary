@@ -78,7 +78,7 @@ public class TestBitFieldId extends TestCase {
         //test changes in the converter behind the seen to make sure it still matches
         converterOne =idOne.getData(rawData);
 
-        assertEquals(26.7, ((SpeedConverter)converterOne).getSpeed());
+        assertEquals(2.67, ((SpeedConverter)converterOne).getSpeed());
         assertEquals(BitFieldId.KPH, idOne);
 
     }
@@ -216,7 +216,7 @@ public class TestBitFieldId extends TestCase {
             double expectResult;
             buff.clear();
             buff.putShort((short)i);
-            expectResult = (i + 0.0) / 10;
+            expectResult = (i + 0.0) / 100;
             converter = idOne.getData(buff);
             assertEquals(SpeedConverter.class, converter.getClass());//should be the same class
             assertEquals(expectResult, ((SpeedConverter)converter).getSpeed());
@@ -269,7 +269,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(0, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(false, bit.getReadOnly());
-        assertEquals(0.5, ((SpeedConverter)bit.getData(buff2)).getSpeed());
+        assertEquals(0.05, ((SpeedConverter)bit.getData(buff2)).getSpeed());
         resultBuff2.clear();
         resultBuff2.putShort((short)50);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -499,7 +499,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(0, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.5, ((SpeedConverter)bit.getData(buff2)).getSpeed());
+        assertEquals(0.05, ((SpeedConverter)bit.getData(buff2)).getSpeed());
         resultBuff2.clear();
         resultBuff2.putShort((short)50);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -641,7 +641,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(6, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.5, ((SpeedConverter)bit.getData(buff2)).getSpeed());
+        assertEquals(0.05, ((SpeedConverter)bit.getData(buff2)).getSpeed());
         resultBuff2.clear();
         resultBuff2.putShort((short)50);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -655,7 +655,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(7, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.5, ((SpeedConverter)bit.getData(buff2)).getSpeed());
+        assertEquals(0.05, ((SpeedConverter)bit.getData(buff2)).getSpeed());
         resultBuff2.clear();
         resultBuff2.putShort((short)50);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
