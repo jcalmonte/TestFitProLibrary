@@ -65,6 +65,9 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
         else if(this.mIdString == InclineDeviceFragment.ARG_ITEM_ID) {
             rootView = inflater.inflate(R.layout.incline_device, container, false);
         }
+        else if(this.mIdString == UserDataFragment.ARG_ITEM_ID) {
+            rootView = inflater.inflate(R.layout.user_data, container, false);
+        }
         else
         {
             return null;
