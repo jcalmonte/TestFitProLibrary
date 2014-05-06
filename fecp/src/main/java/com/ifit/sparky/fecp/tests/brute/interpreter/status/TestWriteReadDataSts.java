@@ -100,6 +100,6 @@ public class TestWriteReadDataSts  extends TestCase {
         map = sts.getResultData();
         assertTrue(map.containsKey(BitFieldId.KPH));
         assertEquals(1, map.size());
-        assertEquals(10.5, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
+        assertEquals(1.05, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
     }
 }

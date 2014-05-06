@@ -7,16 +7,19 @@
  */
 package com.ifit.sparky.fecp.interpreter;
 
-public interface SystemStatusCallback {
+import com.ifit.sparky.fecp.SystemDevice;
 
-    /**
-     * this method is called when the system is connected.
-     */
-    void systemConnected();
+public interface SystemStatusCallback {
 
     /**
      * this method is called when the system is disconnected.
      */
     void systemDisconnected();
+
+    /**
+     * This is called after system is connected
+     * @param dev the System device that is connected.
+     */
+    void systemDeviceConnected(SystemDevice dev);
 
 }

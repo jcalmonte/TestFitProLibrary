@@ -25,7 +25,7 @@ public class TestSetTestingKeyCmd extends TestCase {
      *
      * @throws Exception
      */
-    public void testGetTaskInfoCmd_Constructor() throws Exception{
+    public void testSetTestingKeyCmd_Constructor() throws Exception{
 
         //check all the different options for generating the buffer
         SetTestingKeyCmd cmd;
@@ -59,7 +59,7 @@ public class TestSetTestingKeyCmd extends TestCase {
      *
      * @throws Exception
      */
-    public void testGetTaskInfoCmd_CopyConstructor() throws Exception{
+    public void testSetTestingKeyCmd_CopyConstructor() throws Exception{
 
         //check all the different options for generating the buffer
         SetTestingKeyCmd cmd;
@@ -102,7 +102,7 @@ public class TestSetTestingKeyCmd extends TestCase {
      * Test the Get command Message function.
      * @throws Exception
      */
-    public void testGetTaskInfoCmd_getCmdMsg() throws Exception
+    public void testSetTestingKeyCmd_getCmdMsg() throws Exception
     {
         SetTestingKeyCmd cmd;
         ByteBuffer buff;

@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.ifit.sparky.fecp.CmdHandlerType;
@@ -16,10 +15,7 @@ import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.SystemError;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
-import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.Command;
-import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ConnectionActivity;
 import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
@@ -61,25 +57,14 @@ public class ItemListActivity extends FragmentActivity
         mProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         mProgress.setIndeterminate(true);
         mProgress.show();
-        mProgressThread = new ProgressThread(mProgress);
+        mProgressThread = new ProgressThread(mProgress, 100, this);
         mProgressThread.start();
 
         //Attempt to connect to the Fecp controller
         try {
             this.mFecpCntrl = new FecpController(ItemListActivity.this, getIntent(), CommType.USB_COMMUNICATION, this);
-            mMainDevice = this.mFecpCntrl.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
-            if(this.mMainDevice.getInfo().getDevId() == DeviceId.NONE)//failed to connect
-            {
-                Toast.makeText(this,"Connection Failed",Toast.LENGTH_LONG).show();
-                this.mProgressThread.stopProgress();
-                //change intent back to the connect main menu
-                Intent ConnectionActivity = new Intent(this.getApplicationContext(), ConnectionActivity.class);
-                startActivity(ConnectionActivity);
-                finish();
-                return;
-            }
-            this.mProgressThread.stopProgress();
-            Toast.makeText(this,"Connection Successful",Toast.LENGTH_LONG).show();
+           this.mFecpCntrl.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
+
         }
         catch (Exception ex)
         {
@@ -91,19 +76,72 @@ public class ItemListActivity extends FragmentActivity
             Intent ConnectionActivity = new Intent(this.getApplicationContext(), ConnectionActivity.class);
             startActivity(ConnectionActivity);
             finish();
-            return;
         }
 
 
-        try {
-            this.mKeepAlive = new FecpCommand(this.mFecpCntrl.getSysDev().getCommand(CommandId.WRITE_READ_DATA),this,0,2000);
-            ((WriteReadDataCmd)this.mKeepAlive.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
-            this.mFecpCntrl.addCmd(this.mKeepAlive);
+    }
+
+    /**
+     * Callback method from {@link MainInfoListFragmentControl.Callbacks}
+     * indicating that the item with the given ID was selected.
+     */
+    @Override
+    public void onItemSelected(String id) {
+
+        //load the fragment that we want to see. //pass a reference to the Fecp Controller
+
+        // fragment transaction.
+        Bundle arguments = new Bundle();
+        BaseInfoFragment currentFrag = null;
+
+        for (BaseInfoFragment baseInfoFragment : this.baseInfoFragments) {
+            if(id == baseInfoFragment.getIdString())
+            {
+                currentFrag = baseInfoFragment;
+            }
         }
-        catch (Exception ex)
+        if(currentFrag == null)
         {
-            Log.e("keepAlive error", ex.getMessage());
+            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
         }
+
+        arguments.putString(currentFrag.toString(), id);
+        currentFrag.setArguments(arguments);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.item_detail_container, currentFrag)
+                .commit();
+
+    }
+
+    /**
+     * this method is called when the system is disconnected.
+     */
+    @Override
+    public void systemDisconnected() {
+        this.mConnected = false;
+        Toast.makeText(this,"Connection Lost",Toast.LENGTH_LONG).show();
+
+        Toast.makeText(this,"Connection Lost, or Failed",Toast.LENGTH_LONG).show();
+        //change intent back to the connect main menu
+        Intent ConnectionActivity = new Intent(this.getApplicationContext(), ConnectionActivity.class);
+        startActivity(ConnectionActivity);
+        finish();
+    }
+
+    /**
+     * This is called after system is connected
+     *
+     * @param dev the System device that is connected.
+     */
+    @Override
+    public void systemDeviceConnected(SystemDevice dev) {
+        this.mConnected = true;
+        mProgressThread.stopProgress();
+        Toast.makeText(this,"Connection Successful",Toast.LENGTH_LONG).show();
+        mMainDevice = this.mFecpCntrl.getSysDev();
+
+
         this.mFecpCntrl.addOnErrorEventListener(this);//notify users of any errors
 
         //get supported list of item we will be supporting
@@ -136,74 +174,7 @@ public class ItemListActivity extends FragmentActivity
                     .setActivateOnItemClick(true);
         }
 
-    }
 
-    /**
-     * Callback method from {@link MainInfoListFragmentControl.Callbacks}
-     * indicating that the item with the given ID was selected.
-     */
-    @Override
-    public void onItemSelected(String id) {
-
-        //load the fragment that we want to see. //pass a reference to the Fecp Controller
-
-        // fragment transaction.
-        Bundle arguments = new Bundle();
-        BaseInfoFragment currentFrag = null;
-
-        for (BaseInfoFragment baseInfoFragment : this.baseInfoFragments) {
-            if(id == baseInfoFragment.getIdString())
-            {
-                currentFrag = baseInfoFragment;
-            }
-        }
-        if(currentFrag == null)
-        {
-            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
-        }
-
-//        if (id == MainDeviceInfoFragment.ARG_ITEM_ID) {
-//            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
-//        }
-//        else if (id == TaskInfoFragment.ARG_ITEM_ID) {
-//            currentFrag = new TaskInfoFragment(this.mFecpCntrl);
-//        }
-//        else if (id == InclineDeviceFragment.ARG_ITEM_ID) {
-//            currentFrag = new InclineDeviceFragment(this.mFecpCntrl);
-//        }
-//        else if (id == SpeedDeviceFragment.ARG_ITEM_ID) {
-//            currentFrag = new SpeedDeviceFragment(this.mFecpCntrl);
-//        }
-//        else
-//        {
-//            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
-//        }
-
-        arguments.putString(currentFrag.toString(), id);
-        currentFrag.setArguments(arguments);
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.item_detail_container, currentFrag)
-                .commit();
-
-    }
-
-    /**
-     * this method is called when the system is connected.
-     */
-    @Override
-    public void systemConnected() {
-        this.mConnected = true;
-        mProgressThread.stopProgress();
-    }
-
-    /**
-     * this method is called when the system is disconnected.
-     */
-    @Override
-    public void systemDisconnected() {
-        this.mConnected = false;
-        Toast.makeText(this,"Connection Lost",Toast.LENGTH_LONG).show();
     }
 
     /**

@@ -9,7 +9,6 @@
 
 package com.ifit.sparky.fecp.communication;
 
-import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
@@ -21,7 +20,21 @@ public interface CommInterface {
         void onDeviceDisconnected();
     }
 
-    void setConnectionListener(DeviceConnectionListener listener);
+    /**
+     * Initializes the connection to the communication items.
+     */
+    void initializeCommConnection();
+
+    /**
+     * Handles multiple listeners so we can notify both ifit and the fecp controller.
+     * @param listener the listener for the callbacks
+     */
+    void addConnectionListener(DeviceConnectionListener listener);
+
+    /**
+     * Removes all the Connection listeners,
+     */
+    void clearConnectionListener();
 
     /**
      * sends the command and waits for the reply to handle the buffer

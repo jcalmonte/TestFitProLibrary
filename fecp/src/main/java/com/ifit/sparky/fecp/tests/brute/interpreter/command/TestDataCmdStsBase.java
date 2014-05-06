@@ -273,7 +273,7 @@ public class TestDataCmdStsBase extends TestCase {
         assertEquals(4, buffer.capacity());
         assertEquals(1, buffer.get());//number of sections
         assertEquals(1, buffer.get());
-        assertEquals(105, buffer.getShort());//Caught bug
+        assertEquals(1050, buffer.getShort());//Caught bug
 
         //add another in same section
         dataBase.addBitfieldData(BitFieldId.INCLINE, 10.50);//%10.50 percent incline
@@ -283,7 +283,7 @@ public class TestDataCmdStsBase extends TestCase {
         assertEquals(6, buffer.capacity());
         assertEquals(1, buffer.get());//number of sections
         assertEquals(3, buffer.get());
-        assertEquals(105, buffer.getShort());//target speed
+        assertEquals(1050, buffer.getShort());//target speed
         assertEquals(1050, buffer.getShort());//target incline Caught Bug
 
         //add another in different section
@@ -294,7 +294,7 @@ public class TestDataCmdStsBase extends TestCase {
         assertEquals(8, buffer.capacity());
         assertEquals(1, buffer.get());//number of sections
         assertEquals(7, buffer.get());//section 0
-        assertEquals(105, buffer.getShort());//speed
+        assertEquals(1050, buffer.getShort());//speed
         assertEquals(1050, buffer.getShort());//incline
         assertEquals(5000, buffer.getShort());//Resistance
 
@@ -308,7 +308,7 @@ public class TestDataCmdStsBase extends TestCase {
         assertEquals(2, buffer.get());//number of sections
         assertEquals(7, buffer.get());//section 0
         assertEquals(4, buffer.get());//section 1
-        assertEquals(105, buffer.getShort());//target speed
+        assertEquals(1050, buffer.getShort());//target speed
         assertEquals(1050, buffer.getShort());//target incline
         assertEquals(5000, buffer.getShort());//target Resistance
         assertEquals(123, buffer.get());//Current Pulse
@@ -345,7 +345,7 @@ public class TestDataCmdStsBase extends TestCase {
         dataBase.addBitfieldData(BitFieldId.KPH, 0);
         map = dataBase.handleReadData(buffer);
 
-        assertEquals(10.0, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
+        assertEquals(1.0, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
 
         // Test the Speed and the Incline
         buffer = ByteBuffer.allocate(4);
@@ -358,7 +358,7 @@ public class TestDataCmdStsBase extends TestCase {
         dataBase.addBitfieldData(BitFieldId.INCLINE, 0);
         map = dataBase.handleReadData(buffer);
 
-        assertEquals(10.0, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
+        assertEquals(1.0, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
         assertEquals(12.34, ((InclineConverter)map.get(BitFieldId.INCLINE)).getIncline());
 
         // Test skipping a section, and the order of the items
@@ -389,7 +389,7 @@ public class TestDataCmdStsBase extends TestCase {
         dataBase.addBitfieldData(BitFieldId.KPH, 0);
         map = dataBase.handleReadData(buffer);
 
-        assertEquals(10.0, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
+        assertEquals(1.0, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
         assertEquals(12.34, ((InclineConverter)map.get(BitFieldId.INCLINE)).getIncline());
         assertEquals(231, ((ByteConverter)map.get(BitFieldId.PULSE)).getValue());
 

@@ -239,7 +239,7 @@ public class TestWriteDataCmd extends TestCase {
         assertEquals(cmd.getCmdId().getVal(), (buffer.get() & 0xFF));
         assertEquals(1, buffer.get());
         assertEquals(1, buffer.get());//Section 0
-        assertEquals(105, (buffer.getShort() & 0xFFFF));//targetMPH speed
+        assertEquals(1050, (buffer.getShort() & 0xFFFF));//targetMPH speed
         assertEquals(cmd.getLength(), buffer.capacity());
     }
 }

@@ -10,16 +10,40 @@ package com.ifit.sparky.fecp.communication;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
 
 public class TestComm implements CommInterface {
 
+    private LinkedList<DeviceConnectionListener> mUsbConnectionListener;
     public TestComm()
     {
         //nothing to do.
     }
 
+
+    /**
+     * Initializes the connection to the communication items.
+     */
     @Override
-    public void setConnectionListener(DeviceConnectionListener listener) {
+    public void initializeCommConnection() {
+
+    }
+
+    /**
+     * Handles multiple listeners so we can notify both ifit and the fecp controller.
+     *
+     * @param listener the listener for the callbacks
+     */
+    @Override
+    public void addConnectionListener(DeviceConnectionListener listener) {
+
+    }
+
+    /**
+     * Removes all the Connection listeners,
+     */
+    @Override
+    public void clearConnectionListener() {
 
     }
 

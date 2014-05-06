@@ -23,7 +23,7 @@ public class TestSystemCallback extends TestCase {
         SystemStatusCallback callback = new TempFecpCallbacker();
         //test the connect callback
         assertEquals(false, ((TempFecpCallbacker)callback).getIsConnectedStatus());
-        callback.systemConnected();
+        callback.systemDeviceConnected(null);
         assertEquals(true, ((TempFecpCallbacker)callback).getIsConnectedStatus());
 
         //test the disconnect callback

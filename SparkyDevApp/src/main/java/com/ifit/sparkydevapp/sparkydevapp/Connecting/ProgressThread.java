@@ -8,16 +8,24 @@
 package com.ifit.sparkydevapp.sparkydevapp.Connecting;
 
 import android.app.ProgressDialog;
+import android.os.Looper;
+
+import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 
 public class ProgressThread extends Thread {
 
     private boolean stopThread;
     private final int totalProgressTime = 100;
     private ProgressDialog mProgress;
-    public ProgressThread(ProgressDialog progressObj)
+    private int mTimeoutCounter;
+    private SystemStatusCallback mSysConnectionCallback;
+
+    public ProgressThread(ProgressDialog progressObj, int timeout, SystemStatusCallback sysConnectionCallback)
     {
         super();
         stopThread = false;
+        this.mTimeoutCounter = timeout;
+        this.mSysConnectionCallback = sysConnectionCallback;
         mProgress = progressObj;
     }
     public  void stopProgress()
@@ -28,10 +36,21 @@ public class ProgressThread extends Thread {
     public void run(){
         stopThread = false;
         int jumpTime = 0;
+        int timeOutCount = 0;
         while(jumpTime < totalProgressTime && !stopThread){
             try {
                 sleep(100);
                 jumpTime += 5;
+                timeOutCount++;
+                if(timeOutCount > this.mTimeoutCounter)
+                {
+                    //connection failed
+                    Looper.prepare();
+                    this.mSysConnectionCallback.systemDisconnected();
+                    mProgress.dismiss();
+                    stopThread = true;
+                    return;
+                }
                 if(jumpTime == totalProgressTime)
                 {
                     jumpTime = 0;
