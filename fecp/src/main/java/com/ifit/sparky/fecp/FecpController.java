@@ -9,7 +9,7 @@ package com.ifit.sparky.fecp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.usb.UsbDevice;
+import android.util.Log;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
@@ -35,15 +35,13 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 import com.ifit.sparky.fecp.interpreter.status.GetCmdsSts;
 import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
-import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
-import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
 import java.util.Set;
 
-public class FecpController implements ErrorReporting {
+public class FecpController implements ErrorReporting, CommInterface.DeviceConnectionListener {
     //Fecp System Version number
     private final int VERSION = 1;
     private CommType mCommType;
@@ -65,6 +63,11 @@ public class FecpController implements ErrorReporting {
      * @throws Exception if the device is invalid
      */
     public FecpController(Context context, Intent intent, CommType type, SystemStatusCallback callback) throws Exception {
+
+        if(callback == null)
+        {
+            throw new Exception("SystemStatusCallback callback is null, Can't be null");
+        }
         this.mCommType = type;
         this.statusCallback = callback;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
@@ -76,58 +79,33 @@ public class FecpController implements ErrorReporting {
     }
 
 
-    public SystemDevice initializeConnection(CmdHandlerType type) throws Exception{
-        return this.initializeConnection(type, null);
+    public void initializeConnection(CmdHandlerType type) throws Exception{
+        this.initializeConnection(type, null);
     }
 
     /**
      * Initializes the connection and sets up the communication
      *
      * @param type the type of handling the system should have
-     * @return the system device
+     * @param listener this listens for changes in the connection
      */
-    public SystemDevice initializeConnection(CmdHandlerType type, CommInterface.DeviceConnectionListener listener) throws Exception {
-        GetSysInfoCmd sysInfoCmd;
+    public void initializeConnection(CmdHandlerType type, CommInterface.DeviceConnectionListener listener) throws Exception {
+
         //add as we add support for these
         if (this.mCommType == CommType.USB_COMMUNICATION) {
             this.mCommController = new UsbComm(this.mContext, this.mIntent, 100);
-            this.mCommController.setConnectionListener(listener);
-            this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
-
-            if (this.mSysDev.getInfo().getDevId() == DeviceId.NONE) {
-                return this.mSysDev;//return null if no device is present.
-            }
-            sysInfoCmd = new GetSysInfoCmd(this.mSysDev.getInfo().getDevId());
-
-            sysInfoCmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
-
-            this.mSysDev.setConfig(((GetSysInfoSts) sysInfoCmd.getStatus()).getConfig());
-            this.mSysDev.setModel(((GetSysInfoSts) sysInfoCmd.getStatus()).getModel());
-            this.mSysDev.setPartNumber(((GetSysInfoSts) sysInfoCmd.getStatus()).getPartNumber());
-            this.mSysDev.setCpuUse(((GetSysInfoSts) sysInfoCmd.getStatus()).getCpuUse());
-            this.mSysDev.setNumberOfTasks(((GetSysInfoSts) sysInfoCmd.getStatus()).getNumberOfTasks());
-            this.mSysDev.setIntervalTime(((GetSysInfoSts) sysInfoCmd.getStatus()).getIntervalTime());
-            this.mSysDev.setCpuFrequency(((GetSysInfoSts) sysInfoCmd.getStatus()).getCpuFrequency());
-            this.mSysDev.setMcuName(((GetSysInfoSts) sysInfoCmd.getStatus()).getMcuName());
-            this.mSysDev.setConsoleName(((GetSysInfoSts) sysInfoCmd.getStatus()).getConsoleName());
-            if (this.mSysDev.getCommandSet().containsKey(CommandId.GET_TASK_INFO)) {
-                //add the Cpu Frequency to the command
-                ((GetTaskInfoSts) this.mSysDev.getCommand(CommandId.GET_TASK_INFO).getStatus()).getTask().setMainClkFrequency(this.mSysDev.getCpuFrequency());
-            }
-
-            //two references to the same object with different responsibilities
-            this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
         }
         else if(this.mCommType == CommType.TESTING_COMM) {
             this.mCommController = new TestComm();
             //right after this. and sets the interceptor
-            this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
-
         }
-        this.mCommController.setupErrorReporting(this.mSysErrorControl);
-        //connected to the system
-        this.statusCallback.systemConnected();
-        return this.mSysDev;
+            this.mCommController.addConnectionListener(this);
+
+        if(listener != null) {
+
+            this.mCommController.addConnectionListener(listener);
+        }
+        this.mCommController.initializeCommConnection();
     }
 
     /**
@@ -165,6 +143,31 @@ public class FecpController implements ErrorReporting {
     public boolean getIsConnected() {
         return this.mIsConnected;
     }
+
+    private void getSystem() throws Exception
+    {
+        if (this.mCommType == CommType.USB_COMMUNICATION) {
+            GetSysInfoCmd sysInfoCmd;
+            this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
+
+            if (this.mSysDev.getInfo().getDevId() == DeviceId.NONE) {
+                return;//not connected to any device.
+            }
+            sysInfoCmd = new GetSysInfoCmd(this.mSysDev.getInfo().getDevId());
+
+            sysInfoCmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
+
+            this.mSysDev.setSystemInfo(sysInfoCmd);
+
+        }
+        else if(this.mCommType == CommType.TESTING_COMM) {
+
+        }
+
+        this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
+        this.mCommController.setupErrorReporting(this.mSysErrorControl);
+    }
+
 
     /**
      * Adds a command to send to the device
@@ -317,7 +320,29 @@ public class FecpController implements ErrorReporting {
         this.mSysDev = device;
     }
 
-    public void removeConnectionListener() {
-        mCommController.setConnectionListener(null);
+    public void clearConnectionListener() {
+        mCommController.clearConnectionListener();
+    }
+
+    @Override
+    public void onDeviceConnected() {
+        //search for the device
+        try {
+            this.getSystem();
+
+            if(this.mSysDev.getInfo().getDevId() != DeviceId.NONE)
+            {
+                this.statusCallback.systemDeviceConnected(this.mSysDev);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.e("Get System Failed", ex.getMessage());
+        }
+    }
+
+    @Override
+    public void onDeviceDisconnected() {
+        //nothing to do
     }
 }

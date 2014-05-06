@@ -8,6 +8,7 @@
 package com.ifit.sparky.fecp.tests.brute;
 
 import com.ifit.sparky.fecp.CommandCallback;
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -65,19 +66,21 @@ public class TempFecpCallbacker implements CommandCallback, SystemStatusCallback
     }
 
     /**
-     * this method is called when the system is connected.
-     */
-    @Override
-    public void systemConnected() {
-        this.isConnected = true;
-
-    }
-
-    /**
      * this method is called when the system is disconnected.
      */
     @Override
     public void systemDisconnected() {
         this.isConnected = false;
+    }
+
+    /**
+     * This is called after system is connected
+     *
+     * @param dev the System device that is connected.
+     */
+    @Override
+    public void systemDeviceConnected(SystemDevice dev) {
+
+        this.isConnected = true;
     }
 }

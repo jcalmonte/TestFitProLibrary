@@ -8,8 +8,12 @@
  */
 package com.ifit.sparky.fecp;
 
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
+import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 
 public class SystemDevice extends Device{
 
@@ -108,7 +112,7 @@ public class SystemDevice extends Device{
      * Gets the model 
      * @return the Model Number
      */
-    public int getodel() {
+    public int getModel() {
         return mModel;
     }
 
@@ -240,6 +244,26 @@ public class SystemDevice extends Device{
     public void setConsoleName(String consoleName) {
         this.mConsoleName = consoleName;
     }
+
+    public void setSystemInfo(GetSysInfoCmd systemInfo)
+    {
+        this.setConfig(((GetSysInfoSts) systemInfo.getStatus()).getConfig());
+        this.setModel(((GetSysInfoSts) systemInfo.getStatus()).getModel());
+        this.setPartNumber(((GetSysInfoSts) systemInfo.getStatus()).getPartNumber());
+        this.setCpuUse(((GetSysInfoSts) systemInfo.getStatus()).getCpuUse());
+        this.setNumberOfTasks(((GetSysInfoSts) systemInfo.getStatus()).getNumberOfTasks());
+        this.setIntervalTime(((GetSysInfoSts) systemInfo.getStatus()).getIntervalTime());
+        this.setCpuFrequency(((GetSysInfoSts) systemInfo.getStatus()).getCpuFrequency());
+        this.setMcuName(((GetSysInfoSts) systemInfo.getStatus()).getMcuName());
+        this.setConsoleName(((GetSysInfoSts) systemInfo.getStatus()).getConsoleName());
+
+        if (this.getCommandSet().containsKey(CommandId.GET_TASK_INFO)) {
+            //add the Cpu Frequency to the command
+            ((GetTaskInfoSts) this.getCommand(CommandId.GET_TASK_INFO).getStatus()).getTask().setMainClkFrequency(this.getCpuFrequency());
+        }
+
+    }
+
 
     @Override
     public String toString() {

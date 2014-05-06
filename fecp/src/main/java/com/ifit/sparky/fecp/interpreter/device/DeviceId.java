@@ -19,9 +19,6 @@ public enum DeviceId {
     ELLIPTICAL(0x06, "Incline Trainer"),
     FITNESS_BIKE(0x07, "Traditional bike"),
     SPIN_BIKE(0x08, "cylcist bike"),
-    POWER_BOARD(0x15, "Power Board"),
-    BLE(0x16, "Blue Tooth Low Energy"),
-    ANT_FIT1E(0x17, "Ant Fit1e"),
     ANT_POWER_METER(0x31, "Ant Power Meter"),
     ANT_PLUS_HRM(0x37, "Ant Plus Heart Rate Monitor"),
     AUDIO(0x40, "Audio Controller"),
@@ -37,7 +34,9 @@ public enum DeviceId {
     MODE(0x4C, "Mode Controller"),
     DISTANCE(0X4D, "Distance Controller"),
     USER_TIME(0X4E, "User Time Controller"),
-    AGE(0x4F, "User Age");
+    AGE(0x4F, "User Age"),
+    WEIGHT(0x50, "User Weight"),
+    WORKOUT_CNTRL(0x51, "Workout Controller");
 
     private int mId;
     private String mDescription;

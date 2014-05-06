@@ -219,7 +219,6 @@ public class TestWriteReadDataCmd  extends TestCase {
         assertFalse(cmd.writeContainsBitField(BitFieldId.INCLINE));
     }
 
-
     /** Tests the the Add Write data function.
      *
      * @throws Exception
@@ -305,7 +304,6 @@ public class TestWriteReadDataCmd  extends TestCase {
         assertFalse(cmd.readContainsBitField(BitFieldId.INCLINE));
     }
 
-
     /** Tests the Message make for the command
      *
      * @throws Exception
@@ -341,7 +339,7 @@ public class TestWriteReadDataCmd  extends TestCase {
         assertEquals(cmd.getCmdId().getVal(), (buffer.get() & 0xFF));
         assertEquals(1, buffer.get());//number of Write bytes
         assertEquals(1, buffer.get());//Section 0
-        assertEquals(105, (buffer.getShort() & 0xFFFF));//targetMPH speed
+        assertEquals(1050, (buffer.getShort() & 0xFFFF));//targetMPH speed
         assertEquals(0, buffer.get());//number of Read bytes
         assertEquals(cmd.getLength(), buffer.capacity());
 
@@ -356,7 +354,7 @@ public class TestWriteReadDataCmd  extends TestCase {
         assertEquals(cmd.getCmdId().getVal(), (buffer.get() & 0xFF));
         assertEquals(1, buffer.get());//number of Write bytes
         assertEquals(1, buffer.get());//Section 0
-        assertEquals(105, (buffer.getShort() & 0xFFFF));//targetMPH speed
+        assertEquals(1050, (buffer.getShort() & 0xFFFF));//targetMPH speed
         assertEquals(1, buffer.get());//number of Read bytes
         assertEquals(1, buffer.get());//Section 0
         assertEquals(cmd.getLength(), buffer.capacity());
