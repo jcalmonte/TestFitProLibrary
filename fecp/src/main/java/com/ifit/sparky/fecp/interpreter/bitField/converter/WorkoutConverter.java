@@ -61,7 +61,7 @@ public class WorkoutConverter extends BitfieldDataConverter {
      * gets the data as an int regardless of size
      * @return the data as an int
      */
-    public WorkoutId getMode()
+    public WorkoutId getWorkout()
     {
         return this.mWorkout;
     }

@@ -7,16 +7,12 @@
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 
-import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.GetTaskInfoCmd;
 import com.ifit.sparky.fecp.interpreter.command.UpdateCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import junit.framework.TestCase;
-
-import java.nio.ByteBuffer;
 
 public class TestUpdateCmd extends TestCase {
 
@@ -25,7 +21,7 @@ public class TestUpdateCmd extends TestCase {
      *
      * @throws Exception
      */
-    public void testGetTaskInfoCmd_Constructor() throws Exception{
+    public void testUpdateCmd_Constructor() throws Exception{
 
         //check all the different options for generating the buffer
         UpdateCmd cmd;

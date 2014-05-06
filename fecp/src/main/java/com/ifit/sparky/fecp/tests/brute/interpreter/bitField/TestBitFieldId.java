@@ -221,6 +221,41 @@ public class TestBitFieldId extends TestCase {
             assertEquals(SpeedConverter.class, converter.getClass());//should be the same class
             assertEquals(expectResult, ((SpeedConverter)converter).getSpeed());
         }
+
+        //test Mode Converter
+        buff = ByteBuffer.allocate(1);
+        buff.order(ByteOrder.LITTLE_ENDIAN);
+        idOne = BitFieldId.WORKOUT_MODE;
+
+        // Test all unsigned short values
+        for (ModeId id : ModeId.values()) {
+
+            ModeId expectResult;
+            buff.clear();
+            buff.put((byte) id.getValue());
+            expectResult = id;
+            converter = idOne.getData(buff);
+            assertEquals(ModeConverter.class, converter.getClass());//should be the same class
+            assertEquals(expectResult, ((ModeConverter)converter).getMode());
+        }
+
+        //test Workout Converter
+        buff = ByteBuffer.allocate(1);
+        buff.order(ByteOrder.LITTLE_ENDIAN);
+        idOne = BitFieldId.WORKOUT;
+
+        // Test all unsigned short values
+        for (WorkoutId id : WorkoutId.values()) {
+
+            WorkoutId expectResult;
+            buff.clear();
+            buff.put((byte)id.getValue());
+            expectResult = id;
+            converter = idOne.getData(buff);
+            assertEquals(WorkoutConverter.class, converter.getClass());//should be the same class
+            assertEquals(expectResult, ((WorkoutConverter)converter).getWorkout());
+        }
+
     }
 
     /**
@@ -547,6 +582,20 @@ public class TestBitFieldId extends TestCase {
         resultBuff4.putInt(5);
         assertEquals(resultBuff4, bit.getRawFromData(5.0));//double test
         assertEquals(resultBuff4, bit.getRawFromData(5));//int test
+
+        //test Workout
+        bit = BitFieldId.WORKOUT;
+        assertEquals(BitFieldId.WORKOUT, bit);
+        assertEquals(20, bit.getVal());
+        assertEquals(2, bit.getSection());
+        assertEquals(4, bit.getBit());
+        assertEquals(1, bit.getSize());
+        assertEquals(false, bit.getReadOnly());
+        assertEquals(WorkoutId.SET_A_GOAL, ((WorkoutConverter)bit.getData(buff1)).getWorkout());
+        resultBuff1.clear();
+        resultBuff1.put((byte)5);
+        assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
 
         //test Age
         bit = BitFieldId.AGE;

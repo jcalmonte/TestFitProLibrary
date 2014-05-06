@@ -219,7 +219,6 @@ public class TestWriteReadDataCmd  extends TestCase {
         assertFalse(cmd.writeContainsBitField(BitFieldId.INCLINE));
     }
 
-
     /** Tests the the Add Write data function.
      *
      * @throws Exception
@@ -304,7 +303,6 @@ public class TestWriteReadDataCmd  extends TestCase {
         assertFalse(cmd.readContainsBitField(BitFieldId.KPH));
         assertFalse(cmd.readContainsBitField(BitFieldId.INCLINE));
     }
-
 
     /** Tests the Message make for the command
      *
