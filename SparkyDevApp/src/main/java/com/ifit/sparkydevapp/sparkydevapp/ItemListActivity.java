@@ -25,6 +25,7 @@ import com.ifit.sparkydevapp.sparkydevapp.fragments.InclineDeviceFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.MainDeviceInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.SpeedDeviceFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.TaskInfoFragment;
+import com.ifit.sparkydevapp.sparkydevapp.fragments.UserDataFragment;
 import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentControl;
 
 import java.util.ArrayList;
@@ -151,17 +152,20 @@ public class ItemListActivity extends FragmentActivity
         baseInfoFragments.add(new MainDeviceInfoFragment(this.mFecpCntrl));
         baseInfoFragments.add(new TaskInfoFragment(this.mFecpCntrl));
         baseInfoFragments.add(new ErrorFragment(this.mFecpCntrl));
+        baseInfoFragments.add(new UserDataFragment(this.mFecpCntrl));//variety of items
 
         if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
         {
             baseInfoFragments.add(new InclineDeviceFragment(this.mFecpCntrl));
         }
+
         if(this.mMainDevice.containsDevice(DeviceId.SPEED))
         {
             baseInfoFragments.add(new SpeedDeviceFragment(this.mFecpCntrl));
         }
 
         //add supported Fragments here.
+
         if (findViewById(R.id.item_detail_container) != null) {
 
             ((MainInfoListFragmentControl)getSupportFragmentManager()

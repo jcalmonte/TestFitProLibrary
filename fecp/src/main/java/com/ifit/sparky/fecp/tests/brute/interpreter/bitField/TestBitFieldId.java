@@ -490,13 +490,13 @@ public class TestBitFieldId extends TestCase {
         assertEquals(13, bit.getVal());
         assertEquals(1, bit.getSection());
         assertEquals(5, bit.getBit());
-        assertEquals(2, bit.getSize());
+        assertEquals(4, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
-        resultBuff2.clear();
-        resultBuff2.putShort((short) 5);
-        assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
-        assertEquals(resultBuff2, bit.getRawFromData(5));//int test
+        assertEquals(0.0005, ((CaloriesConverter)bit.getData(buff4)).getCalories());
+        resultBuff4.clear();
+        resultBuff4.putInt(5);
+        assertEquals(resultBuff4, bit.getRawFromData(0.0005));//double test
+        //assertEquals(resultBuff4, bit.getRawFromData(5));//int test
 
         //test Audio Source
         bit = BitFieldId.AUDIO_SOURCE;
@@ -619,10 +619,10 @@ public class TestBitFieldId extends TestCase {
         assertEquals(1, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(false, bit.getReadOnly());
-        assertEquals(5, ((ShortConverter)bit.getData(buff2)).getValue());
+        assertEquals(0.05, ((WeightConverter)bit.getData(buff2)).getWeight());
         resultBuff2.clear();
         resultBuff2.putShort((short) 5);
-        assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
+        assertEquals(resultBuff2, bit.getRawFromData(0.05));//double test
         assertEquals(resultBuff2, bit.getRawFromData(5));//int test
 
         //test Target Gears

@@ -65,6 +65,9 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
         else if(this.mIdString == InclineDeviceFragment.ARG_ITEM_ID) {
             rootView = inflater.inflate(R.layout.incline_device, container, false);
         }
+        else if(this.mIdString == UserDataFragment.ARG_ITEM_ID) {
+            rootView = inflater.inflate(R.layout.user_data, container, false);
+        }
         else
         {
             return null;
@@ -84,6 +87,11 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
             if(this.mFecpCntrl.getSysDev().getInfo().getSupportedBitfields().contains(BitFieldId.RUNNING_TIME))
             {
                 ((WriteReadDataCmd)this.mSysInfoCmd.getCommand()).addReadBitField(BitFieldId.RUNNING_TIME);
+            }
+
+            if(this.mFecpCntrl.getSysDev().getInfo().getSupportedBitfields().contains(BitFieldId.DISTANCE))
+            {
+                ((WriteReadDataCmd)this.mSysInfoCmd.getCommand()).addReadBitField(BitFieldId.DISTANCE);
             }
 
         }
@@ -151,6 +159,20 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
                 long minute = TimeUnit.SECONDS.toMinutes(seconds) - (TimeUnit.SECONDS.toHours(seconds)* 60);
                 long second = TimeUnit.SECONDS.toSeconds(seconds) - (TimeUnit.SECONDS.toMinutes(seconds) *60);
                 systemString  += " time: " +hours+":"+minute+":"+ second;
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+        if(commandData.containsKey(BitFieldId.DISTANCE))
+        {
+            try
+            {
+                int distance = ((LongConverter) commandData.get(BitFieldId.DISTANCE).getData()).getValue();
+
+                systemString  += " distance: " +distance+" Meters";
             }
             catch (Exception ex)
             {
