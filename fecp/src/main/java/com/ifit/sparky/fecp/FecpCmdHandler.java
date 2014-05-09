@@ -225,6 +225,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
                 Log.e("thread error, no message, FecpCmdHandler run()", "");
             }else{
                 Log.e("thread error", ex.getMessage());
+                ex.printStackTrace();
             }
         }
     }

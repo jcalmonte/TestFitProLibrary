@@ -11,10 +11,12 @@ import com.ifit.sparky.fecp.CommandCallback;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.AudioSourceConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.AudioSourceId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.ShortConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.CaloriesConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.WeightConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.WorkoutConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.WorkoutId;
 import com.ifit.sparky.fecp.interpreter.command.Command;
@@ -245,7 +247,7 @@ public class UserDataFragment extends BaseInfoFragment implements CommandCallbac
             try
             {
                 int fanSpeed = ((ByteConverter) commandData.get(BitFieldId.FAN_SPEED).getData()).getValue();
-                this.mTextViewFan.setText("Fan: "+ fanSpeed);
+                this.mTextViewFan.setText("Fan: %"+ fanSpeed);
             }
             catch (Exception ex)
             {
@@ -259,7 +261,7 @@ public class UserDataFragment extends BaseInfoFragment implements CommandCallbac
             try
             {
                 int volume = ((ByteConverter) commandData.get(BitFieldId.VOLUME).getData()).getValue();
-                this.mTextViewVolume.setText("Volume: "+ volume);
+                this.mTextViewVolume.setText("Volume: %"+ volume);
             }
             catch (Exception ex)
             {
@@ -286,7 +288,7 @@ public class UserDataFragment extends BaseInfoFragment implements CommandCallbac
 
             try
             {
-                int calories = ((LongConverter) commandData.get(BitFieldId.CALORIES).getData()).getValue();
+                double calories = ((CaloriesConverter) commandData.get(BitFieldId.CALORIES).getData()).getCalories();
                 this.mTextViewCalories.setText("Calories: "+ calories);
             }
             catch (Exception ex)
@@ -300,8 +302,8 @@ public class UserDataFragment extends BaseInfoFragment implements CommandCallbac
 
             try
             {
-                int audioSrc = ((ByteConverter) commandData.get(BitFieldId.AUDIO_SOURCE).getData()).getValue();
-                this.mTextViewAudioSource.setText("Audio Source: "+ audioSrc);
+                AudioSourceId audioSrc = ((AudioSourceConverter) commandData.get(BitFieldId.AUDIO_SOURCE).getData()).getAudioSource();
+                this.mTextViewAudioSource.setText("Audio Source: "+ audioSrc.getDescription());
             }
             catch (Exception ex)
             {
@@ -328,8 +330,8 @@ public class UserDataFragment extends BaseInfoFragment implements CommandCallbac
 
             try
             {
-                int weight = ((ShortConverter) commandData.get(BitFieldId.WEIGHT).getData()).getValue();
-                this.mTextViewWeight.setText("Weight: "+ weight);
+                double weight = ((WeightConverter)commandData.get(BitFieldId.WEIGHT).getData()).getWeight();
+                this.mTextViewWeight.setText("Weight: "+ weight + " kg");
             }
             catch (Exception ex)
             {
