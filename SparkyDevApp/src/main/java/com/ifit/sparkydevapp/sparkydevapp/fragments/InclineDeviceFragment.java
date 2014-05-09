@@ -224,12 +224,16 @@ public class InclineDeviceFragment extends BaseInfoFragment implements CommandCa
 
             try
             {
-                valueString += "Trans Max= " +((ShortConverter) commandData.get(BitFieldId.ACTUAL_INCLINE).getData()).getValue() + "\n";
+                valueString += "Trans Max= " +((ShortConverter) commandData.get(BitFieldId.TRANS_MAX).getData()).getValue() + "\n";
             }
             catch (Exception ex)
             {
                 ex.printStackTrace();
             }
+        }
+        else
+        {
+            valueString += "Trans Max= " + "\n";
         }
 
         if(commandData.containsKey(BitFieldId.MAX_INCLINE))
