@@ -89,6 +89,11 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
                 ((WriteReadDataCmd)this.mSysInfoCmd.getCommand()).addReadBitField(BitFieldId.RUNNING_TIME);
             }
 
+            if(this.mFecpCntrl.getSysDev().getInfo().getSupportedBitfields().contains(BitFieldId.DISTANCE))
+            {
+                ((WriteReadDataCmd)this.mSysInfoCmd.getCommand()).addReadBitField(BitFieldId.DISTANCE);
+            }
+
         }
         catch (Exception ex)
         {
@@ -154,6 +159,20 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
                 long minute = TimeUnit.SECONDS.toMinutes(seconds) - (TimeUnit.SECONDS.toHours(seconds)* 60);
                 long second = TimeUnit.SECONDS.toSeconds(seconds) - (TimeUnit.SECONDS.toMinutes(seconds) *60);
                 systemString  += " time: " +hours+":"+minute+":"+ second;
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+        if(commandData.containsKey(BitFieldId.DISTANCE))
+        {
+            try
+            {
+                int distance = ((LongConverter) commandData.get(BitFieldId.DISTANCE).getData()).getValue();
+
+                systemString  += " distance: " +distance+" Meters";
             }
             catch (Exception ex)
             {
