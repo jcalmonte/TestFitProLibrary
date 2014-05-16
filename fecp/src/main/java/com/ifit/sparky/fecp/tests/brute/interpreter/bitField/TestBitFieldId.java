@@ -506,10 +506,9 @@ public class TestBitFieldId extends TestCase {
         assertEquals(6, bit.getBit());
         assertEquals(1, bit.getSize());
         assertEquals(false, bit.getReadOnly());
-        assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
+        assertEquals(AudioSourceId.TV, ((AudioSourceConverter)bit.getData(buff1)).getAudioSource());
         resultBuff1.clear();
         resultBuff1.put((byte) 5);
-        assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
         assertEquals(resultBuff1, bit.getRawFromData(5));//int test
 
         //test AndroidKeys

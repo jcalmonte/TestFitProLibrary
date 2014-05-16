@@ -5,7 +5,7 @@
  * @author Levi.Balling
  * @date 4/2/2014
  * @version 1
- * Details.
+ *
  */
 package com.ifit.sparky.fecp.error;
 
@@ -18,7 +18,9 @@ public enum ErrorCode {
     BAD_CHECKSUM_ERROR(5),   //!< BAD_CHECKSUM_ERROR
     WDT_RESET_ERROR(6),      //!< WDT_RESET_ERROR
     TIME_OUT_ERROR(7),        //!< TIME_OUT_ERROR
-    OUT_OF_BOUNDS_ERROR(8);
+    OUT_OF_BOUNDS_ERROR(8),
+    INVALID_BITFIELD_ERROR(9),
+    INVALID_MODE_REQUEST_ERROR(10),;
 
     private int mErrorNumber;
 
@@ -31,6 +33,12 @@ public enum ErrorCode {
     {
         return this.mErrorNumber;
     }
+
+    /**
+     * Converts a raw valid into a Error Code
+     * @param errCodeNum raw error code value
+     * @return the error code as enum. NONE if doesn't match
+     */
     static public ErrorCode getErrorCode(short errCodeNum)
     {
         //go through all device ids and if it equals then return it.
