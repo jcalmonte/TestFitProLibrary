@@ -9,11 +9,16 @@
  */
 package com.ifit.sparky.fecp.tests.brute.error;
 
+import com.ifit.sparky.fecp.error.BitfieldError;
 import com.ifit.sparky.fecp.error.ErrorCode;
 import com.ifit.sparky.fecp.error.ErrorMsgType;
 import com.ifit.sparky.fecp.error.SystemError;
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 
 import junit.framework.TestCase;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class TestSystemError extends TestCase{
 
@@ -90,6 +95,51 @@ public class TestSystemError extends TestCase{
         assertEquals(error.getFunctionName(), "WORLD");
         assertEquals(error.getLineNumber(), 123);
 
+    }
+
+
+    /** Tests the Bitfield error structure
+     *
+     * @throws Exception
+     */
+    public void testSystemError_BitFieldError() throws Exception{
+
+        BitfieldError bitError = new BitfieldError();
+        //validate system error items
+        assertEquals(bitError.getErrorType(), ErrorMsgType.BITFIELD_ERR_MSG);
+        assertEquals(bitError.getErrCode(), ErrorCode.INVALID_BITFIELD_ERROR);
+        assertEquals(bitError.getLineNumber(), 0);
+        assertEquals(bitError.getFileName(), "");
+        assertEquals(bitError.getFunctionName(), "");
+        //validate bitfield error items
+        assertNull(bitError.getBitId());
+        assertEquals(bitError.getDataSize(), 0);
+        assertFalse(bitError.isInvalidRead());
+        assertFalse(bitError.isInvalidWrite());
+        //test the parsing of the raw data and the constructor
+
+        //validate byte buffer parsing of data
+        ByteBuffer buffer = ByteBuffer.allocate(11);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(ErrorMsgType.BITFIELD_ERR_MSG.getErrorMsgType());
+        buffer.putShort((short)ErrorCode.INVALID_BITFIELD_ERROR.getErrorNumber());
+        buffer.putShort((short) BitFieldId.WORKOUT_MODE.getVal());
+        buffer.put((byte)0);//valid read
+        buffer.put((byte)1);//invalid write
+        buffer.put((byte)2);//2 bytes of data
+        buffer.putShort((short)12345);//2 bytes of data
+
+        //data filled
+        bitError.handleErrorBuffer(buffer, 1);
+        //validate interpretation
+
+        assertEquals(bitError.getBitId(), BitFieldId.WORKOUT_MODE);
+        assertEquals(bitError.getDataSize(), 2);
+        assertFalse(bitError.isInvalidRead());
+        assertTrue(bitError.isInvalidWrite());
+        ByteBuffer resultBuffer = bitError.getRawData();
+        resultBuffer.position(0);
+        assertEquals(resultBuffer.getShort(), 12345);
     }
 
 }

@@ -269,7 +269,6 @@ public class SystemDevice extends Device{
     public String toString() {
         String resultStr;
 
-
         resultStr = super.toString();
         resultStr += " config=" + mConfig.toString() +
                 ", mModel=" + mModel +

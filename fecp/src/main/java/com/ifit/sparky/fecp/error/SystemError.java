@@ -9,18 +9,19 @@ package com.ifit.sparky.fecp.error;
 
 import android.text.format.DateFormat;
 
+import java.nio.ByteBuffer;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class SystemError {
 
-    private ErrorMsgType mErrorType;
-    private ErrorCode mErrCode;
-    private int mLineNumber;
-    private String mFileName;
-    private String mFunctionName;
-    private Calendar mErrorTime;
-    private int mErrorNumber;//index of the Error
+    protected ErrorMsgType mErrorType;
+    protected ErrorCode mErrCode;
+    protected int mLineNumber;
+    protected String mFileName;
+    protected String mFunctionName;
+    protected Calendar mErrorTime;
+    protected int mErrorNumber;//index of the Error
 
 
     /**
@@ -160,6 +161,44 @@ public class SystemError {
 
     public void setErrorNumber(int mErrorNumber) {
         this.mErrorNumber = mErrorNumber;
+    }
+
+    public void handleErrorBuffer(ByteBuffer buffer, int errorNumber)
+    {
+        //handles the message and converts it into a System Error
+        //find the type of error msg it is
+        buffer.position(0);
+
+        Calendar currentTime = GregorianCalendar.getInstance();
+        this.setErrorTime(currentTime);
+        this.setErrorType(ErrorMsgType.getMsgType(buffer.get()));
+        this.setErrorNumber(errorNumber);
+
+        this.setErrCode(ErrorCode.getErrorCode(buffer.getShort()));
+        this.setLineNumber(buffer.getShort());
+        //get the file for the buffer
+        String tempStr = "";
+
+        for(int i = buffer.position(); i < buffer.capacity(); i++)
+        {
+            char tempValue = (char)buffer.get();
+            if(tempValue == ':')
+            {
+                break;
+            }
+            tempStr += tempValue;
+
+        }
+        this.setFileName(tempStr);
+        tempStr = "";
+        for(int i = buffer.position(); i < buffer.capacity(); i++)
+        {
+            char tempValue = (char)buffer.get();
+            tempStr += tempValue;
+        }
+
+        this.setFunctionName(tempStr);
+
     }
 
     @Override
