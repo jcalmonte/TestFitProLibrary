@@ -8,12 +8,23 @@
  */
 package com.ifit.sparky.fecp;
 
+import com.ifit.sparky.fecp.communication.CommInterface;
+import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
+import com.ifit.sparky.fecp.interpreter.command.GetSubDevicesCmd;
 import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
+import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
+import com.ifit.sparky.fecp.interpreter.status.GetCmdsSts;
+import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
+import com.ifit.sparky.fecp.interpreter.status.InfoSts;
+
+import java.util.Set;
 
 public class SystemDevice extends Device{
 
@@ -26,6 +37,9 @@ public class SystemDevice extends Device{
     private int mCpuFrequency;
     private String mMcuName;
     private String mConsoleName;
+
+    // this is to clean up the controlling to allow better interfaces to the fitPro
+    private CommInterface mComCntrl;
 
     /**
      * the default constructor for the System Device
@@ -42,6 +56,15 @@ public class SystemDevice extends Device{
         this.mCpuFrequency = 0;
         this.mMcuName = "";
         this.mConsoleName = "";
+    }
+
+    /**
+     * the initializes the System with the communication
+     */
+    public SystemDevice(CommInterface comCntrl) throws Exception
+    {
+        super();
+        initializeSystemDevice(comCntrl);
     }
 
     /**
@@ -97,6 +120,33 @@ public class SystemDevice extends Device{
         this.mCpuFrequency = 0;
         this.mMcuName = "";
         this.mConsoleName = "";
+    }
+
+    /**
+     * initializes the System device in a variety of ways to clean up the system.
+     * @param comCntrl the communication interface for initializing the system.
+     */
+    protected void initializeSystemDevice(CommInterface comCntrl) throws Exception
+    {
+        this.mComCntrl = comCntrl;
+        GetSysInfoCmd sysInfoCmd;
+        Device resultDevice;
+
+        resultDevice = getInitialDevice(DeviceId.MAIN);
+        this.addCommands(resultDevice.getCommandSet().values());
+        this.addAllSubDevice(resultDevice.getSubDeviceList());
+        this.setDeviceInfo(resultDevice.getInfo());
+
+
+        if (this.getInfo().getDevId() == DeviceId.NONE) {
+            return;//not connected to any device.
+        }
+
+        sysInfoCmd = new GetSysInfoCmd(this.getInfo().getDevId());
+
+        sysInfoCmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
+
+        this.setSystemInfo(sysInfoCmd);
     }
 
     /**
@@ -264,6 +314,46 @@ public class SystemDevice extends Device{
 
     }
 
+
+private Device getInitialDevice(DeviceId devId) throws Exception {
+        Device dev = new Device(devId);//
+        Set<DeviceId> subDeviceList;
+        Set<CommandId> tempCmds;
+        //get subDevices
+        subDeviceList = getSupportedSubDevices(devId);
+
+        for (DeviceId subDevId : subDeviceList) {
+        dev.addSubDevice(getInitialDevice(subDevId));
+        }
+        //add commands
+        tempCmds = getSupportedCommands(dev.getInfo().getDevId());
+
+    for (CommandId id : tempCmds) {
+        dev.addCommand(id.getCommand(dev.getInfo().getDevId()));
+    }
+
+        //add info
+        dev.setDeviceInfo(getDevicesInfo(dev.getInfo().getDevId()));
+        return dev;
+        }
+
+private DeviceInfo getDevicesInfo(DeviceId devId) throws Exception {
+        Command cmd = new InfoCmd(devId);
+        cmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(cmd.getCmdMsg()));
+        return ((InfoSts) cmd.getStatus()).getInfo();
+        }
+
+private Set<CommandId> getSupportedCommands(DeviceId devId) throws Exception {
+        Command cmd = new GetCmdsCmd(devId);
+        cmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(cmd.getCmdMsg()));
+        return ((GetCmdsSts) cmd.getStatus()).getSupportedCommands();
+        }
+
+private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception {
+        Command cmd = new GetSubDevicesCmd(devId);
+        cmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(cmd.getCmdMsg()));
+        return ((GetSubDevicesSts) cmd.getStatus()).getSubDevices();
+        }
 
     @Override
     public String toString() {

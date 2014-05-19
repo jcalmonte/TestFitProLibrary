@@ -200,6 +200,9 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         {
             while(this.mProcessCmds.size() > 0)
             {
+                //set comm active
+                this.mCommController.setCommActive(true);
+
                 FecpCommand tempCmd = this.mProcessCmds.get(0);
                 if(this.mInterceptor != null && this.mInterceptor.isInterceptorEnabled())
                 {
@@ -218,6 +221,9 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
                 //remove from this it will add it later when it needs to.
                 this.mProcessCmds.remove(0);
             }
+            //set comm inactive
+            this.mCommController.setCommActive(false);
+
         }
         catch (Exception ex)
         {

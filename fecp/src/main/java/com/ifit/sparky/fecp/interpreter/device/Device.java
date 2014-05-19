@@ -223,6 +223,10 @@ public class Device {
    public void setDeviceInfo(DeviceInfo info)
    {
        this.mInfo = info;
+       //update all the commands to also have the correct device id
+       for (Map.Entry<CommandId, Command> commandEntry : this.mCommandMap.entrySet()) {
+           commandEntry.getValue().setDevId(info.getDevId());
+       }
    }
 
 

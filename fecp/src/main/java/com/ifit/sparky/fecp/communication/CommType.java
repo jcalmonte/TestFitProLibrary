@@ -9,6 +9,7 @@ package com.ifit.sparky.fecp.communication;
 
 public enum CommType {
     USB_COMMUNICATION(),
+    TCP_COMMUNICATION(),
     TESTING_COMM();
 
     /**
