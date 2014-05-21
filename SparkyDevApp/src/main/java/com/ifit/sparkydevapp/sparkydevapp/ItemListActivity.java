@@ -18,8 +18,8 @@ import com.ifit.sparky.fecp.error.SystemError;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
-import com.ifit.sparkydevapp.sparkydevapp.Connecting.ConnectionActivity;
-import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
+import com.ifit.sparkydevapp.sparkydevapp.connecting.ConnectionActivity;
+import com.ifit.sparkydevapp.sparkydevapp.connecting.ProgressThread;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.BaseInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.ErrorFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.InclineDeviceFragment;
@@ -32,7 +32,7 @@ import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentCont
 import java.util.ArrayList;
 
 public class ItemListActivity extends FragmentActivity
-        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, CommandCallback {
+        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, CommandCallback, Runnable {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -45,6 +45,8 @@ public class ItemListActivity extends FragmentActivity
     private SystemDevice mMainDevice;
     private ArrayList<BaseInfoFragment> baseInfoFragments;
     private FecpCommand mKeepAlive;
+    private Thread mServerThread = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +80,9 @@ public class ItemListActivity extends FragmentActivity
                 int port = bundleParameters.getInt("port");
                 this.mFitProCntrl = new FitProTcp(ipAddress, port, this);
             }
-            this.mFitProCntrl.initializeConnection();
+            this.mServerThread = new Thread(this);
+            this.mServerThread.start();
+
         }
         catch (Exception ex)
         {
@@ -94,6 +98,21 @@ public class ItemListActivity extends FragmentActivity
 
 
     }
+
+    /**
+     * Starts executing the active part of the class' code. This method is
+     * called when a thread is started that has been created with a class which
+     * implements {@code Runnable}.
+     */
+    @Override
+    public void run() {
+        try {
+            mFitProCntrl.initializeConnection();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Callback method from {@link MainInfoListFragmentControl.Callbacks}

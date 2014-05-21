@@ -5,7 +5,7 @@
  * @version 1
  * Details.
  */
-package com.ifit.sparkydevapp.sparkydevapp.Connecting;
+package com.ifit.sparkydevapp.sparkydevapp.connecting;
 
 import android.app.ProgressDialog;
 import android.os.Looper;

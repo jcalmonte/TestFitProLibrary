@@ -1,4 +1,4 @@
-package com.ifit.sparkydevapp.sparkydevapp.Connecting;
+package com.ifit.sparkydevapp.sparkydevapp.connecting;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -41,10 +41,13 @@ public class WifiConnectActivity extends Activity implements View.OnClickListene
         this.connectButton = (Button) findViewById(R.id.buttonWifiConnect);
         this.portEditText = (EditText)findViewById(R.id.portEditText);
         this.ipAddressEditText = (EditText)findViewById(R.id.ipAddressEditText);
-
+        this.ipAddressEditText.setText("192.168.0.4");
+        this.portEditText.setText("8090");
         this.portEditText.setOnKeyListener(this);
         this.ipAddressEditText.setOnKeyListener(this);
-        this.connectButton.setEnabled(false);
+        this.connectButton.setEnabled(true);
+        this.mValidIpAddress = true;
+        this.mValidPort = true;
         connectButton.setOnClickListener(this);
     }
 
@@ -92,6 +95,7 @@ public class WifiConnectActivity extends Activity implements View.OnClickListene
                 }catch (NullPointerException e) {
                     e.printStackTrace();
                 }
+                itemListIntent.putExtras(bundleParameters);
                 startActivity(itemListIntent);
                 finish();
             }
@@ -119,10 +123,10 @@ public class WifiConnectActivity extends Activity implements View.OnClickListene
     public boolean onKey(View v, int keyCode, KeyEvent event) {
 
         try {
-            if(v == this.portEditText && this.portEditText != null)
+            if(v == this.portEditText && this.portEditText != null && !this.portEditText.getText().toString().isEmpty())
             {
                 //check for valid format
-                if(Integer.parseInt(this.portEditText.getText().toString()) < 1000)
+                if(Integer.parseInt(this.portEditText.getText().toString()) < Short.MAX_VALUE)
                 {
                     this.portEditText.setTextColor(Color.parseColor("#000000"));
                     this.mValidPort = true;

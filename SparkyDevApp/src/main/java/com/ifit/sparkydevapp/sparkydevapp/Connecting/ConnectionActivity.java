@@ -1,4 +1,4 @@
-package com.ifit.sparkydevapp.sparkydevapp.Connecting;
+package com.ifit.sparkydevapp.sparkydevapp.connecting;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -71,8 +71,8 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         else if(v == this.wifiConnectButton)
         {
             //Switch to the TCP connection activity
-            Intent wifiSettings = new Intent(v.getContext(), WifiConnectActivity.class);
-            startActivity(wifiSettings);
+            Intent wifiConnect = new Intent(v.getContext(), WifiConnectActivity.class);
+            startActivity(wifiConnect);
             finish();
         }
     }

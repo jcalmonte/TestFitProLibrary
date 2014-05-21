@@ -118,7 +118,6 @@ public class TcpComm implements CommInterface {
         data = new byte[BUFF_SIZE];//shouldn't ever be longer
         int bytesRead = 0;
         resultBuffer = ByteBuffer.allocate(BUFF_SIZE);
-
         if(!this.mSocket.isConnected())
         {
             for (DeviceConnectionListener listener : this.mConnectionListeners) {
@@ -134,7 +133,7 @@ public class TcpComm implements CommInterface {
         buff.position(0);
         try {
             this.mSocket.setSoTimeout(timeout);
-            this.mFromMachine.reset();
+//            this.mFromMachine.reset();
             //send data
             this.mToMachine.write(buff.array());
 
