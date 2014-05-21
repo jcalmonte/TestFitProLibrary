@@ -55,6 +55,16 @@ public class TestToolDummyCom implements CommInterface {
     }
 
     /**
+     * Used to determined if we should attempt to reconnect to the machine, or if nothing is going on.
+     *
+     * @param active true for communicating, false for no communication.
+     */
+    @Override
+    public void setCommActive(boolean active) {
+
+    }
+
+    /**
      * Initializes the connection to the communication items.
      */
     @Override

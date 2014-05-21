@@ -179,6 +179,12 @@ public class Status implements StatusInterface{
         //check if the device id matches
         buff.position(0);
         actualByte = buff.get();
+        //check if the checksum is 0
+        if(checkSum == 0 && actualByte == 0)
+        {
+            //msg failed
+            throw new InvalidStatusException(this, checkSum, actualByte);
+        }
         //todo check if message was sent to main.
         if(this.getDevId() == DeviceId.MAIN)
         {
@@ -200,5 +206,16 @@ public class Status implements StatusInterface{
         }
         //get the status ID
         this.mStsId = StatusId.getStatusId(buff.get());
+    }
+
+    @Override
+    public String toString() {
+        return "Status{" +
+                "MAX_MSG_LENGTH=" + MAX_MSG_LENGTH +
+                ", mStsId=" + mStsId +
+                ", mLength=" + mLength +
+                ", mCmdId=" + mCmdId +
+                ", mDevId=" + mDevId +
+                '}';
     }
 }

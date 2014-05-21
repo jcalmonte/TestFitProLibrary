@@ -79,4 +79,14 @@ public class TestComm implements CommInterface {
     public void setupErrorReporting(ErrorReporting errReporterCallBack) {
 
     }
+
+    /**
+     * Used to determined if we should attempt to reconnect to the machine, or if nothing is going on.
+     *
+     * @param active true for communicating, false for no communication.
+     */
+    @Override
+    public void setCommActive(boolean active) {
+        //currently does nothing.
+    }
 }

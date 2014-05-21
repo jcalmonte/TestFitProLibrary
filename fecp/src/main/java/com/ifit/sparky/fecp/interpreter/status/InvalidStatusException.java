@@ -25,7 +25,18 @@ public class InvalidStatusException extends Exception {
      */
     public InvalidStatusException(byte expectedCheckSum, byte actualCheckSum)
     {
-        super("Invalid Status Checksum Expected("+ expectedCheckSum +") Actual("+actualCheckSum+")");
+        super("Invalid Status Checksum Expected or No Checksum("+ expectedCheckSum +") Actual("+actualCheckSum+")");
+
+    }
+
+    /**
+     * If the checksums don't match throw an error.
+     * @param expectedCheckSum The expected byte value
+     * @param actualCheckSum the invalid byte value received
+     */
+    public InvalidStatusException(Status sts, byte expectedCheckSum, byte actualCheckSum)
+    {
+        super("Invalid Response from device("+ sts.toString() +") expected checksum("+ expectedCheckSum +") Actual("+actualCheckSum+")");
 
     }
 

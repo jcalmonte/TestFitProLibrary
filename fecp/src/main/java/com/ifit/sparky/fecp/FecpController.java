@@ -7,62 +7,38 @@
  */
 package com.ifit.sparky.fecp;
 
-import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
-import com.ifit.sparky.fecp.communication.TestComm;
-import com.ifit.sparky.fecp.communication.UsbComm;
 import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
-import com.ifit.sparky.fecp.interpreter.command.CalibrateCmd;
-import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
-import com.ifit.sparky.fecp.interpreter.command.GetSubDevicesCmd;
-import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
-import com.ifit.sparky.fecp.interpreter.command.GetTaskInfoCmd;
-import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
-import com.ifit.sparky.fecp.interpreter.command.SetTestingKeyCmd;
-import com.ifit.sparky.fecp.interpreter.command.SetTestingTachCmd;
-import com.ifit.sparky.fecp.interpreter.command.UpdateCmd;
-import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
-import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
-import com.ifit.sparky.fecp.interpreter.status.GetCmdsSts;
-import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
-import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
-import java.util.Set;
 
 public class FecpController implements ErrorReporting, CommInterface.DeviceConnectionListener {
     //Fecp System Version number
     private final int VERSION = 1;
     private CommType mCommType;
-    private SystemStatusCallback statusCallback;
-    private SystemDevice mSysDev;
-    private boolean mIsConnected;
-    private Context mContext;
-    private Intent mIntent;
-    private CommInterface mCommController;
-    private FecpCmdHandleInterface mCmdHandleInterface;
-    private ErrorCntrl mSysErrorControl;
+    protected SystemStatusCallback statusCallback;
+    protected SystemDevice mSysDev;
+    protected boolean mIsConnected;
+    protected CommInterface mCommController;
+    protected FecpCmdHandleInterface mCmdHandleInterface;
+    protected ErrorCntrl mSysErrorControl;
 
     /**
-     * Sets up the controller, and all the facets dealing with the controller
-     *
-     * @param context  the application context
-     * @param type     the type of communication
-     * @param callback the callback for connection and disconnections
-     * @throws Exception if the device is invalid
+     * This is for Fecp connections that don't req
+     * @param type Communication type
+     * @param callback callback for the system
+     * @throws Exception
      */
-    public FecpController(Context context, Intent intent, CommType type, SystemStatusCallback callback) throws Exception {
+    public FecpController(CommType type, SystemStatusCallback callback) throws Exception {
 
         if(callback == null)
         {
@@ -72,34 +48,28 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
         this.statusCallback = callback;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
         this.mIsConnected = false;
-        this.mContext = context;
-        this.mIntent = intent;
 
         this.mSysErrorControl = new ErrorCntrl(this);
     }
 
+    /**
+     *
+     * @throws Exception
+     */
+    public void initializeConnection() throws Exception{
 
-    public void initializeConnection(CmdHandlerType type) throws Exception{
-        this.initializeConnection(type, null);
+        this.mCommController.addConnectionListener(this);
+        this.mCommController.initializeCommConnection();
     }
 
     /**
      * Initializes the connection and sets up the communication
      *
-     * @param type the type of handling the system should have
      * @param listener this listens for changes in the connection
      */
-    public void initializeConnection(CmdHandlerType type, CommInterface.DeviceConnectionListener listener) throws Exception {
+    public void initializeConnection(CommInterface.DeviceConnectionListener listener) throws Exception {
 
-        //add as we add support for these
-        if (this.mCommType == CommType.USB_COMMUNICATION) {
-            this.mCommController = new UsbComm(this.mContext, this.mIntent, 100);
-        }
-        else if(this.mCommType == CommType.TESTING_COMM) {
-            this.mCommController = new TestComm();
-            //right after this. and sets the interceptor
-        }
-            this.mCommController.addConnectionListener(this);
+        this.mCommController.addConnectionListener(this);
 
         if(listener != null) {
 
@@ -146,28 +116,21 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
 
     private void getSystem() throws Exception
     {
-        if (this.mCommType == CommType.USB_COMMUNICATION) {
-            GetSysInfoCmd sysInfoCmd;
-            this.mSysDev = new SystemDevice(getSubDevice(DeviceId.MAIN));
-
-            if (this.mSysDev.getInfo().getDevId() == DeviceId.NONE) {
-                return;//not connected to any device.
-            }
-            sysInfoCmd = new GetSysInfoCmd(this.mSysDev.getInfo().getDevId());
-
-            sysInfoCmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
-
-            this.mSysDev.setSystemInfo(sysInfoCmd);
+        if(this.mCommType == CommType.TESTING_COMM) {
 
         }
-        else if(this.mCommType == CommType.TESTING_COMM) {
-
+        else
+        {
+            this.mSysDev = new SystemDevice(this.mCommController);
         }
 
+        if(this.mSysDev.getInfo().getDevId() == DeviceId.NONE)
+        {
+            return;
+        }
         this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
         this.mCommController.setupErrorReporting(this.mSysErrorControl);
     }
-
 
     /**
      * Adds a command to send to the device
@@ -195,70 +158,6 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
      */
     public void removeCmd(DeviceId devId, CommandId cmdId) {
         this.mCmdHandleInterface.removeFecpCommand(devId, cmdId);
-    }
-
-    private Device getSubDevice(DeviceId devId) throws Exception {
-        Device dev = new Device(devId);//
-        Set<DeviceId> subDeviceList;
-        Set<CommandId> tempCmds;
-        //get subDevices
-        subDeviceList = getSupportedSubDevices(devId);
-
-        for (DeviceId subDevId : subDeviceList) {
-            dev.addSubDevice(getSubDevice(subDevId));
-        }
-        //add commands
-        tempCmds = getSupportedCommands(dev.getInfo().getDevId());
-
-        for (CommandId id : tempCmds) {
-            dev.addCommand(initializeCommand(dev.getInfo().getDevId(), id));
-        }
-
-        //add info
-        dev.setDeviceInfo(getDevicesInfo(dev.getInfo().getDevId()));
-        return dev;
-    }
-
-    private DeviceInfo getDevicesInfo(DeviceId devId) throws Exception {
-        Command cmd = new InfoCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(cmd.getCmdMsg()));
-        return ((InfoSts) cmd.getStatus()).getInfo();
-    }
-
-    private Set<CommandId> getSupportedCommands(DeviceId devId) throws Exception {
-        Command cmd = new GetCmdsCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(cmd.getCmdMsg()));
-        return ((GetCmdsSts) cmd.getStatus()).getSupportedCommands();
-    }
-
-    private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception {
-        Command cmd = new GetSubDevicesCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(cmd.getCmdMsg()));
-        return ((GetSubDevicesSts) cmd.getStatus()).getSubDevices();
-    }
-
-    private static Command initializeCommand(DeviceId devId, CommandId cmdId) throws Exception {
-        if (CommandId.CONNECT == cmdId) {
-            //not implemented yet
-            throw new Exception("Command not supported yet");
-        } else if (CommandId.DISCONNECT == cmdId) {
-            //not implemented yet
-            throw new Exception("Command not supported yet");
-        } else if (CommandId.CALIBRATE == cmdId) {
-            return new CalibrateCmd(devId);
-        } else if (CommandId.GET_SYSTEM_INFO == cmdId) {
-            return new GetSysInfoCmd(devId);
-        } else if (CommandId.GET_TASK_INFO == cmdId) {
-            return new GetTaskInfoCmd(devId);
-        } else if (CommandId.SET_TESTING_KEY == cmdId) {
-            return new SetTestingKeyCmd(devId);
-        } else if (CommandId.SET_TESTING_TACH == cmdId) {
-            return new SetTestingTachCmd(devId);
-        } else if (CommandId.UPDATE == cmdId) {
-            return new UpdateCmd(devId);
-        }
-
-        return null;//nothing supported yet
     }
 
     /**
@@ -328,7 +227,11 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
     public void onDeviceConnected() {
         //search for the device
         try {
-            this.getSystem();
+
+            if(this.mSysDev.getInfo().getDevId() == DeviceId.MAIN) {
+                this.getSystem();
+                this.mCommController.setCommActive(false);
+            }
 
             if(this.mSysDev.getInfo().getDevId() != DeviceId.NONE)
             {
@@ -338,6 +241,7 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
         catch (Exception ex)
         {
             Log.e("Get System Failed", ex.getMessage());
+            ex.printStackTrace();
         }
     }
 

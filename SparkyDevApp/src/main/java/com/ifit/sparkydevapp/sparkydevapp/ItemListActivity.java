@@ -6,10 +6,11 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
-import com.ifit.sparky.fecp.CmdHandlerType;
 import com.ifit.sparky.fecp.CommandCallback;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.FitProTcp;
+import com.ifit.sparky.fecp.FitProUsb;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
@@ -17,8 +18,8 @@ import com.ifit.sparky.fecp.error.SystemError;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
-import com.ifit.sparkydevapp.sparkydevapp.Connecting.ConnectionActivity;
-import com.ifit.sparkydevapp.sparkydevapp.Connecting.ProgressThread;
+import com.ifit.sparkydevapp.sparkydevapp.connecting.ConnectionActivity;
+import com.ifit.sparkydevapp.sparkydevapp.connecting.ProgressThread;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.BaseInfoFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.ErrorFragment;
 import com.ifit.sparkydevapp.sparkydevapp.fragments.InclineDeviceFragment;
@@ -31,19 +32,21 @@ import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentCont
 import java.util.ArrayList;
 
 public class ItemListActivity extends FragmentActivity
-        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, CommandCallback {
+        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, CommandCallback, Runnable {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     private ProgressDialog mProgress;
-    private FecpController mFecpCntrl;
+    private FecpController mFitProCntrl;
     private boolean mConnected;
     private ProgressThread mProgressThread;
     private SystemDevice mMainDevice;
     private ArrayList<BaseInfoFragment> baseInfoFragments;
     private FecpCommand mKeepAlive;
+    private Thread mServerThread = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,15 +66,29 @@ public class ItemListActivity extends FragmentActivity
 
         //Attempt to connect to the Fecp controller
         try {
-            this.mFecpCntrl = new FecpController(ItemListActivity.this, getIntent(), CommType.USB_COMMUNICATION, this);
-           this.mFecpCntrl.initializeConnection(CmdHandlerType.FIFO_PRIORITY);
+            //determine whether it is over usb or tcp
+            Bundle bundleParameters = getIntent().getExtras();
+            CommType comm = CommType.values()[bundleParameters.getInt("commInterface")];
+
+            if(comm == CommType.USB_COMMUNICATION)
+            {
+                this.mFitProCntrl = new FitProUsb(ItemListActivity.this, getIntent(), this);
+            }
+            else if(comm == CommType.TCP_COMMUNICATION)
+            {
+                String ipAddress = bundleParameters.getString("ipAddress");
+                int port = bundleParameters.getInt("port");
+                this.mFitProCntrl = new FitProTcp(ipAddress, port, this);
+            }
+            this.mServerThread = new Thread(this);
+            this.mServerThread.start();
 
         }
         catch (Exception ex)
         {
             ex.printStackTrace();
             //Log.e("Connection Error", ex.getMessage());
-            Toast.makeText(this,"Connection Failed",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Connection Failed",Toast.LENGTH_LONG).show();
             this.mProgressThread.stopProgress();
             //change intent back to the connect main menu
             Intent ConnectionActivity = new Intent(this.getApplicationContext(), ConnectionActivity.class);
@@ -81,6 +98,21 @@ public class ItemListActivity extends FragmentActivity
 
 
     }
+
+    /**
+     * Starts executing the active part of the class' code. This method is
+     * called when a thread is started that has been created with a class which
+     * implements {@code Runnable}.
+     */
+    @Override
+    public void run() {
+        try {
+            mFitProCntrl.initializeConnection();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Callback method from {@link MainInfoListFragmentControl.Callbacks}
@@ -103,7 +135,7 @@ public class ItemListActivity extends FragmentActivity
         }
         if(currentFrag == null)
         {
-            currentFrag = new MainDeviceInfoFragment(this.mFecpCntrl);
+            currentFrag = new MainDeviceInfoFragment(this.mFitProCntrl);
         }
 
         arguments.putString(currentFrag.toString(), id);
@@ -140,28 +172,28 @@ public class ItemListActivity extends FragmentActivity
         this.mConnected = true;
         mProgressThread.stopProgress();
         Toast.makeText(this,"Connection Successful",Toast.LENGTH_LONG).show();
-        mMainDevice = this.mFecpCntrl.getSysDev();
+        mMainDevice = this.mFitProCntrl.getSysDev();
 
 
-        this.mFecpCntrl.addOnErrorEventListener(this);//notify users of any errors
+        this.mFitProCntrl.addOnErrorEventListener(this);//notify users of any errors
 
         //get supported list of item we will be supporting
         this.baseInfoFragments = new ArrayList<BaseInfoFragment>();
 
         //always support main info, error, task
-        baseInfoFragments.add(new MainDeviceInfoFragment(this.mFecpCntrl));
-        baseInfoFragments.add(new TaskInfoFragment(this.mFecpCntrl));
-        baseInfoFragments.add(new ErrorFragment(this.mFecpCntrl));
-        baseInfoFragments.add(new UserDataFragment(this.mFecpCntrl));//variety of items
+        baseInfoFragments.add(new MainDeviceInfoFragment(this.mFitProCntrl));
+        baseInfoFragments.add(new TaskInfoFragment(this.mFitProCntrl));
+        baseInfoFragments.add(new ErrorFragment(this.mFitProCntrl));
+        baseInfoFragments.add(new UserDataFragment(this.mFitProCntrl));//variety of items
 
         if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
         {
-            baseInfoFragments.add(new InclineDeviceFragment(this.mFecpCntrl));
+            baseInfoFragments.add(new InclineDeviceFragment(this.mFitProCntrl));
         }
 
         if(this.mMainDevice.containsDevice(DeviceId.SPEED))
         {
-            baseInfoFragments.add(new SpeedDeviceFragment(this.mFecpCntrl));
+            baseInfoFragments.add(new SpeedDeviceFragment(this.mFitProCntrl));
         }
 
         //add supported Fragments here.

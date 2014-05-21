@@ -73,6 +73,7 @@ public class UsbComm extends Activity implements CommInterface {
 
     private boolean waitingForEp1Data = false;
     private boolean waitingForEp3Data = false;
+    private boolean isCommActive = true;
 
     // Counters
     private long ep1_RX_Count = 0;
@@ -255,6 +256,11 @@ public class UsbComm extends Activity implements CommInterface {
         this.mErrorReporter = errReporterCallBack;
     }
 
+    @Override
+    public void setCommActive(boolean active) {
+        this.isCommActive = active;
+    }
+
     /**
      * m_statusChecker
      * Used to check for the device periodically
@@ -302,7 +308,7 @@ public class UsbComm extends Activity implements CommInterface {
             connectionState = ConnectionState.CONNECTION_DROPPED;
         }
 
-        if(connectionState == ConnectionState.CONNECTED && delayCount == 0){	//if there hasn't been communication in COMM_ERROR_CONST ms, try to reestablish
+        if(connectionState == ConnectionState.CONNECTED && delayCount == 0 && isCommActive){	//if there hasn't been communication in COMM_ERROR_CONST ms, try to reestablish
             Log.d(TAG, "detach 1 " + delayCount);
             detach();
             reestablishConnection();
