@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.ifit.sparky.fecp.CommandCallback;
+import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * This fragment is either contained in a {@link com.ifit.sparkydevapp.sparkydevapp.ItemListActivity}
  * in two-pane mode (on tablets)
  */
-public abstract class BaseInfoFragment extends Fragment  implements CommandCallback, Runnable {
+public abstract class BaseInfoFragment extends Fragment  implements OnCommandReceivedListener, Runnable {
 
     protected FecpController mFecpCntrl;
     private String mIdString;
@@ -111,7 +111,7 @@ public abstract class BaseInfoFragment extends Fragment  implements CommandCallb
      * @param cmd the command that was sent.
      */
     @Override
-    public void msgHandler(Command cmd) {
+    public void onCommandReceived(Command cmd) {
 
 
         if(cmd.getCmdId() == this.mSysInfoCmd.getCommand().getCmdId() && cmd.getDevId() == this.mSysInfoCmd.getCommand().getDevId()) {

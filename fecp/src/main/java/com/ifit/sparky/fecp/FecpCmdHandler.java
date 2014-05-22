@@ -15,6 +15,7 @@ import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -212,11 +213,15 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
                     this.sendCommand(tempCmd);
                 }
                 //if there is a callback call it
-                if(tempCmd.getCallback() != null
+                ArrayList<OnCommandReceivedListener> listeners;
+                listeners = tempCmd.getOnCommandReceiveListeners();
+                if(listeners.size() != 0
                         && (tempCmd.getCommand().getStatus().getStsId() == StatusId.DONE
                         || tempCmd.getCommand().getStatus().getStsId() == StatusId.FAILED || tempCmd.getCommand().getStatus().getStsId() == StatusId.IN_PROGRESS))
                 {
-                    tempCmd.getCallback().msgHandler(tempCmd.getCommand());//needs to be able to handle pass failed or in progress
+                    for (OnCommandReceivedListener listener : listeners) {
+                        listener.onCommandReceived(tempCmd.getCommand());//needs to be able to handle pass failed or in progress
+                    }
                 }
                 //remove from this it will add it later when it needs to.
                 this.mProcessCmds.remove(0);

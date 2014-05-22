@@ -9,13 +9,14 @@ package com.ifit.sparky.fecp;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
 
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledFuture;
 
 public class FecpCommand extends Thread{
 
     //cmd and device
     private Command mCommand;//this holds the command and the status.
-    private CommandCallback mCallback;
+    private ArrayList<OnCommandReceivedListener> mOnCommandReceiveListeners;
     private int mTimeout;
     private int mFrequency;//time in between each call.
     private int mCmdSentCounter;
@@ -48,7 +49,7 @@ public class FecpCommand extends Thread{
      * @param cmd the command for the device.
      * @param callback the callback after it is done.
      */
-    public FecpCommand(Command cmd, CommandCallback callback) throws Exception
+    public FecpCommand(Command cmd, OnCommandReceivedListener callback) throws Exception
     {
         this.fecpInitializer(cmd, callback, 0,0);
     }
@@ -59,7 +60,7 @@ public class FecpCommand extends Thread{
      * @param callback the callback after it is done.
      * @param timeout the length of time it should receive a response.
      */
-    public FecpCommand(Command cmd, CommandCallback callback, int timeout) throws Exception
+    public FecpCommand(Command cmd, OnCommandReceivedListener callback, int timeout) throws Exception
     {
         this.fecpInitializer(cmd, callback, timeout,0);
     }
@@ -70,7 +71,7 @@ public class FecpCommand extends Thread{
      * @param timeout the length of time it should receive a response.
      * @param frequency How frequent messages should be sent.
      */
-    public FecpCommand(Command cmd, CommandCallback callback, int timeout, int frequency) throws Exception
+    public FecpCommand(Command cmd, OnCommandReceivedListener callback, int timeout, int frequency) throws Exception
     {
         this.fecpInitializer(cmd, callback, timeout, frequency);
     }
@@ -83,7 +84,7 @@ public class FecpCommand extends Thread{
      * @param frequency How frequent messages should be sent.
      */
     private void fecpInitializer(Command cmd,
-                                 CommandCallback callback,
+                                 OnCommandReceivedListener callback,
                                  int timeout,
                                  int frequency) throws Exception
     {
@@ -91,7 +92,8 @@ public class FecpCommand extends Thread{
         {
             this.mCommand = cmd.getCommandCopy();
         }
-        this.mCallback = callback;
+        this.mOnCommandReceiveListeners = new ArrayList<OnCommandReceivedListener>();
+        this.addOnCommandReceived(callback);
         this.mTimeout = timeout;
         this.mFrequency = frequency;
         this.mCmdSentCounter = 0;
@@ -113,12 +115,12 @@ public class FecpCommand extends Thread{
     }
 
     /**
-     * Gets the callback for the command
-     * @return the callback
+     * Gets a list of the On Command Received Listeners
+     * @return ArrayList of On Command Receive listeners
      */
-    public CommandCallback getCallback()
+    public ArrayList<OnCommandReceivedListener> getOnCommandReceiveListeners()
     {
-        return this.mCallback;
+        return this.mOnCommandReceiveListeners;
     }
 
     /**
@@ -184,12 +186,29 @@ public class FecpCommand extends Thread{
     }
 
     /**
-     * Sets the callback for the send
-     * @param mCallback the callback
+     * Adds an OnReceived Listener to the Command. This is to share the same command results across multiple
+     * objects
+     * @param cmdReceivedListener the listener
      */
-    public void setCallback(CommandCallback mCallback) {
-        this.mCallback = mCallback;
+    public void addOnCommandReceived(OnCommandReceivedListener  cmdReceivedListener)
+    {
+        if(this.mOnCommandReceiveListeners.contains(cmdReceivedListener))
+        {
+            return;//already added, don't need duplicates
+        }
+        this.mOnCommandReceiveListeners.add(cmdReceivedListener);
     }
+
+    /**
+     * Removes the command from the List of listeners
+     * @param cmdReceivedListener command listener to be removed
+     * @return true if the item was in the list, false if nothing to be removed
+     */
+    public boolean removeOnCommandReceived(OnCommandReceivedListener  cmdReceivedListener)
+    {
+        return  this.mOnCommandReceiveListeners.remove(cmdReceivedListener);
+    }
+
 
     /**
      * Sets the timeout for the command
