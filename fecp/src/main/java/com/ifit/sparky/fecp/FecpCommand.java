@@ -9,14 +9,15 @@ package com.ifit.sparky.fecp;
 
 import com.ifit.sparky.fecp.interpreter.command.Command;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 
 public class FecpCommand extends Thread{
 
     //cmd and device
     private Command mCommand;//this holds the command and the status.
-    private ArrayList<OnCommandReceivedListener> mOnCommandReceiveListeners;
+    private List<OnCommandReceivedListener> mOnCommandReceiveListeners;
     private int mTimeout;
     private int mFrequency;//time in between each call.
     private int mCmdSentCounter;
@@ -92,7 +93,7 @@ public class FecpCommand extends Thread{
         {
             this.mCommand = cmd.getCommandCopy();
         }
-        this.mOnCommandReceiveListeners = new ArrayList<OnCommandReceivedListener>();
+        this.mOnCommandReceiveListeners = new CopyOnWriteArrayList<OnCommandReceivedListener>();
         this.addOnCommandReceived(callback);
         this.mTimeout = timeout;
         this.mFrequency = frequency;
@@ -118,7 +119,7 @@ public class FecpCommand extends Thread{
      * Gets a list of the On Command Received Listeners
      * @return ArrayList of On Command Receive listeners
      */
-    public ArrayList<OnCommandReceivedListener> getOnCommandReceiveListeners()
+    public List<OnCommandReceivedListener> getOnCommandReceiveListeners()
     {
         return this.mOnCommandReceiveListeners;
     }

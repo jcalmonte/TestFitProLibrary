@@ -6,6 +6,7 @@
  * handles the common items as far as what to send and what to receive.
  */
 package com.ifit.sparky.fecp;
+
 import android.util.Log;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
@@ -15,7 +16,7 @@ import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -213,14 +214,17 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
                     this.sendCommand(tempCmd);
                 }
                 //if there is a callback call it
-                ArrayList<OnCommandReceivedListener> listeners;
+                List<OnCommandReceivedListener> listeners;
                 listeners = tempCmd.getOnCommandReceiveListeners();
                 if(listeners.size() != 0
                         && (tempCmd.getCommand().getStatus().getStsId() == StatusId.DONE
                         || tempCmd.getCommand().getStatus().getStsId() == StatusId.FAILED || tempCmd.getCommand().getStatus().getStsId() == StatusId.IN_PROGRESS))
                 {
+
                     for (OnCommandReceivedListener listener : listeners) {
-                        listener.onCommandReceived(tempCmd.getCommand());//needs to be able to handle pass failed or in progress
+                        if(listener != null) {
+                            listener.onCommandReceived(tempCmd.getCommand());//needs to be able to handle pass failed or in progress
+                        }
                     }
                 }
                 //remove from this it will add it later when it needs to.
@@ -234,6 +238,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         {
             if(ex.getMessage() == null){
                 Log.e("thread error, no message, FecpCmdHandler run()", "");
+                ex.printStackTrace();
             }else{
                 Log.e("thread error", ex.getMessage());
                 ex.printStackTrace();

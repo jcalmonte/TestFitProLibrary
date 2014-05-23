@@ -159,7 +159,7 @@ public abstract class Command implements CommandInterface{
         }
         else
         {
-            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Requested Length="+length);
         }
     }
 
