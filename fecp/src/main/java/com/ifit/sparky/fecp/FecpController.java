@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.communication.TcpServer;
 import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
@@ -31,6 +32,7 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
     protected CommInterface mCommController;
     protected FecpCmdHandleInterface mCmdHandleInterface;
     protected ErrorCntrl mSysErrorControl;
+    private TcpServer mTcpServer;
 
     /**
      * This is for Fecp connections that don't req
@@ -48,7 +50,6 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
         this.statusCallback = callback;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
         this.mIsConnected = false;
-
         this.mSysErrorControl = new ErrorCntrl(this);
     }
 
@@ -129,6 +130,10 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
             return;
         }
         this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
+
+        this.mTcpServer = new TcpServer(this.mCmdHandleInterface);//currently accepting connections
+        //on port 8080.
+
         this.mCommController.setupErrorReporting(this.mSysErrorControl);
     }
 
@@ -236,6 +241,10 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
             if(this.mSysDev.getInfo().getDevId() != DeviceId.NONE)
             {
                 this.statusCallback.systemDeviceConnected(this.mSysDev);
+                if(this.mSysDev.getConfig() == SystemConfiguration.MASTER || this.mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER )
+                {
+                    this.mTcpServer.startServer();//start the server
+                }
             }
         }
         catch (Exception ex)
