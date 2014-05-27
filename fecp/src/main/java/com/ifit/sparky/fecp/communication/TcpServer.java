@@ -10,13 +10,18 @@ package com.ifit.sparky.fecp.communication;
 import com.ifit.sparky.fecp.FecpCmdHandleInterface;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.OnCommandReceivedListener;
+import com.ifit.sparky.fecp.SystemConfiguration;
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.RawDataCmd;
 import com.ifit.sparky.fecp.interpreter.status.RawDataSts;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -27,10 +32,12 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
     private Thread mServerThread;
     private int mServerPort = 8080;//default
     private FecpCmdHandleInterface mCmdHandler;
+    private SystemDevice mSysDev;
 
-    public TcpServer(FecpCmdHandleInterface cmdHandler)
+    public TcpServer(FecpCmdHandleInterface cmdHandler, SystemDevice sysDev)
     {
         this.mCmdHandler = cmdHandler;
+        this.mSysDev = sysDev;
         this.mServerThread = new Thread(new ServerThread());
         this.mCmdHandler.getCommController().addConnectionListener(this);
 
@@ -136,6 +143,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             try {
                 this.inFromClient = new BufferedInputStream(this.clientSocket.getInputStream());
                 this.mToClient = new DataOutputStream(this.clientSocket.getOutputStream());
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -144,18 +152,54 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     byte[] data = new byte[64];
-
-                    this.inFromClient.read(data, 0, 64);
+                    this.inFromClient.read(data, 0, 3);//read the first 3 bytes
                     try {
                         //created the command
-                        this.mRawFecpCmd = new FecpCommand(new RawDataCmd(ByteBuffer.wrap(data)),this);
-                        //send to FecpCmdHandler
-                        mCmdHandler.addFecpCommand(this.mRawFecpCmd);
+                        //check what the command is, and my current master configuration
+                        if(data[0] == 0x02 && data[2] == 0x82)//addressing the Main device for sys info
+                        {
+                            //read the rest of the data
+                            //return System Info command with appropriate system configuration
+                            ByteBuffer reply = mSysDev.getSysInfoSts().getReplyBuffer();
+                            reply.position(0);
+                            reply.put(0, (byte) 0x03);//portal device
+                            if(mSysDev.getConfig() == SystemConfiguration.SLAVE || mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
+                                reply.put(5, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
+                            }
+                            else if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER) {
+                                reply.put(5, (byte)SystemConfiguration.PORTAL_TO_MASTER.ordinal());//portal device
+                            }
+                            reply.position(0);
+                            this.mToClient.write(reply.array());
+                            //they then use Listen command and single not repeat commands
+
+                        }
+                        else if (data[0] == 0x03 && data[2] == 0x01)//get System Devic Command
+                        {
+                            //reply with specific command
+                            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                            ObjectOutput objectOutput = null;
+                            objectOutput = new ObjectOutputStream(byteArrayOutputStream);
+                            objectOutput.writeObject(mSysDev);
+                            byte[] dataObjectArray = byteArrayOutputStream.toByteArray();
+
+
+                            this.mToClient.write(0x03);//size of the object may vary greatly
+                            this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
+                            this.mToClient.write(dataObjectArray);//write object to client
+                        }
+                        else {
+
+                            this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
+                            this.mRawFecpCmd = new FecpCommand(new RawDataCmd(ByteBuffer.wrap(data)), this);
+                            //set to be a higher priority
+                            //check if it is a master command
+                            //send to FecpCmdHandler
+                            mCmdHandler.addFecpCommand(this.mRawFecpCmd);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

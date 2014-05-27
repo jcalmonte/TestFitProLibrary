@@ -15,6 +15,7 @@ import java.lang.reflect.Constructor;
 
 public enum CommandId {
     NONE(0, null, "No Command"),
+    PORTAL_DEV_LISTEN(0x01, PortalDeviceCmd.class, "Gets the System Device and all it's current data"),
     WRITE_READ_DATA(0x02, WriteReadDataCmd.class,"Writes data and reads data in single command."),
     TEST(0x03, null, "Test the device."),
     CONNECT(0x04, null, "Connects to the device."),

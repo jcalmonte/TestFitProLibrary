@@ -13,9 +13,10 @@ package com.ifit.sparky.fecp.interpreter.device;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.*;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Device {
+public class Device implements Serializable {
 
     private Map<CommandId, Command> mCommandMap;//list of all the available commands.
     private ArrayList<Device> mSubDevArrayList;//list of all the subDevices.

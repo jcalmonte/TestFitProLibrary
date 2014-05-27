@@ -14,6 +14,7 @@ public enum DeviceId {
     MULTIPLE_DEVICES(0x01, "This is a special command for sending multiple device commands" +
             " in single message."),
     MAIN(0x02, "Main, or Parent, device that contains all the sub devices"),
+    PORTAL(0x03, "This is a Portal Device to the Main Device different way of communicating to it"),
     TREADMILL(0x04, "Treadmill system"),
     INCLINE_TRAINER(0x05, "Incline Trainer"),
     ELLIPTICAL(0x06, "Incline Trainer"),

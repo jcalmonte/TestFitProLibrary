@@ -27,10 +27,25 @@ public interface FecpCmdHandleInterface {
     void addFecpCommand(FecpCommand cmd)throws Exception;
 
     /**
+     * Adds the command to the list to be sent
+     *
+     * @param cmd the command to be sent.
+     * @param highPriority the command to be sent.
+     */
+    void addFecpCommand(FecpCommand cmd, boolean highPriority) throws Exception;
+
+
+    /**
      * adds the command to the queue, in order to be ready to send.
      * @param cmd the command to be sent.
      */
     void processFecpCommand(FecpCommand cmd);
+
+    /**
+     * adds the command to the queue, in order to be ready to send.
+     * @param cmd the command to be sent.
+     */
+    void processFecpCommand(FecpCommand cmd, boolean highPriority);
 
     /**
      * Removes the command if it matches the Command id and the Device ID.

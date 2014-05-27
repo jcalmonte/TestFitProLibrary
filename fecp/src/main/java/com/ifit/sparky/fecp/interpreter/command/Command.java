@@ -12,9 +12,10 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.device.*;
 import com.ifit.sparky.fecp.interpreter.status.Status;
 
+import java.io.Serializable;
 import java.nio.*;
 
-public abstract class Command implements CommandInterface{
+public abstract class Command implements CommandInterface, Serializable{
 
     private final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 

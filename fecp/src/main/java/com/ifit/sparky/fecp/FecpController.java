@@ -16,8 +16,11 @@ import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
+import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.PortalDeviceCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.PortalDeviceSts;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
@@ -103,6 +106,7 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
      * @return the System Device
      */
     public SystemDevice getSysDev() {
+
         return this.mSysDev;
     }
 
@@ -125,13 +129,26 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
             this.mSysDev = new SystemDevice(this.mCommController);
         }
 
+        if(this.mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_MASTER || this.mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE)
+        {
+            //communication is different update through the latest Command data
+            //create a Portal Listen command
+            //fetch the System Device object
+            Command portalDeviceCmd = new PortalDeviceCmd(DeviceId.PORTAL);
+            portalDeviceCmd.getStatus().handleStsMsg(this.mCommController.sendAndReceiveCmd(portalDeviceCmd.getCmdMsg()));
+            SystemDevice newSysData = ((PortalDeviceSts)portalDeviceCmd.getStatus()).getmSysDev();
+
+            this.mSysDev = newSysData;//latest version of the System
+            //copy data
+        }
+
         if(this.mSysDev.getInfo().getDevId() == DeviceId.NONE)
         {
             return;
         }
-        this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
+        this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController, this.mSysDev);
 
-        this.mTcpServer = new TcpServer(this.mCmdHandleInterface);//currently accepting connections
+        this.mTcpServer = new TcpServer(this.mCmdHandleInterface, this.mSysDev);//currently accepting connections
         //on port 8080.
 
         this.mCommController.setupErrorReporting(this.mSysErrorControl);

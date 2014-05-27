@@ -19,6 +19,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -144,14 +145,43 @@ public class TcpComm implements CommInterface {
             Arrays.fill(data, (byte) 0);
 
             //read from server
-            //read the first 2 bytes
-            bytesRead = this.mFromMachine.read(data, 0, BUFF_SIZE);//read the length
-            resultBuffer.put(data);
+            //read the first byte
+            bytesRead = this.mFromMachine.read(data, 0, 1);//read the device
             if(bytesRead == -1)
             {
                 Log.d("BAD_TCP_READ", "invalid Read");
                 return resultBuffer;
             }
+            if(data[0] == 0x03)//custom handle for special objects.
+            {
+                //Portal Listen command prep for receiving System Object
+                //read the next 4 bytes
+                bytesRead = this.mFromMachine.read(data, 1, 4);//read the device
+                ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
+                tempSizeBuff.order(ByteOrder.LITTLE_ENDIAN);
+                tempSizeBuff.wrap(data,1,4);
+                tempSizeBuff.position(0);
+                int dataSize = tempSizeBuff.getInt();
+                byte[] sysObjectData = new byte[dataSize];
+                bytesRead = this.mFromMachine.read(sysObjectData, 0, dataSize);
+                resultBuffer = ByteBuffer.allocate(dataSize);
+                resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                resultBuffer.position(0);
+                resultBuffer.put(sysObjectData, 0, dataSize);
+                if(bytesRead == -1)
+                {
+                    Log.d("BAD_TCP_READ", "invalid Read");
+                    return resultBuffer;
+
+                }
+                return resultBuffer;
+
+
+            }
+            //read the first 2 bytes
+            bytesRead = this.mFromMachine.read(data, 0, BUFF_SIZE);//read the length
+            resultBuffer.put(data);
+
 
         } catch (IOException e) {
             e.printStackTrace();

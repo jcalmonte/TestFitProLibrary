@@ -11,9 +11,10 @@ import com.ifit.sparky.fecp.SystemConfiguration;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class GetSysInfoSts extends Status implements StatusInterface {
+public class GetSysInfoSts extends Status implements StatusInterface, Serializable {
 
     private static final int STS_LENGTH = 24;
 

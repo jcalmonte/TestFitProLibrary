@@ -16,10 +16,11 @@ import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.InvalidDeviceException;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 
-public class Status implements StatusInterface{
+public class Status implements StatusInterface, Serializable{
 
     public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
@@ -27,6 +28,7 @@ public class Status implements StatusInterface{
     private int mLength;
     private CommandId mCmdId;
     private DeviceId mDevId;
+    private ByteBuffer mReplyBuffer;
 
     /**
      * Default Constructor for the Status object.
@@ -151,7 +153,14 @@ public class Status implements StatusInterface{
         this.mDevId = id;
     }
 
-
+    /**
+     * This will return the raw data received from the command send to the machine.
+     * @return Byte buffer of the original data from the Machine
+     */
+    public ByteBuffer getReplyBuffer()
+    {
+        return this.mReplyBuffer;
+    }
     /**
      * Handles the message that is coming across the usb. It handles raw data, and it
      * must be handled by the correct status.
@@ -161,6 +170,8 @@ public class Status implements StatusInterface{
     @Override
     public void handleStsMsg(ByteBuffer buff) throws Exception {
         //goes through all the major items, but doesn't handle the specifics
+
+        this.mReplyBuffer = buff.duplicate();
         if(buff == null)
         {
             this.setStsId(StatusId.FAILED);

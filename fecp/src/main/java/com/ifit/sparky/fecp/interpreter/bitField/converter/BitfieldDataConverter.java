@@ -17,6 +17,7 @@ public abstract class BitfieldDataConverter {
 
     protected ByteBuffer mRawData;
     protected int mDataSize;
+    protected long mTimeRecieved;
 
     /**
      * Default Constructor.
@@ -120,4 +121,12 @@ public abstract class BitfieldDataConverter {
 
     public abstract ByteBuffer convertData(Object obj)throws InvalidBitFieldException;
 
+    /**
+     * This is to keep track of when the data was last received
+     * @param time time sample in the form of a long
+     */
+    public void setTimeRecieved(long time)
+    {
+        this.mTimeRecieved = time;
+    }
 }
