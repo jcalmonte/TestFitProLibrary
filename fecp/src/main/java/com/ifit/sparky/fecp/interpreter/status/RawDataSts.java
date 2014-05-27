@@ -37,5 +37,8 @@ public class RawDataSts extends Status {
     @Override
     public void handleStsMsg(ByteBuffer buff) throws Exception {
         this.mRawReceiveBuffer = buff;
+        //set status to be done
+        this.setStsId(StatusId.DONE);//command received
+
     }
 }

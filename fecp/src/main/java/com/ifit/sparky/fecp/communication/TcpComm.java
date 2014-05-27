@@ -14,10 +14,12 @@ import com.ifit.sparky.fecp.error.ErrorReporting;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 public class TcpComm implements CommInterface {
@@ -50,7 +52,9 @@ public class TcpComm implements CommInterface {
     public void initializeCommConnection() {
         //makes a connection across port
         try {
-            this.mSocket = new Socket(this.mIpAddress, this.mPort);
+            this.mSocket = new Socket();
+            this.mSocket.connect(new InetSocketAddress(this.mIpAddress, this.mPort), this.mSendTimeout);
+//            this.mSocket = new Socket(this.mIpAddress, this.mPort);
             this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority
             //then connection speed, then bandwidth is lowest.
             this.mToMachine = new DataOutputStream(this.mSocket.getOutputStream());
@@ -132,10 +136,14 @@ public class TcpComm implements CommInterface {
         }
         buff.position(0);
         try {
-            this.mSocket.setSoTimeout(timeout);
+            //this.mSocket.setSoTimeout(timeout);
 //            this.mFromMachine.reset();
+            //copy Data to a 64 byte array
+            buff.get(data,0, buff.capacity());//copy all of the elements available
+
             //send data
-            this.mToMachine.write(buff.array());
+            this.mToMachine.write(data);
+            Arrays.fill(data, (byte) 0);
 
             //read from server
             //read the first 2 bytes

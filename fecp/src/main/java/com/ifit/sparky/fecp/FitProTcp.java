@@ -53,7 +53,7 @@ public class FitProTcp extends FecpController {
     @Override
     public void initializeConnection(CommInterface.DeviceConnectionListener listener) throws Exception {
 
-        this.mCommController = new TcpComm(this.mIpAddress, this.mPort, 100);
+        this.mCommController = new TcpComm(this.mIpAddress, this.mPort, 5000);
         super.initializeConnection(listener);
     }
 

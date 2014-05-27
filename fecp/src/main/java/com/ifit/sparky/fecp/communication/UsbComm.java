@@ -32,7 +32,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Vector;
 
 
 public class UsbComm extends Activity implements CommInterface {
@@ -90,7 +90,7 @@ public class UsbComm extends Activity implements CommInterface {
     private int mSendTimeout;
 
 
-    private LinkedList<DeviceConnectionListener> mUsbConnectionListener;
+    private Vector<DeviceConnectionListener> mUsbConnectionListener;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -110,7 +110,7 @@ public class UsbComm extends Activity implements CommInterface {
         mIntent = i;
         this.mSendTimeout = defaultTimeout;
         if(this.mUsbConnectionListener == null) {
-            this.mUsbConnectionListener = new LinkedList<DeviceConnectionListener>();
+            this.mUsbConnectionListener = new Vector<DeviceConnectionListener>();
         }
     }
 
@@ -121,7 +121,7 @@ public class UsbComm extends Activity implements CommInterface {
     private void onCreateUSB(){
         isInitialized = false;
         if(this.mUsbConnectionListener == null) {
-            this.mUsbConnectionListener = new LinkedList<DeviceConnectionListener>();
+            this.mUsbConnectionListener = new Vector<DeviceConnectionListener>();
         }
         mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
 
@@ -518,7 +518,7 @@ public class UsbComm extends Activity implements CommInterface {
             if(deviceList != null)
                 deviceIterator = deviceList.values().iterator();
             UsbDevice device = null;
-            while(deviceIterator != null){
+            while(deviceIterator != null && deviceList.size() != 0){
                 if(!deviceIterator.hasNext()){
                     deviceList = mUsbManager.getDeviceList();
                     deviceIterator = deviceList.values().iterator();

@@ -45,6 +45,7 @@ public class RawDataCmd extends Command {
      */
     @Override
     public Command getCommandCopy() throws Exception {
-        return null;
+        Command tempCmd = new RawDataCmd(this.mRawSendBuffer);
+        return tempCmd;
     }
 }
