@@ -20,7 +20,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TcpComm implements CommInterface {
 
@@ -32,7 +32,7 @@ public class TcpComm implements CommInterface {
     private int mPort;
     private int mSendTimeout;
 
-    private LinkedList<DeviceConnectionListener> mConnectionListeners;
+    private CopyOnWriteArrayList<DeviceConnectionListener> mConnectionListeners;
 
     public TcpComm(String ipAddress, int port, int defaultTimeout)
     {
@@ -41,7 +41,7 @@ public class TcpComm implements CommInterface {
         this.mSendTimeout = defaultTimeout;
         if(this.mConnectionListeners == null)
         {
-            this.mConnectionListeners = new LinkedList<DeviceConnectionListener>();
+            this.mConnectionListeners = new CopyOnWriteArrayList<DeviceConnectionListener>();
         }
     }
 
@@ -102,9 +102,7 @@ public class TcpComm implements CommInterface {
     @Override
     public ByteBuffer sendAndReceiveCmd(ByteBuffer buff) {
 
-        this.sendAndReceiveCmd(buff, this.mSendTimeout);
-
-        return null;
+        return this.sendAndReceiveCmd(buff, this.mSendTimeout);
     }
 
     /**

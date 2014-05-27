@@ -32,7 +32,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class UsbComm extends Activity implements CommInterface {
@@ -90,7 +90,7 @@ public class UsbComm extends Activity implements CommInterface {
     private int mSendTimeout;
 
 
-    private Vector<DeviceConnectionListener> mUsbConnectionListener;
+    private CopyOnWriteArrayList<DeviceConnectionListener> mUsbConnectionListener;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -110,7 +110,7 @@ public class UsbComm extends Activity implements CommInterface {
         mIntent = i;
         this.mSendTimeout = defaultTimeout;
         if(this.mUsbConnectionListener == null) {
-            this.mUsbConnectionListener = new Vector<DeviceConnectionListener>();
+            this.mUsbConnectionListener = new CopyOnWriteArrayList<DeviceConnectionListener>();
         }
     }
 
@@ -121,7 +121,7 @@ public class UsbComm extends Activity implements CommInterface {
     private void onCreateUSB(){
         isInitialized = false;
         if(this.mUsbConnectionListener == null) {
-            this.mUsbConnectionListener = new Vector<DeviceConnectionListener>();
+            this.mUsbConnectionListener = new CopyOnWriteArrayList<DeviceConnectionListener>();
         }
         mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
 
