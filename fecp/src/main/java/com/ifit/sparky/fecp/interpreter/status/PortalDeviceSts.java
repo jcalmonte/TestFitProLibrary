@@ -54,5 +54,6 @@ public class PortalDeviceSts extends Status implements Serializable {
         this.mSysDev.readObject((ObjectInputStream)inObject);
         inputStream.close();
         inObject.close();
+        this.setStsId(StatusId.DONE);
     }
 }

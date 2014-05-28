@@ -119,6 +119,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     socket = mServerSock.accept();
+                    socket.setKeepAlive(false);
                     CommunicationThread commThread = new CommunicationThread(socket);
                     new Thread(commThread).start();
 
@@ -160,6 +161,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                         if(data[0] == (byte)0x02 && data[2] == (byte)0x82)//addressing the Main device for sys info
                         {
                             //read the rest of the data
+                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
                             //return System Info command with appropriate system configuration
                             ByteBuffer reply = mSysDev.getSysInfoSts().getReplyBuffer();
 
@@ -180,9 +182,10 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                             //they then use Listen command and single not repeat commands
 
                         }
-                        else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Devic Command
+                        else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Device Command
                         {
                             //reply with specific command
+                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
                             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                             ObjectOutput objectOutput = null;
                             objectOutput = new ObjectOutputStream(byteArrayOutputStream);
@@ -195,13 +198,19 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                         }
                         else {
 
-                            this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
+                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
+                            if(readCount != 61 || (data[0] == 0 && data[1] == 0))
+                            {
+                                return;
+                            }
                             this.mRawFecpCmd = new FecpCommand(new RawDataCmd(ByteBuffer.wrap(data)), this);
+
                             //set to be a higher priority
                             //check if it is a master command
                             //send to FecpCmdHandler
                             mCmdHandler.addFecpCommand(this.mRawFecpCmd);
                         }
+                        //clear everything from in buffer
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

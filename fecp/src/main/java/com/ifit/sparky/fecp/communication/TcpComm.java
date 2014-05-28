@@ -141,43 +141,73 @@ public class TcpComm implements CommInterface {
             buff.get(data,0, buff.capacity());//copy all of the elements available
 
             //send data
-            this.mToMachine.write(data);
-            Arrays.fill(data, (byte) 0);
+            try {
 
-            //read from server
-            //read the first byte
-            bytesRead = this.mFromMachine.read(data, 0, 1);//read the device
-            if(bytesRead == -1)
-            {
-                Log.d("BAD_TCP_READ", "invalid Read");
-                return resultBuffer;
-            }
-            buff.position(0);
-            if(data[0] == (byte)0x03 && buff.get() == (byte)0x03)//custom handle for special objects.
-            {
-                //Portal Listen command prep for receiving System Object
-                //read the next 4 bytes
-                bytesRead = this.mFromMachine.read(data, 1, 4);//read the device
-                ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
-                tempSizeBuff.order(ByteOrder.BIG_ENDIAN);
-                tempSizeBuff.put(data,1,4);
-                tempSizeBuff.position(0);
-                int dataSize = tempSizeBuff.getInt();
-                byte[] sysObjectData = new byte[dataSize];
-                bytesRead = this.mFromMachine.read(sysObjectData, 0, dataSize);
-                resultBuffer = ByteBuffer.allocate(dataSize);
-                resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
-                resultBuffer.position(0);
-                resultBuffer.put(sysObjectData, 0, dataSize);
+                this.mToMachine.write(data);
+                Arrays.fill(data, (byte) 0);
+                Thread.sleep(5);
+
+                //read from server
+                //read the first byte
+                bytesRead = this.mFromMachine.read(data, 0, 1);//read the device
                 if(bytesRead == -1)
                 {
                     Log.d("BAD_TCP_READ", "invalid Read");
                     return resultBuffer;
+                }
+                buff.position(0);
+                if(data[0] == (byte)0x03 && buff.get() == (byte)0x03)//custom handle for special objects.
+                {
+                    //Portal Listen command prep for receiving System Object
+                    //read the next 4 bytes
+                    bytesRead = this.mFromMachine.read(data, 1, 4);//read the device
+                    ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
+                    tempSizeBuff.order(ByteOrder.BIG_ENDIAN);
+                    tempSizeBuff.put(data,1,4);
+                    tempSizeBuff.position(0);
+                    int dataSize = tempSizeBuff.getInt();
+                    byte[] sysObjectData = new byte[dataSize];
+                    int timeoutCounter = 0;//try for ten times
+                    bytesRead = 0;
+                    while(bytesRead < dataSize && timeoutCounter < 10) {
+                        int readCount = this.mFromMachine.read(sysObjectData, bytesRead, dataSize-bytesRead);
+                        if(readCount != -1)
+                        {
+                            bytesRead += readCount;
+                        }
+
+                        if(bytesRead != dataSize)
+                        {
+                            Thread.sleep(5);
+                        }
+                        timeoutCounter++;
+                    }
+
+
+
+                    if(bytesRead != dataSize)
+                    {
+                        Log.d("BAD_TCP_READ", "invalid Read Size expected " + dataSize + " actual " + bytesRead);
+                        return resultBuffer;
+                    }
+                    resultBuffer = ByteBuffer.allocate(dataSize);
+                    resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                    resultBuffer.position(0);
+                    resultBuffer.put(sysObjectData, 0, dataSize);
+                    if(bytesRead == -1)
+                    {
+                        Log.d("BAD_TCP_READ", "invalid Read");
+                        return resultBuffer;
+
+                    }
+
+
+                    return resultBuffer;
+
 
                 }
-                return resultBuffer;
-
-
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             //read the first 2 bytes
             bytesRead = this.mFromMachine.read(data, 1, BUFF_SIZE-1);//read the length

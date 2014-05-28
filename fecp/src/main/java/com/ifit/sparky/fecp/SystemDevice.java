@@ -454,8 +454,24 @@ private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception {
     public void writeObject(ObjectOutputStream stream) throws IOException
     {
         //write the data we are concerned about
+        if(this.mConfig == SystemConfiguration.MASTER)
+        {
+            stream.writeObject(SystemConfiguration.PORTAL_TO_MASTER);
+        }
+        else if(this.mConfig == SystemConfiguration.MULTI_MASTER)
+        {
+            stream.writeObject(SystemConfiguration.PORTAL_TO_MASTER);
+        }
+        else if(this.mConfig == SystemConfiguration.SLAVE)
+        {
+            //portal to slave
+            stream.writeObject(SystemConfiguration.PORTAL_TO_SLAVE);
+        }
+        else
+        {
+            stream.writeObject(this.mConfig);
+        }
 
-        stream.writeObject(this.mConfig);
         stream.writeInt(this.mModel);
         stream.writeInt(this.mPartNumber);
         stream.writeDouble(this.mCpuUse);
@@ -496,7 +512,7 @@ private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception {
             this.mCurrentSystemData =  new TreeMap<BitFieldId, BitfieldDataConverter>();
         }
 
-        for(int i = 0; i < currDataSize; i++)
+        for(int i = 0; i < currDataSize-1; i++)
         {
             BitFieldId key = (BitFieldId)stream.readObject();
             BitfieldDataConverter value = key.getConverter();
