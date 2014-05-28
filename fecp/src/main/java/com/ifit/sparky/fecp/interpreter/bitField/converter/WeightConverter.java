@@ -9,9 +9,13 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class WeightConverter extends BitfieldDataConverter {
+public class WeightConverter extends BitfieldDataConverter implements Serializable {
 
     private double mWeight;
 
@@ -48,6 +52,18 @@ public class WeightConverter extends BitfieldDataConverter {
         }
         temp *= 100;//convert to int
         return this.getRawFromData((int)temp);
+    }
+
+    @Override
+    public void writeObject(ObjectOutputStream stream) throws IOException {
+
+        stream.writeDouble(this.mWeight);
+    }
+
+    @Override
+    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+
+        this.mWeight = stream.readDouble();
     }
 
     public double getWeight()

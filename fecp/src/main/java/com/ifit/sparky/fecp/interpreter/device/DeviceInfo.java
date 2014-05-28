@@ -9,10 +9,11 @@ package com.ifit.sparky.fecp.interpreter.device;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-public class DeviceInfo {
+public class DeviceInfo implements Serializable {
 
     private DeviceId mId;
     private int mSWVersion;

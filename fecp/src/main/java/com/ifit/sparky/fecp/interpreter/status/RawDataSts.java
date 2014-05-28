@@ -8,9 +8,10 @@
  */
 package com.ifit.sparky.fecp.interpreter.status;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class RawDataSts extends Status {
+public class RawDataSts extends Status implements Serializable {
 
     private ByteBuffer mRawReceiveBuffer;//comes from the System to Remote Source
 

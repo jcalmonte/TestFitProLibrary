@@ -12,9 +12,10 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.SetTestingKeySts;
 import com.ifit.sparky.fecp.interpreter.status.SetTestingTachSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class SetTestingTachCmd extends Command implements CommandInterface{
+public class SetTestingTachCmd extends Command implements CommandInterface, Serializable {
 
     private static final int CMD_LENGTH = 11;
     private boolean mTachOverride;

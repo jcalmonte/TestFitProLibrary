@@ -156,33 +156,38 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                     try {
                         //created the command
                         //check what the command is, and my current master configuration
-                        if(data[0] == 0x02 && data[2] == 0x82)//addressing the Main device for sys info
+
+                        if(data[0] == (byte)0x02 && data[2] == (byte)0x82)//addressing the Main device for sys info
                         {
                             //read the rest of the data
                             //return System Info command with appropriate system configuration
                             ByteBuffer reply = mSysDev.getSysInfoSts().getReplyBuffer();
+
                             reply.position(0);
                             reply.put(0, (byte) 0x03);//portal device
                             if(mSysDev.getConfig() == SystemConfiguration.SLAVE || mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
-                                reply.put(5, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
+                                reply.put(4, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
                             }
                             else if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER) {
-                                reply.put(5, (byte)SystemConfiguration.PORTAL_TO_MASTER.ordinal());//portal device
+                                reply.put(4, (byte)SystemConfiguration.PORTAL_TO_MASTER.ordinal());//portal device
                             }
+
+                            byte length = reply.get(1);
+                            reply.position(length-1);
+                            reply.put(Command.getCheckSum(reply));
                             reply.position(0);
                             this.mToClient.write(reply.array());
                             //they then use Listen command and single not repeat commands
 
                         }
-                        else if (data[0] == 0x03 && data[2] == 0x01)//get System Devic Command
+                        else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Devic Command
                         {
                             //reply with specific command
                             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                             ObjectOutput objectOutput = null;
                             objectOutput = new ObjectOutputStream(byteArrayOutputStream);
-                            objectOutput.writeObject(mSysDev);
+                            mSysDev.writeObject((ObjectOutputStream) objectOutput);
                             byte[] dataObjectArray = byteArrayOutputStream.toByteArray();
-
 
                             this.mToClient.write(0x03);//size of the object may vary greatly
                             this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
@@ -215,6 +220,10 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
         public void onCommandReceived(Command cmd) {
 
             ByteBuffer buffer = ((RawDataSts)cmd.getStatus()).getRawBuffer();
+            if(buffer == null)
+            {
+                return;//nothing to send invalid data
+            }
             buffer.position(0);
             try {
                 this.mToClient.write(buffer.array());//write the reply back to the server

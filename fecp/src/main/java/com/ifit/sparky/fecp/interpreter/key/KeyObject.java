@@ -8,7 +8,9 @@
  */
 package com.ifit.sparky.fecp.interpreter.key;
 
-public class KeyObject {
+import java.io.Serializable;
+
+public class KeyObject implements Serializable {
 
     private KeyCodes    mCode;
     private long        mRawKeyCode;//this is the 0xFFFFFFC thing

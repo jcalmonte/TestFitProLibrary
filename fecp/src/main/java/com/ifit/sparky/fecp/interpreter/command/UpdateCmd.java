@@ -10,9 +10,10 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.UpdateSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class UpdateCmd extends Command implements CommandInterface{
+public class UpdateCmd extends Command implements CommandInterface, Serializable {
 
     private static final int CMD_LENGTH = 13;
     private static final int MAX_UPDATE_DATA_SIZE = 50;//raw update data

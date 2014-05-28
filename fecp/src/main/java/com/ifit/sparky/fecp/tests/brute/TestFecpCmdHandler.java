@@ -23,7 +23,7 @@ public class TestFecpCmdHandler extends ActivityTestCase {
     public void testFecpCmdHandler_Constructor() throws Exception{
         TestToolDummyCom comTool = new TestToolDummyCom();
 
-        FecpCmdHandler cmdHandler  = new FecpCmdHandler(comTool);
+        FecpCmdHandler cmdHandler  = new FecpCmdHandler(comTool, null);
 
         assertEquals(cmdHandler.getCommController(), comTool);
     }
@@ -36,7 +36,7 @@ public class TestFecpCmdHandler extends ActivityTestCase {
         TestToolDummyCom comTool = new TestToolDummyCom();
         FecpCommand cmd;//command to validate sent
 
-        FecpCmdHandler cmdHandler  = new FecpCmdHandler(comTool);
+        FecpCmdHandler cmdHandler  = new FecpCmdHandler(comTool, null);
 
         cmd = new FecpCommand(new InfoCmd(DeviceId.TREADMILL));
 
@@ -63,7 +63,7 @@ public class TestFecpCmdHandler extends ActivityTestCase {
         TestToolDummyCom comTool = new TestToolDummyCom();
         FecpCommand cmd;//command to validate sent
 
-        FecpCmdHandler cmdHandler  = new FecpCmdHandler(comTool);
+        FecpCmdHandler cmdHandler  = new FecpCmdHandler(comTool, null);
 
         cmd = new FecpCommand(new InfoCmd(DeviceId.TREADMILL), null, 0, 100);
         cmdHandler.addFecpCommand(cmd);

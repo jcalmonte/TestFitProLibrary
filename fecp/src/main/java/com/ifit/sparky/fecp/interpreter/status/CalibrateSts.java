@@ -11,9 +11,10 @@ package com.ifit.sparky.fecp.interpreter.status;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class CalibrateSts extends Status implements StatusInterface {
+public class CalibrateSts extends Status implements StatusInterface, Serializable {
 
     private static final int STS_LENGTH = 6;
     private int mCalResponseData;//whatever may be useful from a reply from calibration 0 - 255

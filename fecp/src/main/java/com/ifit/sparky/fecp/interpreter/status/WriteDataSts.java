@@ -10,7 +10,9 @@ package com.ifit.sparky.fecp.interpreter.status;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
-public class WriteDataSts extends Status implements StatusInterface {
+import java.io.Serializable;
+
+public class WriteDataSts extends Status implements StatusInterface, Serializable {
 
     private static final int MIN_STS_LENGTH = 5;
 

@@ -13,11 +13,16 @@ import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.DataBaseCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.TreeMap;
 
-public class WriteReadDataSts extends Status implements StatusInterface  {
+public class WriteReadDataSts extends Status implements StatusInterface, Serializable {
 
 
     private static final int MIN_STS_LENGTH = 5;
@@ -69,5 +74,36 @@ public class WriteReadDataSts extends Status implements StatusInterface  {
         super.handleStsMsg(buff);
         //handle the data now
         this.mResultData = (TreeMap<BitFieldId, BitfieldDataConverter>)this.mData.handleReadData(buff);
+    }
+
+    private void writeObject(ObjectOutputStream stream) throws IOException
+    {
+        stream.writeObject(this.mData);
+        stream.writeInt(this.mResultData.size());
+
+        for (Map.Entry<BitFieldId, BitfieldDataConverter> entry : this.mResultData.entrySet()) {
+            stream.writeObject(entry.getKey());
+            stream.writeObject(entry.getValue());
+        }
+
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException
+    {
+
+        this.mData = (DataBaseCmd)stream.readObject();
+        int size = stream.readInt();
+
+        if(this.mResultData == null)
+        {
+            this.mResultData = new TreeMap<BitFieldId, BitfieldDataConverter>();
+        }
+
+        for(int i = 0; i < size; i++)
+        {
+            BitFieldId key = (BitFieldId)stream.readObject();
+            BitfieldDataConverter value = (BitfieldDataConverter)stream.readObject();
+            this.mResultData.put(key, value);
+        }
     }
 }

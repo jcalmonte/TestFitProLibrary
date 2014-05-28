@@ -12,9 +12,13 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class KeyObjectConverter extends BitfieldDataConverter {
+public class KeyObjectConverter extends BitfieldDataConverter implements Serializable {
 
     private KeyObject mKey;
 
@@ -53,6 +57,19 @@ public class KeyObjectConverter extends BitfieldDataConverter {
 
         throw new InvalidBitFieldException("KeyCodes bitfield doesn't support converting " +
                 "into Raw Data");
+    }
+
+
+    @Override
+    public void writeObject(ObjectOutputStream stream) throws IOException {
+
+        stream.writeObject(this.mKey);
+    }
+
+    @Override
+    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+
+        this.mKey = (KeyObject)stream.readObject();
     }
 
     /**

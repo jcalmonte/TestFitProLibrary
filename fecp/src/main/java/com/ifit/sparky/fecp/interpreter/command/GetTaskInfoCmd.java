@@ -12,9 +12,10 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.CpuTask;
 import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class GetTaskInfoCmd extends Command implements CommandInterface{
+public class GetTaskInfoCmd extends Command implements CommandInterface, Serializable {
 
     private static final int CMD_LENGTH = 5;
     private int mTaskIndex;

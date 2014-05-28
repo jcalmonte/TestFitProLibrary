@@ -9,9 +9,10 @@ package com.ifit.sparky.fecp.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.status.RawDataSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class RawDataCmd extends Command {
+public class RawDataCmd extends Command implements Serializable {
 
     private ByteBuffer mRawSendBuffer;// Comes from remote source to System
 

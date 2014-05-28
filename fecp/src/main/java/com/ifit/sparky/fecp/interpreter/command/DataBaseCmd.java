@@ -10,6 +10,10 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Comparator;
@@ -17,7 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
-public class DataBaseCmd{
+public class DataBaseCmd implements Serializable {
 
     /**
      * the data to be sent or to be received
@@ -259,5 +263,38 @@ public class DataBaseCmd{
         }
         return result;
     }
+
+
+    private void writeObject(ObjectOutputStream stream) throws IOException
+    {
+        stream.writeInt(this.mNumOfDataBytes);
+        stream.writeInt(this.mMsgData.size());
+        for (Map.Entry<BitFieldId, Object> entry : this.mMsgData.entrySet()) {
+
+            stream.writeObject(entry.getKey());
+            stream.writeObject(entry.getValue());
+        }
+
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException
+    {
+        this.mNumOfDataBytes = stream.readInt();
+        int size = stream.readInt();
+        if(this.mMsgData == null)
+        {
+            this.mMsgData = new TreeMap<BitFieldId, Object>();
+        }
+
+        for(int i = 0; i < size; i++)
+        {
+            BitFieldId key = (BitFieldId)stream.readObject();
+            Object value = stream.readObject();
+            this.mMsgData.put(key, value);
+        }
+
+
+    }
+
 
 }

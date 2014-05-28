@@ -10,11 +10,12 @@ package com.ifit.sparky.fecp.interpreter.status;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GetCmdsSts extends Status implements StatusInterface {
+public class GetCmdsSts extends Status implements StatusInterface, Serializable {
 
     private static final int MIN_STS_LENGTH = 5;
     private HashSet<CommandId> mCmdList;

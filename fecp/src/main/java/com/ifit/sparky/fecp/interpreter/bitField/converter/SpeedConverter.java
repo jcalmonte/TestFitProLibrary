@@ -9,9 +9,13 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class SpeedConverter extends BitfieldDataConverter {
+public class SpeedConverter extends BitfieldDataConverter implements Serializable {
 
     private double mSpeed;
 
@@ -48,6 +52,18 @@ public class SpeedConverter extends BitfieldDataConverter {
         }
         temp *= 100;//convert to int
         return this.getRawFromData((int)temp);
+    }
+
+    @Override
+    public void writeObject(ObjectOutputStream stream) throws IOException {
+
+        stream.writeDouble(this.mSpeed);
+    }
+
+    @Override
+    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+
+        this.mSpeed = stream.readDouble();
     }
 
     public double getSpeed()

@@ -11,9 +11,10 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class InfoCmd extends Command implements CommandInterface{
+public class InfoCmd extends Command implements CommandInterface, Serializable {
 
     private static final int CMD_LENGTH = 4;
     /**

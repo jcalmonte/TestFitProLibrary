@@ -11,10 +11,11 @@ import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.ReadDataSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-public class ReadDataCmd extends Command implements CommandInterface{
+public class ReadDataCmd extends Command implements CommandInterface, Serializable {
 
     private static final int MIN_CMD_LENGTH = 5;
 

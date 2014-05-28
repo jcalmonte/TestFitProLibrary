@@ -12,9 +12,10 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.key.KeyCodes;
 import com.ifit.sparky.fecp.interpreter.status.SetTestingKeySts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class SetTestingKeyCmd extends Command implements CommandInterface{
+public class SetTestingKeyCmd extends Command implements CommandInterface, Serializable {
 
     private static final int CMD_LENGTH = 10;
     private boolean mKeyOverride;

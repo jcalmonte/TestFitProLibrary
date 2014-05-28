@@ -10,9 +10,10 @@ package com.ifit.sparky.fecp.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.PortalDeviceSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class PortalDeviceCmd extends Command{
+public class PortalDeviceCmd extends Command implements Serializable {
 
 
     private static final int CMD_LENGTH = 4;

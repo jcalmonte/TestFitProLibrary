@@ -152,14 +152,15 @@ public class TcpComm implements CommInterface {
                 Log.d("BAD_TCP_READ", "invalid Read");
                 return resultBuffer;
             }
-            if(data[0] == 0x03)//custom handle for special objects.
+            buff.position(0);
+            if(data[0] == (byte)0x03 && buff.get() == (byte)0x03)//custom handle for special objects.
             {
                 //Portal Listen command prep for receiving System Object
                 //read the next 4 bytes
                 bytesRead = this.mFromMachine.read(data, 1, 4);//read the device
                 ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
-                tempSizeBuff.order(ByteOrder.LITTLE_ENDIAN);
-                tempSizeBuff.wrap(data,1,4);
+                tempSizeBuff.order(ByteOrder.BIG_ENDIAN);
+                tempSizeBuff.put(data,1,4);
                 tempSizeBuff.position(0);
                 int dataSize = tempSizeBuff.getInt();
                 byte[] sysObjectData = new byte[dataSize];
@@ -179,7 +180,7 @@ public class TcpComm implements CommInterface {
 
             }
             //read the first 2 bytes
-            bytesRead = this.mFromMachine.read(data, 0, BUFF_SIZE);//read the length
+            bytesRead = this.mFromMachine.read(data, 1, BUFF_SIZE-1);//read the length
             resultBuffer.put(data);
 
 

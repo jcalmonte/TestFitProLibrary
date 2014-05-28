@@ -144,6 +144,15 @@ public enum BitFieldId {
         return this.mConverter.getData();
     }
 
+    /**
+     * Gets the Converter
+     * @return the data converter
+     */
+    public BitfieldDataConverter getConverter()
+    {
+        return this.mConverter;
+    }
+
 
     /**
      * Converts the data into a formatted array of bytes.

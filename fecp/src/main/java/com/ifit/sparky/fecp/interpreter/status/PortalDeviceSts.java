@@ -14,9 +14,10 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class PortalDeviceSts extends Status {
+public class PortalDeviceSts extends Status implements Serializable {
 
 
     private static final int STS_LENGTH = 6;
@@ -45,7 +46,12 @@ public class PortalDeviceSts extends Status {
         ObjectInput inObject = null;
         inObject = new ObjectInputStream(inputStream);
 
-        this.mSysDev = (SystemDevice)inObject.readObject();
+        if(this.mSysDev == null)
+        {
+            this.mSysDev = new SystemDevice();
+        }
+
+        this.mSysDev.readObject((ObjectInputStream)inObject);
         inputStream.close();
         inObject.close();
     }

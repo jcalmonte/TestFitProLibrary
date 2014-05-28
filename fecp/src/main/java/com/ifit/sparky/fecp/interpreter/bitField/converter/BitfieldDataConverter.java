@@ -10,10 +10,14 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public abstract class BitfieldDataConverter {
+public abstract class BitfieldDataConverter implements Serializable {
 
     protected ByteBuffer mRawData;
     protected int mDataSize;
@@ -129,4 +133,10 @@ public abstract class BitfieldDataConverter {
     {
         this.mTimeRecieved = time;
     }
+
+    public abstract void writeObject(ObjectOutputStream stream) throws IOException;
+
+    public abstract void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException;
+
+
 }

@@ -10,9 +10,10 @@ package com.ifit.sparky.fecp.interpreter.status;
 import com.ifit.sparky.fecp.interpreter.command.*;
 import com.ifit.sparky.fecp.interpreter.device.*;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class InfoSts extends Status implements StatusInterface {
+public class InfoSts extends Status implements StatusInterface, Serializable {
 
     private DeviceInfo mInfo;
     private static final int STS_LENGTH = 14;

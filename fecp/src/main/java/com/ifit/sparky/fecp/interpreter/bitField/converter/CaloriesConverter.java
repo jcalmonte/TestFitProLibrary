@@ -9,9 +9,13 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class CaloriesConverter extends BitfieldDataConverter {
+public class CaloriesConverter extends BitfieldDataConverter implements Serializable {
 
     private double mCalories;
 
@@ -50,6 +54,18 @@ public class CaloriesConverter extends BitfieldDataConverter {
         return this.getRawFromData((int)temp);
     }
 
+
+    @Override
+    public void writeObject(ObjectOutputStream stream) throws IOException {
+
+        stream.writeDouble(this.mCalories);
+    }
+
+    @Override
+    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+
+        this.mCalories = stream.readDouble();
+    }
     public double getCalories()
     {
         return this.mCalories;

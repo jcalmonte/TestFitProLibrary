@@ -13,11 +13,12 @@ import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.WriteDataSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;
 
-public class WriteDataCmd extends Command implements CommandInterface{
+public class WriteDataCmd extends Command implements CommandInterface, Serializable {
 
 
     private static final int MIN_CMD_LENGTH = 5;
