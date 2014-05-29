@@ -34,9 +34,9 @@ public class TestFecpController extends TestCase {
         c = getTestContext();
         callback = new TempFecpCallbacker();
 
-        controller = new FecpController(CommType.USB_COMMUNICATION, callback);
+        controller = new FecpController(CommType.USB, callback);
 
-        assertEquals(CommType.USB_COMMUNICATION, controller.getCommType());
+        assertEquals(CommType.USB, controller.getCommType());
         assertEquals(DeviceId.MAIN, controller.getSysDev().getInfo().getDevId());
         assertEquals(false, controller.getIsConnected());
     }
@@ -49,9 +49,9 @@ public class TestFecpController extends TestCase {
 
         c = getTestContext();
         callback = new TempFecpCallbacker();
-        controller = new FecpController(CommType.USB_COMMUNICATION, callback);
+        controller = new FecpController(CommType.USB, callback);
 
-        assertEquals(CommType.USB_COMMUNICATION, controller.getCommType());
+        assertEquals(CommType.USB, controller.getCommType());
         assertEquals(DeviceId.MAIN, controller.getSysDev().getInfo().getDevId());
         assertEquals(false, controller.getIsConnected());
 

@@ -10,17 +10,26 @@ package com.ifit.sparky.fecp.communication;
 import android.util.Log;
 
 import com.ifit.sparky.fecp.error.ErrorReporting;
+import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
+import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TcpComm implements CommInterface {
@@ -32,6 +41,7 @@ public class TcpComm implements CommInterface {
     private String mIpAddress;
     private int mPort;
     private int mSendTimeout;
+    private ScanSystemListener mScanListener;//returns with list of devices or none
 
     private CopyOnWriteArrayList<DeviceConnectionListener> mConnectionListeners;
 
@@ -239,5 +249,199 @@ public class TcpComm implements CommInterface {
     @Override
     public void setCommActive(boolean active) {
         //currently has no impact on communication,
+    }
+
+    /**
+     * This allows the user to scan for all of the different devices, when finished scanning it will
+     * Call the listener to allow them to select with
+     *
+     * @param listener listener to be called after scanning is complete.
+     */
+    @Override
+    public void scanForSystems(ScanSystemListener listener) {
+
+        //scans all of the different Ip addresses for any valid ones, then scans the default port for any
+        //this is a multi threaded opperation
+        this.mScanListener = listener;
+        Thread scanThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //gets all the ip address available in this network.
+                InetAddress currentIpAddress = getCurrentIpAddress();
+                if(currentIpAddress == null)
+                {
+                    mScanListener.onScanFinish(new ArrayList<ConnectionDevice>());//return an empty array list
+                    return;
+                }
+
+                byte[] rawIpAddress = currentIpAddress.getAddress();
+                //get starter string
+                if(rawIpAddress.length < 3)
+                {
+                    return;
+                }
+                String maskedIpStr = rawIpAddress[0] +"." + rawIpAddress[1] +"." + rawIpAddress[2] +".";
+                //generate a list ip address besides this ip address to check is valid ip address
+
+                int excludeNum = rawIpAddress[3];
+
+                ArrayList<IpScanner> ipScanners = new ArrayList<IpScanner>();
+                ArrayList<Thread> scanThreads = new ArrayList<Thread>();
+
+                //UNLEASE THE HOUNDS
+                for(int i = 0; i < Byte.MAX_VALUE; i++)
+                {
+                    //create ip address string
+
+                    if(i != excludeNum) {
+
+                        IpScanner scanner = new IpScanner(new InetSocketAddress(maskedIpStr + i, 8090));
+                        ipScanners.add(scanner);
+                        Thread runThread = new Thread(scanner);
+                        runThread.start();
+                        scanThreads.add(runThread);
+
+                    }
+                }
+
+                // CALL THE DOGS BACK, THEY HAVE GUNS
+                try {
+                    for (Thread thread : scanThreads) {
+                        thread.join();
+
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    mScanListener.onScanFinish(new ArrayList<ConnectionDevice>());//return an empty array list
+                }
+
+                //all the dogs are back and safe.
+                //now we can send data to the valid addresses if they exist
+                ArrayList<ConnectionDevice> possibleDevices = new ArrayList<ConnectionDevice>();
+                for (IpScanner scanner : ipScanners) {
+                    if(scanner.isValidDevice)
+                    {
+                        possibleDevices.add(scanner.mDev);
+                    }
+                }
+                mScanListener.onScanFinish(possibleDevices);
+            }
+        });
+
+        scanThread.start();
+
+    }
+
+    private InetAddress getCurrentIpAddress()
+    {
+        //gets all the ip address available in this network.
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addrs) {
+                    if (!addr.isLoopbackAddress()) {
+                        return addr;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Log.e("No IP address", ex.getMessage());
+                ex.printStackTrace();
+        }
+        return null;
+    }
+
+    private class IpScanner implements Runnable{
+
+        private TcpConnectionDevice mDev;
+        private boolean isValidDevice = false;
+        public IpScanner(InetSocketAddress ipAddress)
+        {
+            this.mDev = new TcpConnectionDevice(ipAddress);
+        }
+        /**
+         * Starts executing the active part of the class' code. This method is
+         * called when a thread is started that has been created with a class which
+         * implements {@code Runnable}.
+         */
+        @Override
+        public void run() {
+            //uses the given Ip address to check if it is available
+            try {
+
+                //todo try with no ip checking
+                if(this.mDev.mIpAddress.getAddress().isReachable(1000))
+                {
+                    //try to see if port is available
+                    Socket testSocket = new Socket();
+                    DataOutputStream sendStream;
+                    InputStream readStream;
+                    try {
+
+                        testSocket.connect(this.mDev.mIpAddress, 3000);//start off with a 3 second timeout
+
+                        //send message to get the System Info
+                        try {
+                            GetSysInfoCmd tempCmd = new GetSysInfoCmd(DeviceId.MAIN);
+                            tempCmd.getCmdMsg();
+                            sendStream = new DataOutputStream(testSocket.getOutputStream());
+                            readStream = testSocket.getInputStream();
+
+                            byte[] data;
+                            ByteBuffer resultBuffer;
+                            data = new byte[BUFF_SIZE];//shouldn't ever be longer
+                            int bytesRead = 0;
+                            resultBuffer = ByteBuffer.allocate(BUFF_SIZE);
+
+                            ByteBuffer buff = tempCmd.getCmdMsg();
+                            buff.position(0);
+                            //copy Data to a 64 byte array
+                            buff.get(data,0, buff.capacity());//copy all of the elements available
+
+                            sendStream.write(data);
+                            Arrays.fill(data, (byte) 0);
+                            Thread.sleep(5);
+
+                            bytesRead = readStream.read(data, 0, data.length);//read the device
+
+                            resultBuffer = ByteBuffer.allocate(data.length);
+                            resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                            resultBuffer.position(0);
+                            resultBuffer.put(data, 0, data.length);
+
+                            if(bytesRead != -1) {
+
+                                GetSysInfoSts sysInfoSts =  (GetSysInfoSts)tempCmd.getStatus();//.handleStsMsg(resultBuffer);
+                                sysInfoSts.handleStsMsg(resultBuffer);
+                                if(sysInfoSts.getStsId() == StatusId.DONE)//valid option to connect to
+                                {
+                                    this.isValidDevice = true;
+                                    this.mDev.setSysInfoVal(sysInfoSts);
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+                    }finally {
+                        try {
+                            testSocket.close();
+                        } catch (IOException closeEx) {
+                            Log.e("failed to Close", closeEx.getMessage());
+                            closeEx.printStackTrace();
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+
+                ex.printStackTrace();
+            }
+
+
+        }
     }
 }

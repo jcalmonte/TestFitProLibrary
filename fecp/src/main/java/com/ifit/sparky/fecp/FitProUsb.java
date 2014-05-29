@@ -27,7 +27,7 @@ public class FitProUsb extends FecpController {
      * @throws Exception
      */
     public FitProUsb(Context context, Intent intent) throws Exception {
-        super(CommType.USB_COMMUNICATION, null);
+        super(CommType.USB, null);
         this.mContext = context;
         this.mIntent = intent;
     }
@@ -40,7 +40,7 @@ public class FitProUsb extends FecpController {
      * @throws Exception invalid parameters
      */
     public FitProUsb(Context context, Intent intent, SystemStatusCallback callback ) throws Exception {
-        super(CommType.USB_COMMUNICATION, callback);
+        super(CommType.USB, callback);
         this.mContext = context;
         this.mIntent = intent;
     }

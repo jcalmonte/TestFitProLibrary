@@ -31,7 +31,7 @@ public class FitProTcp extends FecpController {
      * @throws Exception
      */
     public FitProTcp(String ipAddress, int port, SystemStatusCallback callback) throws Exception {
-        super(CommType.TCP_COMMUNICATION, callback);
+        super(CommType.TCP, callback);
         this.mPort = port;
         this.mIpAddress = ipAddress;
     }

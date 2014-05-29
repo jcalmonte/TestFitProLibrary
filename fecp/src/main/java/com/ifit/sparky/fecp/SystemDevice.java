@@ -392,7 +392,8 @@ public class SystemDevice extends Device implements Serializable{
     }
 
 
-private Device getInitialDevice(DeviceId devId) throws Exception {
+    private Device getInitialDevice(DeviceId devId) throws Exception
+    {
         Device dev = new Device(devId);//
         Set<DeviceId> subDeviceList;
         Set<CommandId> tempCmds;
@@ -400,19 +401,23 @@ private Device getInitialDevice(DeviceId devId) throws Exception {
         subDeviceList = getSupportedSubDevices(devId);
 
         for (DeviceId subDevId : subDeviceList) {
-        dev.addSubDevice(getInitialDevice(subDevId));
+            dev.addSubDevice(getInitialDevice(subDevId));
         }
+
         //add commands
         tempCmds = getSupportedCommands(dev.getInfo().getDevId());
 
-    for (CommandId id : tempCmds) {
-        dev.addCommand(id.getCommand(dev.getInfo().getDevId()));
-    }
+        if (tempCmds.size() != 1 && !tempCmds.contains(CommandId.NONE)) {
+            for (CommandId id : tempCmds) {
+                dev.addCommand(id.getCommand(dev.getInfo().getDevId()));
+            }
+        }
 
         //add info
         dev.setDeviceInfo(getDevicesInfo(dev.getInfo().getDevId()));
         return dev;
-        }
+
+    }
 
 private DeviceInfo getDevicesInfo(DeviceId devId) throws Exception {
         Command cmd = new InfoCmd(devId);

@@ -233,7 +233,6 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
     public void onDeviceConnected() {
         //search for the device
         try {
-
             if(this.mSysDev.getInfo().getDevId() == DeviceId.MAIN) {
                 this.getSystem();
                 this.mCommController.setCommActive(false);

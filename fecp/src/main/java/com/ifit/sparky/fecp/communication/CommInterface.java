@@ -12,12 +12,21 @@ package com.ifit.sparky.fecp.communication;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 public interface CommInterface {
 
     public interface DeviceConnectionListener{
         void onDeviceConnected();
         void onDeviceDisconnected();
+    }
+
+    /**
+     * This interface will allow for an asynchronous callback to reply with all of the available
+     * Devices this may connect to.
+     */
+    public interface ScanSystemListener {
+        void onScanFinish(List<ConnectionDevice> devices);
     }
 
     /**
@@ -63,4 +72,10 @@ public interface CommInterface {
      */
     void setCommActive(boolean active);
 
+    /**
+     * This allows the user to scan for all of the different devices, when finished scanning it will
+     * Call the listener to allow them to select with
+     * @param listener listener to be called after scanning is complete.
+     */
+    void scanForSystems(ScanSystemListener listener);
 }

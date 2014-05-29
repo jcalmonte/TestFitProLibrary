@@ -30,7 +30,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 
     private ServerSocket mServerSock;
     private Thread mServerThread;
-    private int mServerPort = 8080;//default
+    private int mServerPort = 8090;//default
     private FecpCmdHandleInterface mCmdHandler;
     private SystemDevice mSysDev;
 

@@ -74,6 +74,10 @@ public enum CommandId {
      */
     public Command getCommand(DeviceId devId) throws Exception
     {
+        if(CommandId.NONE == this)
+        {
+            return null;
+        }
         if(this.mCommandClass == null)
         {
             throw new Exception("Command not supported yet");

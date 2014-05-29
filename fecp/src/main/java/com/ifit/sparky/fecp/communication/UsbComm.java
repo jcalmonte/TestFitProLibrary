@@ -262,6 +262,17 @@ public class UsbComm extends Activity implements CommInterface {
     }
 
     /**
+     * This allows the user to scan for all of the different devices, when finished scanning it will
+     * Call the listener to allow them to select with
+     *
+     * @param listener listener to be called after scanning is complete.
+     */
+    @Override
+    public void scanForSystems(ScanSystemListener listener) {
+
+    }
+
+    /**
      * m_statusChecker
      * Used to check for the device periodically
      */

@@ -20,8 +20,8 @@ public class TestCommType extends TestCase {
     public void testEnum() throws Exception{
         CommType type;
 
-        type = CommType.USB_COMMUNICATION;
+        type = CommType.USB;
 
-        assertEquals(type, CommType.USB_COMMUNICATION);//dumb test, but checks change
+        assertEquals(type, CommType.USB);//dumb test, but checks change
     }
 }

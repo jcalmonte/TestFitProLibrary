@@ -40,13 +40,13 @@ public class TestType extends TestIntegration{
 //        //attempt to initialize a connection with the FECP controller
 //        //access the FECP library
 //        try{
-//            FecpController fecpController = new FecpController(TestType.this, getIntent(), CommType.USB_COMMUNICATION, null);}
+//            FecpController fecpController = new FecpController(TestType.this, getIntent(), CommType.USB, null);}
 //            fecpController.initializeConnection();
 //            catch (Exception e)
 //            {
 //                    Log.e("Device failed", e.getMessage()));
 //            try {
-//                machineCommand = new FecpCommand(); getIntent(), CommType.USB_COMMUNICATION, null);
+//                machineCommand = new FecpCommand(); getIntent(), CommType.USB, null);
 //
 //            }catch (Exception exit){
 //
