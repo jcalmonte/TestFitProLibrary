@@ -146,7 +146,7 @@ public class ConnectionDevice {
 
     /**
      * Sets the Model number of the system
-     * @param model
+     * @param model Model of the System
      */
     public void setModel(String model) {
         this.mModel = model;

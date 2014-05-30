@@ -27,6 +27,7 @@ import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
 import com.ifit.sparky.fecp.interpreter.status.PortalDeviceSts;
+import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 
 import java.io.IOException;
@@ -72,15 +73,6 @@ public class SystemDevice extends Device implements Serializable{
         this.mMcuName = "";
         this.mConsoleName = "";
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
-    }
-
-    /**
-     * the initializes the System with the communication
-     */
-    public SystemDevice(CommInterface comCntrl) throws Exception
-    {
-        super();
-        initializeSystemDevice(comCntrl);
     }
 
     /**
@@ -141,64 +133,25 @@ public class SystemDevice extends Device implements Serializable{
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
     }
 
-    /**
-     * initializes the System device in a variety of ways to clean up the system.
-     * @param comCntrl the communication interface for initializing the system.
-     */
-    protected void initializeSystemDevice(CommInterface comCntrl) throws Exception
+    public SystemDevice(GetSysInfoSts sts) throws Exception
     {
-        this.mComCntrl = comCntrl;
-        GetSysInfoCmd sysInfoCmd;
-        Device resultDevice;
+        super(sts.getDevId());
+
+        this.mConfig = sts.getConfig();
+        this.mModel = sts.getModel();
+        this.mPartNumber = sts.getPartNumber();
+        this.mCpuUse = sts.getCpuUse();
+        this.mNumberOfTasks = sts.getNumberOfTasks();
+        this.mIntervalTime = sts.getIntervalTime();
+        this.mCpuFrequency = sts.getCpuFrequency();
+        this.mMcuName = sts.getMcuName();
+        this.mConsoleName = sts.getConsoleName();
+        this.mSysInfoReply = sts;
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
 
 
-        //first start out by finding out the configuration
-        sysInfoCmd = new GetSysInfoCmd(DeviceId.MAIN);
-
-        sysInfoCmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
-        this.mSysInfoReply = (GetSysInfoSts)sysInfoCmd.getStatus();
-
-        this.setSystemInfo(sysInfoCmd);
-
-
-        if(this.getConfig() == SystemConfiguration.MASTER || this.getConfig() == SystemConfiguration.SLAVE )//direct master connection
-        {
-            resultDevice = getInitialDevice(DeviceId.MAIN);
-            this.addCommands(resultDevice.getCommandSet().values());
-            this.addAllSubDevice(resultDevice.getSubDeviceList());
-            this.setDeviceInfo(resultDevice.getInfo());
-        }
-        else if(this.getConfig() == SystemConfiguration.PORTAL_TO_MASTER || this.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE)
-        {
-            //communication is different update through the latest Command data
-            //create a Portal Listen command
-            //fetch the System Device object
-            Command portalDeviceCmd = new PortalDeviceCmd(DeviceId.PORTAL);
-            portalDeviceCmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(portalDeviceCmd.getCmdMsg()));
-            SystemDevice newSysData = ((PortalDeviceSts)portalDeviceCmd.getStatus()).getmSysDev();
-
-            //copy data
-            //exclude Configuration
-            this.mModel = newSysData.mModel;
-            this.mPartNumber = newSysData.mPartNumber;
-            this.mCpuUse = newSysData.mCpuUse;
-            this.mNumberOfTasks = newSysData.mNumberOfTasks;
-            this.mIntervalTime = newSysData.mIntervalTime;
-            this.mCpuFrequency = newSysData.mCpuFrequency;
-            this.mMcuName = newSysData.mMcuName;
-            this.mConsoleName = newSysData.mConsoleName;
-            this.setDeviceInfo(newSysData.getInfo());
-            this.mCurrentSystemData = newSysData.mCurrentSystemData;
-
-        }
-
-
-        if (this.getInfo().getDevId() == DeviceId.NONE) {
-            return;//not connected to any device.
-        }
-
     }
+
 
     /**
      * Gets the system configuration
@@ -354,25 +307,11 @@ public class SystemDevice extends Device implements Serializable{
         this.mConsoleName = consoleName;
     }
 
-    public void setSystemInfo(GetSysInfoCmd systemInfo)
-    {
-        this.setConfig(((GetSysInfoSts) systemInfo.getStatus()).getConfig());
-        this.setModel(((GetSysInfoSts) systemInfo.getStatus()).getModel());
-        this.setPartNumber(((GetSysInfoSts) systemInfo.getStatus()).getPartNumber());
-        this.setCpuUse(((GetSysInfoSts) systemInfo.getStatus()).getCpuUse());
-        this.setNumberOfTasks(((GetSysInfoSts) systemInfo.getStatus()).getNumberOfTasks());
-        this.setIntervalTime(((GetSysInfoSts) systemInfo.getStatus()).getIntervalTime());
-        this.setCpuFrequency(((GetSysInfoSts) systemInfo.getStatus()).getCpuFrequency());
-        this.setMcuName(((GetSysInfoSts) systemInfo.getStatus()).getMcuName());
-        this.setConsoleName(((GetSysInfoSts) systemInfo.getStatus()).getConsoleName());
 
-        if (this.getCommandSet().containsKey(CommandId.GET_TASK_INFO)) {
-            //add the Cpu Frequency to the command
-            ((GetTaskInfoSts) this.getCommand(CommandId.GET_TASK_INFO).getStatus()).getTask().setMainClkFrequency(this.getCpuFrequency());
-        }
-
-    }
-
+    /**
+     * Updates the data that you need to know for displaying data.
+     * @param sts Results of the command for any listeners
+     */
     public void updateCurrentData(WriteReadDataSts sts)
     {
         TreeMap<BitFieldId, BitfieldDataConverter> cmdResults;
@@ -381,6 +320,7 @@ public class SystemDevice extends Device implements Serializable{
 
         for (Map.Entry<BitFieldId, BitfieldDataConverter> entry : cmdResults.entrySet()) {
                 entry.getValue().setTimeRecieved(System.currentTimeMillis());
+            //todo add a set Value is dirty here, so we can get all of the values that have changed easier.
                 this.mCurrentSystemData.put(entry.getKey(), entry.getValue());
         }
     }
@@ -390,53 +330,6 @@ public class SystemDevice extends Device implements Serializable{
         //returns the system info based on what we currently have
         return this.mSysInfoReply;
     }
-
-
-    private Device getInitialDevice(DeviceId devId) throws Exception
-    {
-        Device dev = new Device(devId);//
-        Set<DeviceId> subDeviceList;
-        Set<CommandId> tempCmds;
-        //get subDevices
-        subDeviceList = getSupportedSubDevices(devId);
-
-        for (DeviceId subDevId : subDeviceList) {
-            dev.addSubDevice(getInitialDevice(subDevId));
-        }
-
-        //add commands
-        tempCmds = getSupportedCommands(dev.getInfo().getDevId());
-
-        if (tempCmds.size() != 1 && !tempCmds.contains(CommandId.NONE)) {
-            for (CommandId id : tempCmds) {
-                dev.addCommand(id.getCommand(dev.getInfo().getDevId()));
-            }
-        }
-
-        //add info
-        dev.setDeviceInfo(getDevicesInfo(dev.getInfo().getDevId()));
-        return dev;
-
-    }
-
-private DeviceInfo getDevicesInfo(DeviceId devId) throws Exception {
-        Command cmd = new InfoCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(cmd.getCmdMsg()));
-        return ((InfoSts) cmd.getStatus()).getInfo();
-        }
-
-private Set<CommandId> getSupportedCommands(DeviceId devId) throws Exception {
-        Command cmd = new GetCmdsCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(cmd.getCmdMsg()));
-        return ((GetCmdsSts) cmd.getStatus()).getSupportedCommands();
-        }
-
-private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception {
-        Command cmd = new GetSubDevicesCmd(devId);
-        cmd.getStatus().handleStsMsg(this.mComCntrl.sendAndReceiveCmd(cmd.getCmdMsg()));
-        return ((GetSubDevicesSts) cmd.getStatus()).getSubDevices();
-        }
-
 
     @Override
     public String toString() {
@@ -455,7 +348,11 @@ private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception {
         return resultStr;
     }
 
-
+    /**
+     * Writes the object to be sent over a Serial Stream.
+     * @param stream Stream to be loaded. data size between 1K and 2K
+     * @throws IOException
+     */
     public void writeObject(ObjectOutputStream stream) throws IOException
     {
         //write the data we are concerned about
@@ -497,6 +394,13 @@ private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception {
         }
     }
 
+    /**
+     * To allow easy passing of data objects from one System to another we have this system that will
+     * serialize the object for the other side estimate on object size is between 1K Bytes and 2K Bytes
+     * @param stream the stream we want to load with the data
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException
     {
         this.mConfig = (SystemConfiguration)stream.readObject();
@@ -525,4 +429,107 @@ private Set<DeviceId> getSupportedSubDevices(DeviceId devId) throws Exception {
             this.mCurrentSystemData.put(key, value);
         }
     }
+
+
+
+    /**
+     * initializes the System device in a variety of ways to clean up the system.
+     * @param comm the communication interface for initializing the system.
+     */
+    public static SystemDevice initializeSystemDevice(CommInterface comm) throws Exception
+    {
+        GetSysInfoCmd sysInfoCmd;
+        SystemDevice resultDevice;
+        Device tempDevice;
+
+
+        //first start out by finding out the configuration
+        sysInfoCmd = new GetSysInfoCmd(DeviceId.MAIN);
+
+        sysInfoCmd.getStatus().handleStsMsg(comm.sendAndReceiveCmd(sysInfoCmd.getCmdMsg()));
+
+        if(sysInfoCmd.getStatus().getStsId() != StatusId.DONE || sysInfoCmd.getDevId() == DeviceId.NONE)
+        {
+            return null;//no device available
+        }
+
+        resultDevice = new SystemDevice((GetSysInfoSts)sysInfoCmd.getStatus());
+
+        if(resultDevice.getConfig() == SystemConfiguration.MASTER || resultDevice.getConfig() == SystemConfiguration.SLAVE )//direct master connection
+        {
+            tempDevice = getInitialDevice(comm, DeviceId.MAIN);
+            resultDevice.addCommands(tempDevice.getCommandSet().values());
+            resultDevice.addAllSubDevice(tempDevice.getSubDeviceList());
+            resultDevice.setDeviceInfo(tempDevice.getInfo());
+
+            if (resultDevice.getCommandSet().containsKey(CommandId.GET_TASK_INFO)) {
+                //add the Cpu Frequency to the command so it will reflect actual time for the tasks
+                ((GetTaskInfoSts) resultDevice.getCommand(CommandId.GET_TASK_INFO).getStatus()).getTask().setMainClkFrequency(resultDevice.mCpuFrequency);
+            }
+        }
+        else if(resultDevice.getConfig() == SystemConfiguration.PORTAL_TO_MASTER || resultDevice.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE)
+        {
+            //communication is different update through the latest Command data
+            //create a Portal Listen command
+            //fetch the System Device object
+            Command portalDeviceCmd = new PortalDeviceCmd(DeviceId.PORTAL);
+            portalDeviceCmd.getStatus().handleStsMsg(comm.sendAndReceiveCmd(portalDeviceCmd.getCmdMsg()));
+            SystemDevice newSysData = ((PortalDeviceSts)portalDeviceCmd.getStatus()).getmSysDev();
+
+            resultDevice.setDeviceInfo(newSysData.getInfo());
+            resultDevice.mCurrentSystemData = newSysData.mCurrentSystemData;
+
+        }
+
+        return resultDevice;
+    }
+
+
+    private static Device getInitialDevice(CommInterface comm, DeviceId devId) throws Exception
+    {
+        Device dev = new Device(devId);//
+        Set<DeviceId> subDeviceList;
+        Set<CommandId> tempCmds;
+        //get subDevices
+        subDeviceList = getSupportedSubDevices(comm, devId);
+
+        for (DeviceId subDevId : subDeviceList) {
+            dev.addSubDevice(getInitialDevice(comm, subDevId));
+        }
+
+        //add commands
+        tempCmds = getSupportedCommands(comm, dev.getInfo().getDevId());
+
+        if (tempCmds.size() != 1 && !tempCmds.contains(CommandId.NONE)) {
+            for (CommandId id : tempCmds) {
+                dev.addCommand(id.getCommand(dev.getInfo().getDevId()));
+            }
+        }
+
+        //add info
+        dev.setDeviceInfo(getDevicesInfo(comm, dev.getInfo().getDevId()));
+        return dev;
+
+    }
+
+    private static DeviceInfo getDevicesInfo(CommInterface comm, DeviceId devId) throws Exception {
+        Command cmd = new InfoCmd(devId);
+        cmd.getStatus().handleStsMsg(comm.sendAndReceiveCmd(cmd.getCmdMsg()));
+        return ((InfoSts) cmd.getStatus()).getInfo();
+        }
+
+    private static Set<CommandId> getSupportedCommands(CommInterface comm, DeviceId devId) throws Exception {
+        Command cmd = new GetCmdsCmd(devId);
+        cmd.getStatus().handleStsMsg(comm.sendAndReceiveCmd(cmd.getCmdMsg()));
+        return ((GetCmdsSts) cmd.getStatus()).getSupportedCommands();
+        }
+
+    private static Set<DeviceId> getSupportedSubDevices(CommInterface comm, DeviceId devId) throws Exception {
+        Command cmd = new GetSubDevicesCmd(devId);
+        cmd.getStatus().handleStsMsg(comm.sendAndReceiveCmd(cmd.getCmdMsg()));
+        return ((GetSubDevicesSts) cmd.getStatus()).getSubDevices();
+        }
+
+
+
 }

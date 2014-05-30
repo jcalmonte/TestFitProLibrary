@@ -9,6 +9,7 @@
 
 package com.ifit.sparky.fecp.communication;
 
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
@@ -16,6 +17,7 @@ import java.util.List;
 
 public interface CommInterface {
 
+    //todo check if this may be combined with SystemStatusCallback
     public interface DeviceConnectionListener{
         void onDeviceConnected();
         void onDeviceDisconnected();
@@ -32,7 +34,7 @@ public interface CommInterface {
     /**
      * Initializes the connection to the communication items.
      */
-    void initializeCommConnection();
+    SystemDevice initializeCommConnection();
 
     /**
      * Handles multiple listeners so we can notify both ifit and the fecp controller.

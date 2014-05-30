@@ -25,6 +25,7 @@ import android.hardware.usb.UsbRequest;
 import android.os.Handler;
 import android.util.Log;
 
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
@@ -125,7 +126,6 @@ public class UsbComm extends Activity implements CommInterface {
         }
         mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
 
-        //thread_LocalRun.start();
         try{
             reestablishConnection();
         }catch (Exception e){
@@ -198,9 +198,23 @@ public class UsbComm extends Activity implements CommInterface {
      * Initializes the connection to the communication items.
      */
     @Override
-    public void initializeCommConnection() {
+    public SystemDevice initializeCommConnection() {
         onCreateUSB();
         onResumeUSB(mIntent);
+        //check if there is a device attached
+        if(connectionState != ConnectionState.CONNECTED)
+        {
+            return null;
+        }
+
+        try {
+
+            return SystemDevice.initializeSystemDevice(this);//get the System Device
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -269,7 +283,8 @@ public class UsbComm extends Activity implements CommInterface {
      */
     @Override
     public void scanForSystems(ScanSystemListener listener) {
-
+        listener.onScanFinish(new ArrayList<ConnectionDevice>());//empty with usb, one 1 device connected
+        // at a time.
     }
 
     /**

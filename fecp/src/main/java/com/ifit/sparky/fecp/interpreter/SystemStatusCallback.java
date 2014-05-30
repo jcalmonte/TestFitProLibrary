@@ -18,7 +18,7 @@ public interface SystemStatusCallback {
 
     /**
      * This is called after system is connected
-     * @param dev the System device that is connected.
+     * @param dev the System device that is connected. null if attempt failed
      */
     void systemDeviceConnected(SystemDevice dev);
 

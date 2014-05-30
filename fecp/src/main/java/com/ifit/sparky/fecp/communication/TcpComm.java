@@ -9,6 +9,7 @@ package com.ifit.sparky.fecp.communication;
 
 import android.util.Log;
 
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
@@ -22,8 +23,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -38,17 +37,21 @@ public class TcpComm implements CommInterface {
     private final int BUFF_SIZE = 64;
     private DataOutputStream mToMachine;
     private InputStream mFromMachine;
-    private String mIpAddress;
+    private InetSocketAddress mIpAddress;
     private int mPort;
     private int mSendTimeout;
     private ScanSystemListener mScanListener;//returns with list of devices or none
 
     private CopyOnWriteArrayList<DeviceConnectionListener> mConnectionListeners;
 
-    public TcpComm(String ipAddress, int port, int defaultTimeout)
+    public TcpComm()
+    {
+        //don't need anything this is specifically for the Scanning
+    }
+
+    public TcpComm(InetSocketAddress ipAddress, int defaultTimeout)
     {
         this.mIpAddress = ipAddress;
-        this.mPort = port;
         this.mSendTimeout = defaultTimeout;
         if(this.mConnectionListeners == null)
         {
@@ -60,11 +63,11 @@ public class TcpComm implements CommInterface {
      * Initializes the connection to the communication items.
      */
     @Override
-    public void initializeCommConnection() {
+    public SystemDevice initializeCommConnection() {
         //makes a connection across port
         try {
             this.mSocket = new Socket();
-            this.mSocket.connect(new InetSocketAddress(this.mIpAddress, this.mPort), this.mSendTimeout);
+            this.mSocket.connect(this.mIpAddress, this.mSendTimeout);
 //            this.mSocket = new Socket(this.mIpAddress, this.mPort);
             this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority
             //then connection speed, then bandwidth is lowest.
@@ -72,18 +75,19 @@ public class TcpComm implements CommInterface {
             this.mFromMachine = this.mSocket.getInputStream();
 
             if(this.mSocket.isConnected())
+            {
+                // check for the system device
+                return SystemDevice.initializeSystemDevice(this);//get the System Device
+            }
+            //todo remove this listener
             for (DeviceConnectionListener listener : this.mConnectionListeners) {
                 listener.onDeviceConnected();
             }
-        }
-        catch (SocketException ex)
-        {
-            ex.printStackTrace();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     /**

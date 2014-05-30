@@ -7,8 +7,6 @@
  */
 package com.ifit.sparky.fecp;
 
-import android.util.Log;
-
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.TcpServer;
@@ -22,7 +20,7 @@ import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
 
-public class FecpController implements ErrorReporting, CommInterface.DeviceConnectionListener {
+public class FecpController implements ErrorReporting {
     //Fecp System Version number
     private final int VERSION = 1;
     private CommType mCommType;
@@ -58,9 +56,7 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
      * @throws Exception
      */
     public void initializeConnection() throws Exception{
-
-        this.mCommController.addConnectionListener(this);
-        this.mCommController.initializeCommConnection();
+        this.initializeConnection(null);
     }
 
     /**
@@ -70,13 +66,35 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
      */
     public void initializeConnection(CommInterface.DeviceConnectionListener listener) throws Exception {
 
-        this.mCommController.addConnectionListener(this);
-
         if(listener != null) {
-
             this.mCommController.addConnectionListener(listener);
         }
-        this.mCommController.initializeCommConnection();
+        //start a thread to initialize the connection
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mSysDev = mCommController.initializeCommConnection();//start initializing communications
+                statusCallback.systemDeviceConnected(mSysDev);//May be Null
+
+                if(mSysDev == null ||mSysDev.getInfo().getDevId() == DeviceId.NONE)
+                {
+                    mIsConnected = false;
+                    return;
+                }
+
+                mIsConnected = true;
+                mCmdHandleInterface = new FecpCmdHandler(mCommController, mSysDev);
+
+                if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER ) {
+                    //on port 8090.
+                    mTcpServer = new TcpServer(mCmdHandleInterface, mSysDev);//currently accepting connections
+                    mTcpServer.startServer();//start the server
+                }
+
+                mCommController.setupErrorReporting(mSysErrorControl);
+                mCommController.setCommActive(false);
+            }
+        }).start();
     }
 
     /**
@@ -114,28 +132,6 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
      */
     public boolean getIsConnected() {
         return this.mIsConnected;
-    }
-
-    private void getSystem() throws Exception
-    {
-        if(this.mCommType == CommType.TESTING_COMM) {
-
-        }
-        else
-        {
-            this.mSysDev = new SystemDevice(this.mCommController);
-        }
-
-        if(this.mSysDev.getInfo().getDevId() == DeviceId.NONE)
-        {
-            return;
-        }
-        this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController, this.mSysDev);
-
-        this.mTcpServer = new TcpServer(this.mCmdHandleInterface, this.mSysDev);//currently accepting connections
-        //on port 8080.
-
-        this.mCommController.setupErrorReporting(this.mSysErrorControl);
     }
 
     /**
@@ -227,37 +223,5 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
 
     public void clearConnectionListener() {
         mCommController.clearConnectionListener();
-    }
-
-    @Override
-    public void onDeviceConnected() {
-        //search for the device
-        try {
-            if(this.mSysDev.getInfo().getDevId() == DeviceId.MAIN) {
-                this.getSystem();
-                this.mCommController.setCommActive(false);
-            }
-
-            if(this.mSysDev.getInfo().getDevId() != DeviceId.NONE)
-            {
-                this.statusCallback.systemDeviceConnected(this.mSysDev);
-                if(this.mSysDev.getConfig() == SystemConfiguration.MASTER || this.mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER )
-                {
-                    this.mTcpServer.startServer();//start the server
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            if(ex.getMessage() != null) {
-                Log.e("Get System Failed", ex.getMessage());
-            }
-            ex.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onDeviceDisconnected() {
-        //nothing to do
     }
 }
