@@ -7,6 +7,8 @@
  */
 package com.ifit.sparky.fecp;
 
+import android.os.Looper;
+
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.TcpServer;
@@ -73,15 +75,16 @@ public class FecpController implements ErrorReporting {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                Looper.prepare();
                 mSysDev = mCommController.initializeCommConnection();//start initializing communications
-                statusCallback.systemDeviceConnected(mSysDev);//May be Null
 
                 if(mSysDev == null ||mSysDev.getInfo().getDevId() == DeviceId.NONE)
                 {
                     mIsConnected = false;
+                    statusCallback.systemDeviceConnected(mSysDev);//May be Null
+                    Looper.myLooper().quit();
                     return;
                 }
-
                 mIsConnected = true;
                 mCmdHandleInterface = new FecpCmdHandler(mCommController, mSysDev);
 
@@ -93,6 +96,9 @@ public class FecpController implements ErrorReporting {
 
                 mCommController.setupErrorReporting(mSysErrorControl);
                 mCommController.setCommActive(false);
+                statusCallback.systemDeviceConnected(mSysDev);
+
+                Looper.myLooper().quit();
             }
         }).start();
     }

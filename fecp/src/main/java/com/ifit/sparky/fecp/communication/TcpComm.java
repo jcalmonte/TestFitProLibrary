@@ -272,6 +272,13 @@ public class TcpComm implements CommInterface {
             public void run() {
                 //gets all the ip address available in this network.
                 InetAddress currentIpAddress = getCurrentIpAddress();
+//                InetAddress currentIpAddress = null;
+//                try {
+//                    currentIpAddress = InetAddress.getLocalHost();
+//                } catch (UnknownHostException e) {
+//                    Log.e("Unknown Host", e.getMessage());
+//                    e.printStackTrace();
+//                }
                 if(currentIpAddress == null)
                 {
                     mScanListener.onScanFinish(new ArrayList<ConnectionDevice>());//return an empty array list
@@ -284,10 +291,10 @@ public class TcpComm implements CommInterface {
                 {
                     return;
                 }
-                String maskedIpStr = rawIpAddress[0] +"." + rawIpAddress[1] +"." + rawIpAddress[2] +".";
+                String maskedIpStr = ((int)rawIpAddress[0] & 0xff) +"." + ((int)rawIpAddress[1] & 0xff) +"." + ((int)rawIpAddress[2] & 0xff) +".";
                 //generate a list ip address besides this ip address to check is valid ip address
 
-                int excludeNum = rawIpAddress[3];
+                int excludeNum = ((int)rawIpAddress[3] & 0xff);
 
                 ArrayList<IpScanner> ipScanners = new ArrayList<IpScanner>();
                 ArrayList<Thread> scanThreads = new ArrayList<Thread>();
@@ -299,11 +306,15 @@ public class TcpComm implements CommInterface {
 
                     if(i != excludeNum) {
 
-                        IpScanner scanner = new IpScanner(new InetSocketAddress(maskedIpStr + i, 8090));
-                        ipScanners.add(scanner);
-                        Thread runThread = new Thread(scanner);
-                        runThread.start();
-                        scanThreads.add(runThread);
+                        try {
+                            IpScanner scanner = new IpScanner(new InetSocketAddress(maskedIpStr + i, 8090));
+                            ipScanners.add(scanner);
+                            Thread runThread = new Thread(scanner);
+                            runThread.start();
+                            scanThreads.add(runThread);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
                     }
                 }
@@ -344,7 +355,7 @@ public class TcpComm implements CommInterface {
             for (NetworkInterface intf : interfaces) {
                 List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
                 for (InetAddress addr : addrs) {
-                    if (!addr.isLoopbackAddress()) {
+                    if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress()) {
                         return addr;
                     }
                 }
