@@ -7,6 +7,8 @@
  */
 package com.ifit.sparky.fecp.communication;
 
+import android.util.Log;
+
 import com.ifit.sparky.fecp.FecpCmdHandleInterface;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.OnCommandReceivedListener;
@@ -152,6 +154,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
+                    long startTime = System.currentTimeMillis();
                     byte[] data = new byte[64];
                     this.inFromClient.read(data, 0, 3);//read the first 3 bytes
                     try {
@@ -210,6 +213,9 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                             //send to FecpCmdHandler
                             mCmdHandler.addFecpCommand(this.mRawFecpCmd);
                         }
+
+                        long endTime = System.currentTimeMillis();
+                        Log.d("SERVER_SEND_TIME","Server Send Time:" + (startTime - endTime));
                         //clear everything from in buffer
                     } catch (Exception e) {
                         e.printStackTrace();

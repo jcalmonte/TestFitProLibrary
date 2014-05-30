@@ -18,6 +18,7 @@ public class FitProTcp extends FecpController {
 
     private InetSocketAddress mIpAddress;
     public final int DEFAULT_PORT = 8090;
+    public final int DEFAULT_TIME_OUT = 5000;
 
     /**
      * This sets up the FitPro for the wifi connection over TCP
@@ -29,7 +30,7 @@ public class FitProTcp extends FecpController {
     public FitProTcp(String ipAddress, int port, SystemStatusCallback callback) throws Exception {
         super(CommType.TCP, callback);
         this.mIpAddress = new InetSocketAddress(ipAddress, port);
-        this.mCommController = new TcpComm(this.mIpAddress, 100);
+        this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
     }
 
     /**
@@ -41,7 +42,7 @@ public class FitProTcp extends FecpController {
     public FitProTcp(String ipAddress, SystemStatusCallback callback) throws Exception {
         super(CommType.TCP, callback);
         this.mIpAddress = new InetSocketAddress(ipAddress, DEFAULT_PORT);
-        this.mCommController = new TcpComm(this.mIpAddress, 100);
+        this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
     }
 
     /**
@@ -53,7 +54,7 @@ public class FitProTcp extends FecpController {
     public FitProTcp(InetSocketAddress ipAddress, SystemStatusCallback callback) throws Exception {
         super(CommType.TCP, callback);
         this.mIpAddress = ipAddress;
-        this.mCommController = new TcpComm(this.mIpAddress, 100);
+        this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
     }
 
     /**

@@ -82,7 +82,6 @@ public class FecpController implements ErrorReporting {
                 {
                     mIsConnected = false;
                     statusCallback.systemDeviceConnected(mSysDev);//May be Null
-                    Looper.myLooper().quit();
                     return;
                 }
                 mIsConnected = true;
@@ -216,6 +215,15 @@ public class FecpController implements ErrorReporting {
     {
         this.mCmdHandleInterface.addInterceptor(interceptor);
         //this will get the data from fecp controller that the interceptor needs
+    }
+
+    public String getCommunicationStats()
+    {
+        if(this.mCmdHandleInterface != null)
+        {
+            return this.mCmdHandleInterface.getCmdHandlingStats();
+        }
+        return "";
     }
 
     /**

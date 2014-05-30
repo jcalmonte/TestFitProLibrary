@@ -259,11 +259,11 @@ public class FecpCommand extends Thread{
 
     /**
      * Approximate time in nano seconds for how long it took to send and receive the command
-     * @param nanoSecondTime the time in nano seconds
+     * @param millisecondTime the time in nano seconds
      */
-    public void setCommSendReceiveTime(long nanoSecondTime)
+    public void setCommSendReceiveTime(long millisecondTime)
     {
-        this.mCommSendReceiveTime = nanoSecondTime;
+        this.mCommSendReceiveTime = millisecondTime;
     }
 
     public void setSendHandler(FecpCmdHandleInterface sendHandler)

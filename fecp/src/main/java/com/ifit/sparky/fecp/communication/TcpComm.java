@@ -300,7 +300,7 @@ public class TcpComm implements CommInterface {
                 ArrayList<Thread> scanThreads = new ArrayList<Thread>();
 
                 //UNLEASE THE HOUNDS
-                for(int i = 0; i < Byte.MAX_VALUE; i++)
+                for(int i = 2; i < Byte.MAX_VALUE; i++)//0 and 1 are always gateways
                 {
                     //create ip address string
 
@@ -386,7 +386,7 @@ public class TcpComm implements CommInterface {
             try {
 
                 //todo try with no ip checking
-                if(this.mDev.mIpAddress.getAddress().isReachable(1000))
+                if(this.mDev.mIpAddress.getAddress().isReachable(2000))
                 {
                     //try to see if port is available
                     Socket testSocket = new Socket();
@@ -394,7 +394,7 @@ public class TcpComm implements CommInterface {
                     InputStream readStream;
                     try {
 
-                        testSocket.connect(this.mDev.mIpAddress, 3000);//start off with a 3 second timeout
+                        testSocket.connect(this.mDev.mIpAddress, 5000);//start off with a 5 second timeout
 
                         //send message to get the System Info
                         try {

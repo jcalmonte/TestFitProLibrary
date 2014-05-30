@@ -74,4 +74,11 @@ public interface FecpCmdHandleInterface {
      */
     void addInterceptor(CmdInterceptor interceptor);
 
+    /**
+     * This is to return the status on the commands
+     * average, total time sent, total time
+     * @return String of all the details
+     */
+    String getCmdHandlingStats();
+
 }

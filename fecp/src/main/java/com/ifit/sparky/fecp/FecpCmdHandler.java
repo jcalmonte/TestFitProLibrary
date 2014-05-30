@@ -33,6 +33,11 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     private int idAssigner;
     private CmdInterceptor mInterceptor;
     private SystemDevice mSysDev;
+    private long mSucessfulSendReceiveTime;
+    private long mFailedSendReceiveTime;
+    private int mSuccessfulCmds;
+    private int mFailedCmds;
+    private int mAverageCmdPeriodic;
 
     public FecpCmdHandler(CommInterface commController, SystemDevice sysDev)
     {
@@ -41,6 +46,11 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         this.mProcessCmds =new Vector<FecpCommand>();
         this.mPeriodicCmds = new Vector<FecpCommand>();
         this.mSysDev = sysDev;
+        this.mSucessfulSendReceiveTime = 0;
+        this.mFailedSendReceiveTime = 0;
+        this.mSuccessfulCmds = 0;
+        this.mFailedCmds = 0;
+        this.mAverageCmdPeriodic = 0;
     }
 
     /**
@@ -181,24 +191,30 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         //send the command and handle the response.
         if(cmd.getTimeout() == 0)
         {
-            startTime = System.nanoTime();
+            startTime = System.currentTimeMillis();
             tempBuffer = this.mCommController.sendAndReceiveCmd(tempBuffer);
-            endTime = System.nanoTime();
+            endTime = System.currentTimeMillis();
         }
         else
         {
-            startTime = System.nanoTime();
+            startTime = System.currentTimeMillis();
             tempBuffer = this.mCommController.sendAndReceiveCmd(tempBuffer, cmd.getTimeout());
-            endTime = System.nanoTime();
+            endTime = System.currentTimeMillis();
         }
-        cmd.setCommSendReceiveTime(endTime - startTime);
+        long resultTime = endTime - startTime;
+        cmd.setCommSendReceiveTime(resultTime);
+        this.mAverageCmdPeriodic += cmd.getFrequency();
         //check if there was an error with the send. if so return Failed
         if(tempBuffer == null || tempBuffer.get(0)== 0)
         {
             //message failed
+            this.mFailedSendReceiveTime += resultTime;
             cmd.getCommand().getStatus().setStsId(StatusId.FAILED);
+            this.mFailedCmds++;
             return;
         }
+        this.mSucessfulSendReceiveTime += resultTime;
+        this.mSuccessfulCmds++;
         cmd.getCommand().getStatus().handleStsMsg(tempBuffer);
         cmd.incrementCmdReceivedCounter();
     }
@@ -206,6 +222,28 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     @Override
     public void addInterceptor(CmdInterceptor interceptor) {
         this.mInterceptor = interceptor;
+    }
+
+    /**
+     * This is to return the status on the commands
+     * average, total time sent, total time
+     *
+     * @return String of all the details
+     */
+    @Override
+    public String getCmdHandlingStats() {
+        String details;
+        details = "Successful Cmds: " + this.mSuccessfulCmds + "\n" +
+                "Failed Cmds: " + this.mFailedCmds + "\n" +
+                "Successful Cmd Time: " + this.mSucessfulSendReceiveTime + " mSec\n" +
+                "Success Rate: " + (this.mSuccessfulCmds + 0.0) / ((this.mSuccessfulCmds + this.mFailedCmds + 0.0)) + "\n" +
+                "Failed Cmd Time: " + this.mFailedSendReceiveTime + " mSec\n" +
+                "total msg Time: " + (this.mSucessfulSendReceiveTime  + this.mFailedSendReceiveTime)+ " mSec\n" +
+                "Average Cmd Time: " +
+                ((this.mSucessfulSendReceiveTime + this.mFailedSendReceiveTime)/(this.mFailedCmds + this.mSuccessfulCmds)) +" mSec\n" +
+                "Average Periodic Send Time: " + this.mAverageCmdPeriodic /(this.mFailedCmds + this.mSuccessfulCmds) + " mSec";
+
+        return details;
     }
 
     /**
