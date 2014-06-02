@@ -175,4 +175,10 @@ public class ConnectionDevice {
     public void setCommType(CommType commType) {
         this.mCommType = commType;
     }
+
+    @Override
+    public String toString() {
+        return  mDevId.name() +
+                ": " + mConsoleName;
+    }
 }

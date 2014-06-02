@@ -16,6 +16,7 @@ import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +36,7 @@ public class TcpComm implements CommInterface {
 
     private Socket mSocket;
     private final int BUFF_SIZE = 64;
-    private DataOutputStream mToMachine;
+    private BufferedOutputStream mToMachine;
     private InputStream mFromMachine;
     private InetSocketAddress mIpAddress;
     private int mPort;
@@ -71,7 +72,7 @@ public class TcpComm implements CommInterface {
 //            this.mSocket = new Socket(this.mIpAddress, this.mPort);
             this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority
             //then connection speed, then bandwidth is lowest.
-            this.mToMachine = new DataOutputStream(this.mSocket.getOutputStream());
+            this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
             this.mFromMachine = this.mSocket.getInputStream();
 
             if(this.mSocket.isConnected())
@@ -174,9 +175,9 @@ public class TcpComm implements CommInterface {
                 {
                     //Portal Listen command prep for receiving System Object
                     //read the next 4 bytes
-                    bytesRead = this.mFromMachine.read(data, 1, 4);//read the device
+                    bytesRead = this.mFromMachine.read(data, 1, 4);//read the Length of the message
                     ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
-                    tempSizeBuff.order(ByteOrder.BIG_ENDIAN);
+                    tempSizeBuff.order(ByteOrder.LITTLE_ENDIAN);
                     tempSizeBuff.put(data,1,4);
                     tempSizeBuff.position(0);
                     int dataSize = tempSizeBuff.getInt();
@@ -215,10 +216,7 @@ public class TcpComm implements CommInterface {
 
                     }
 
-
                     return resultBuffer;
-
-
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

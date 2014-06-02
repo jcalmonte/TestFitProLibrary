@@ -19,14 +19,15 @@ import com.ifit.sparky.fecp.interpreter.command.RawDataCmd;
 import com.ifit.sparky.fecp.interpreter.status.RawDataSts;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class TcpServer implements CommInterface.DeviceConnectionListener {
 
@@ -139,13 +140,15 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 
         private Socket clientSocket;
         private BufferedInputStream inFromClient;
-        private DataOutputStream mToClient;
+        private BufferedOutputStream mToClient;
+        //private DataOutputStream mToClient;
+
         private FecpCommand mRawFecpCmd;
         public CommunicationThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
             try {
                 this.inFromClient = new BufferedInputStream(this.clientSocket.getInputStream());
-                this.mToClient = new DataOutputStream(this.clientSocket.getOutputStream());
+                this.mToClient = new BufferedOutputStream(this.clientSocket.getOutputStream());
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -155,6 +158,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     long startTime = System.currentTimeMillis();
+                    long medTime = 0;
                     byte[] data = new byte[64];
                     this.inFromClient.read(data, 0, 3);//read the first 3 bytes
                     try {
@@ -187,22 +191,30 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                         }
                         else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Device Command
                         {
+                            medTime = System.currentTimeMillis();
                             //reply with specific command
                             int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
                             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                             ObjectOutput objectOutput = null;
                             objectOutput = new ObjectOutputStream(byteArrayOutputStream);
+
                             mSysDev.writeObject((ObjectOutputStream) objectOutput);
                             byte[] dataObjectArray = byteArrayOutputStream.toByteArray();
 
                             this.mToClient.write(0x03);//size of the object may vary greatly
-                            this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
+                            ByteBuffer b = ByteBuffer.allocate(5);
+                            b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
+                            b.put((byte)0x03);
+                            b.putInt(dataObjectArray.length);
+
+                            //this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
+                            this.mToClient.write(b.array());
                             this.mToClient.write(dataObjectArray);//write object to client
                         }
                         else {
 
                             int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
-                            if(readCount != 61 || (data[0] == 0 && data[1] == 0))
+                            if(readCount == -1 || (data[0] == 0 && data[1] == 0))
                             {
                                 return;
                             }
@@ -215,7 +227,11 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                         }
 
                         long endTime = System.currentTimeMillis();
-                        Log.d("SERVER_SEND_TIME","Server Send Time:" + (startTime - endTime));
+                        if(medTime == 0)
+                        {
+                            medTime = endTime;
+                        }
+                        Log.d("SERVER_SEND_TIME","Server Full:" + (endTime -startTime ) + "mSec Part:" + (endTime - medTime));
                         //clear everything from in buffer
                     } catch (Exception e) {
                         e.printStackTrace();

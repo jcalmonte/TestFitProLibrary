@@ -194,7 +194,8 @@ public class Status implements StatusInterface, Serializable{
         if(checkSum == 0 && actualByte == 0)
         {
             //msg failed
-            throw new InvalidStatusException(this, checkSum, actualByte);
+            this.setStsId(StatusId.FAILED);
+            return;
         }
         //todo check if message was sent to main.
         if(this.getDevId() == DeviceId.MAIN)
