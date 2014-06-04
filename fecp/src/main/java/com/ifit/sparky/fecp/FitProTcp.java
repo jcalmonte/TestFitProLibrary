@@ -10,6 +10,7 @@ package com.ifit.sparky.fecp;
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.TcpComm;
+import com.ifit.sparky.fecp.communication.TcpConnectionDevice;
 import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 
 import java.net.InetSocketAddress;
@@ -55,6 +56,18 @@ public class FitProTcp extends FecpController {
         super(CommType.TCP, callback);
         this.mIpAddress = ipAddress;
         this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
+    }
+
+    /**
+     * This sets up the FitPro for the wifi connection over TCP
+     * @param connectionDev the Socket and the Device to connect to
+     * @param callback the connection status callback
+     * @throws Exception
+     */
+    public FitProTcp(TcpConnectionDevice connectionDev, SystemStatusCallback callback) throws Exception {
+        super(CommType.TCP, callback);
+        this.mIpAddress = connectionDev.getIpAddress();
+        this.mCommController = new TcpComm(connectionDev, DEFAULT_TIME_OUT);
     }
 
     /**

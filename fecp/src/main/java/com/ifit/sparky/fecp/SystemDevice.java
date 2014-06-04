@@ -450,6 +450,7 @@ public class SystemDevice extends Device implements Serializable{
 
         if(sysInfoCmd.getStatus().getStsId() != StatusId.DONE || sysInfoCmd.getDevId() == DeviceId.NONE)
         {
+            //disconnect the comm port
             return null;//no device available
         }
 

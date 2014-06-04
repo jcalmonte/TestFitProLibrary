@@ -17,7 +17,6 @@ import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -35,8 +34,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class TcpComm implements CommInterface {
 
     private Socket mSocket;
+    private TcpConnectionDevice mConnectionDevice;
     private final int BUFF_SIZE = 64;
     private BufferedOutputStream mToMachine;
+    //private ObjectOutputStream mToMachine;
     private InputStream mFromMachine;
     private InetSocketAddress mIpAddress;
     private int mPort;
@@ -60,6 +61,19 @@ public class TcpComm implements CommInterface {
         }
     }
 
+    public TcpComm(TcpConnectionDevice mDev, int defaultTimeout)
+    {
+        this.mIpAddress = mDev.getIpAddress();
+        this.mSocket = mDev.getSocket();
+        this.mConnectionDevice = mDev;
+
+        this.mSendTimeout = defaultTimeout;
+        if(this.mConnectionListeners == null)
+        {
+            this.mConnectionListeners = new CopyOnWriteArrayList<DeviceConnectionListener>();
+        }
+    }
+
     /**
      * Initializes the connection to the communication items.
      */
@@ -67,13 +81,23 @@ public class TcpComm implements CommInterface {
     public SystemDevice initializeCommConnection() {
         //makes a connection across port
         try {
-            this.mSocket = new Socket();
-            this.mSocket.connect(this.mIpAddress, this.mSendTimeout);
-//            this.mSocket = new Socket(this.mIpAddress, this.mPort);
-            this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority
+            if(this.mConnectionDevice == null) {
+                if (this.mSocket == null) {
+                    this.mSocket = new Socket();
+                    this.mSocket.setSendBufferSize(4096);
+                    this.mSocket.setReceiveBufferSize(4096);
+                    this.mSocket.connect(this.mIpAddress, 10000);
+                }
+                this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority
+                this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
+                this.mFromMachine = this.mSocket.getInputStream();
+            }
+            else
+            {
+               this.mSocket = this.mConnectionDevice.getSocket();
+            }
+            //this.mSocket = new Socket(this.mIpAddress, this.mPort);
             //then connection speed, then bandwidth is lowest.
-            this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
-            this.mFromMachine = this.mSocket.getInputStream();
 
             if(this.mSocket.isConnected())
             {
@@ -130,7 +154,93 @@ public class TcpComm implements CommInterface {
      */
     @Override
     public ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout) {
+        ByteBuffer resultBuffer = ByteBuffer.allocate(64);
+        resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                long startTime = System.currentTimeMillis();
+                long medTime = 0;
+                byte[] data = new byte[64];
 
+                String helloWorld = "HelloWorld Back to you";
+                buff.position(0);
+
+                //clear input before sending
+                while (this.mSocket.getInputStream().available() != 0)
+                {
+                    this.mSocket.getInputStream().read();
+                }
+
+                //this.mSocket.getOutputStream().write(buff.array());
+                this.mToMachine.write(buff.array());
+                this.mToMachine.flush();
+                //this.mSocket.getOutputStream().write(helloWorld.getBytes());
+
+                //assume it worked
+                this.mSocket.getInputStream().read(data, 0, 64);//at least 64
+                buff.position(0);
+                if(data[0] == (byte)0x03 && buff.get() == (byte)0x03 && data[2] != (byte)0x82)//custom handle for special objects.
+                {
+                    ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
+                    tempSizeBuff.order(ByteOrder.LITTLE_ENDIAN);
+                    tempSizeBuff.put(data,1,4);
+                    tempSizeBuff.position(0);
+                    int dataSize = tempSizeBuff.getInt();
+                    byte[] sysObjectData = new byte[(dataSize - 64)+5];//for the size and the dev id
+                    this.mSocket.getInputStream().read(sysObjectData, 0, sysObjectData.length);
+                    resultBuffer = ByteBuffer.allocate(dataSize);
+                    resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                    resultBuffer.put(data,5, data.length-5);
+                    resultBuffer.put(sysObjectData);
+                    if(resultBuffer.position()!= dataSize)
+                    {
+                        return null;
+                    }
+                }
+                else {
+                    resultBuffer.put(data);
+                }
+
+                String result = "raw Server data=\n";
+                int counter = 0;
+                int length = data[1];
+
+                for (byte b : data) {
+                    if(counter < length )
+                    {
+                        result += "[" + counter++ + "]=" + b + "\n";
+                    }
+                }
+                Log.d("IN_DATA", result);
+                resultBuffer.position(0);
+                return resultBuffer;
+                //log data that is received
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+     public ByteBuffer temp(ByteBuffer buff, int timeout) {
+        try {
+            if(this.mConnectionDevice == null) {
+                if (this.mSocket == null) {
+//                    this.mSocket = new Socket();
+                    this.mSocket = new Socket(this.mIpAddress.getAddress(), 8090);
+//                    this.mSocket.connect(this.mIpAddress, 10000);
+                }
+                this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority
+                this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
+                this.mFromMachine = this.mSocket.getInputStream();
+            }
+            else
+            {
+                this.mSocket = this.mConnectionDevice.getSocket();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         byte[] data;
         ByteBuffer resultBuffer;
         data = new byte[BUFF_SIZE];//shouldn't ever be longer
@@ -150,21 +260,26 @@ public class TcpComm implements CommInterface {
         }
         buff.position(0);
         try {
-            //this.mSocket.setSoTimeout(timeout);
+            this.mSocket.setSoTimeout(timeout);
 //            this.mFromMachine.reset();
             //copy Data to a 64 byte array
             buff.get(data,0, buff.capacity());//copy all of the elements available
 
             //send data
             try {
-
+//                this.mToMachine.write(data, 0, data.length);
                 this.mToMachine.write(data);
-                Arrays.fill(data, (byte) 0);
+                //this.mConnectionDevice.getSendStream().write(data, 0, data.length);
+                //this.mToMachine.write(data);
                 Thread.sleep(5);
+                Arrays.fill(data, (byte) 0);
 
                 //read from server
                 //read the first byte
-                bytesRead = this.mFromMachine.read(data, 0, 1);//read the device
+//                bytesRead = this.mConnectionDevice.getReadStream().read(data, 0, 1);
+//                bytesRead = this.mFromMachine.read(data, 0, 1);
+                bytesRead = this.mFromMachine.read(data);
+                //bytesRead = this.mFromMachine.read(data, 0, 1);//read the device
                 if(bytesRead == -1)
                 {
                     Log.d("BAD_TCP_READ", "invalid Read");
@@ -175,7 +290,9 @@ public class TcpComm implements CommInterface {
                 {
                     //Portal Listen command prep for receiving System Object
                     //read the next 4 bytes
+                    //bytesRead = this.mConnectionDevice.getReadStream().read(data, 1, 4);
                     bytesRead = this.mFromMachine.read(data, 1, 4);//read the Length of the message
+                    //bytesRead = this.mFromMachine.read(data, 1, 4);//read the Length of the message
                     ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
                     tempSizeBuff.order(ByteOrder.LITTLE_ENDIAN);
                     tempSizeBuff.put(data,1,4);
@@ -185,6 +302,8 @@ public class TcpComm implements CommInterface {
                     int timeoutCounter = 0;//try for ten times
                     bytesRead = 0;
                     while(bytesRead < dataSize && timeoutCounter < 10) {
+
+                        //int readCount = this.mConnectionDevice.getReadStream().read(sysObjectData, bytesRead, dataSize - bytesRead);
                         int readCount = this.mFromMachine.read(sysObjectData, bytesRead, dataSize-bytesRead);
                         if(readCount != -1)
                         {
@@ -372,6 +491,7 @@ public class TcpComm implements CommInterface {
         public IpScanner(InetSocketAddress ipAddress)
         {
             this.mDev = new TcpConnectionDevice(ipAddress);
+            this.mDev.setSocket(new Socket());
         }
         /**
          * Starts executing the active part of the class' code. This method is
@@ -384,26 +504,29 @@ public class TcpComm implements CommInterface {
             try {
 
                 //todo try with no ip checking
-                if(this.mDev.mIpAddress.getAddress().isReachable(2000))
+                if(this.mDev.mIpAddress.getAddress().isReachable(10000))
                 {
                     //try to see if port is available
-                    Socket testSocket = new Socket();
-                    DataOutputStream sendStream;
-                    InputStream readStream;
+
                     try {
 
-                        testSocket.connect(this.mDev.mIpAddress, 5000);//start off with a 5 second timeout
-
+                        this.mDev.getSocket().connect(this.mDev.mIpAddress, 10000);//start off with a 5 second timeout
                         //send message to get the System Info
                         try {
+
                             GetSysInfoCmd tempCmd = new GetSysInfoCmd(DeviceId.MAIN);
-                            tempCmd.getCmdMsg();
-                            sendStream = new DataOutputStream(testSocket.getOutputStream());
-                            readStream = testSocket.getInputStream();
+                            //this.mDev.setSendStream(new BufferedOutputStream(this.mDev.getSocket().getOutputStream()));
+
+                            //this.mDev.setReadStream(new BufferedInputStream(this.mDev.getSocket().getInputStream()));
+                            //new DataOutputStream(testSocket.getOutputStream());
+                            //readStream = testSocket.getInputStream();
+
 
                             byte[] data;
+                            byte[] readData;
                             ByteBuffer resultBuffer;
                             data = new byte[BUFF_SIZE];//shouldn't ever be longer
+                            readData = new byte[BUFF_SIZE];//shouldn't ever be longer
                             int bytesRead = 0;
                             resultBuffer = ByteBuffer.allocate(BUFF_SIZE);
 
@@ -411,17 +534,25 @@ public class TcpComm implements CommInterface {
                             buff.position(0);
                             //copy Data to a 64 byte array
                             buff.get(data,0, buff.capacity());//copy all of the elements available
-
-                            sendStream.write(data);
-                            Arrays.fill(data, (byte) 0);
-                            Thread.sleep(5);
-
-                            bytesRead = readStream.read(data, 0, data.length);//read the device
+                            this.mDev.getSocket().setSoTimeout(5000);
+                            this.mDev.getSocket().getOutputStream().write(data, 0, data.length);
+                            //sendStream.write(data, 0, data.length);
+                            int timeoutCount = 0;
+                            while (this.mDev.getSocket().getInputStream().available()==0 && timeoutCount < 10) {
+                                Thread.sleep(5);
+                                timeoutCount++;
+                            }
+                            if(timeoutCount == 10)
+                            {
+                                return;//nothing to connect to
+                            }
+                            bytesRead = this.mDev.getSocket().getInputStream().read(readData);
+                            //bytesRead = this.mDev.getReadStream().read(readData, 0, readData.length);//read the device
 
                             resultBuffer = ByteBuffer.allocate(data.length);
                             resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
                             resultBuffer.position(0);
-                            resultBuffer.put(data, 0, data.length);
+                            resultBuffer.put(readData, 0, readData.length);
 
                             if(bytesRead != -1) {
 
@@ -442,19 +573,21 @@ public class TcpComm implements CommInterface {
                         e.printStackTrace();
                     }finally {
                         try {
-                            testSocket.close();
+                            if(this.mDev.getSocket() != null && !this.isValidDevice)
+                            {
+//                                this.mDev.getSocket().setSoLinger(true, 0);
+                                this.mDev.getSocket().close();
+                            }
                         } catch (IOException closeEx) {
                             Log.e("failed to Close", closeEx.getMessage());
                             closeEx.printStackTrace();
                         }
                     }
                 }
-            } catch (IOException ex) {
+            } catch (Exception ex) {
 
                 ex.printStackTrace();
             }
-
-
         }
     }
 }

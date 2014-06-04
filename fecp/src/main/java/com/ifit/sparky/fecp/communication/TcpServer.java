@@ -18,7 +18,6 @@ import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.RawDataCmd;
 import com.ifit.sparky.fecp.interpreter.status.RawDataSts;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -122,7 +121,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     socket = mServerSock.accept();
-                    socket.setKeepAlive(false);
+                    socket.setKeepAlive(true);
                     CommunicationThread commThread = new CommunicationThread(socket);
                     new Thread(commThread).start();
 
@@ -139,106 +138,293 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 
 
         private Socket clientSocket;
-        private BufferedInputStream inFromClient;
-        private BufferedOutputStream mToClient;
+        //private InputStream inFromClient;
+//        private BufferedInputStream inFromClient;
         //private DataOutputStream mToClient;
+        private BufferedOutputStream mToClient;
 
         private FecpCommand mRawFecpCmd;
         public CommunicationThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
+
             try {
-                this.inFromClient = new BufferedInputStream(this.clientSocket.getInputStream());
+                this.clientSocket.setSendBufferSize(4096);
+                this.clientSocket.setReceiveBufferSize(4096);
+                //this.inFromClient = new BufferedInputStream(this.clientSocket.getInputStream());
                 this.mToClient = new BufferedOutputStream(this.clientSocket.getOutputStream());
+                this.clientSocket.setSoTimeout(5000);//timeout after 5 secs
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    long startTime = System.currentTimeMillis();
-                    long medTime = 0;
-                    byte[] data = new byte[64];
-                    this.inFromClient.read(data, 0, 3);//read the first 3 bytes
-                    try {
-                        //created the command
-                        //check what the command is, and my current master configuration
 
-                        if(data[0] == (byte)0x02 && data[2] == (byte)0x82)//addressing the Main device for sys info
-                        {
-                            //read the rest of the data
-                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
-                            //return System Info command with appropriate system configuration
-                            ByteBuffer reply = mSysDev.getSysInfoSts().getReplyBuffer();
+                    if(true|| this.clientSocket.getInputStream().available()!=0)
+                    {
+                        long startTime = System.currentTimeMillis();
+                        long medTime = 0;
+                        byte[] data = new byte[64];
+                        this.clientSocket.getInputStream().read(data, 0, 64);
+                        //this.inFromClient.read(data);
 
-                            reply.position(0);
-                            reply.put(0, (byte) 0x03);//portal device
-                            if(mSysDev.getConfig() == SystemConfiguration.SLAVE || mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
-                                reply.put(4, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
-                            }
-                            else if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER) {
-                                reply.put(4, (byte)SystemConfiguration.PORTAL_TO_MASTER.ordinal());//portal device
-                            }
+                        String result = "raw client " + this.clientSocket.getInetAddress().getHostAddress() +":" + this.clientSocket.getPort() +"data=\n";
+                        int counter = 0;
+                        int length = data[1];
 
-                            byte length = reply.get(1);
-                            reply.position(length-1);
-                            reply.put(Command.getCheckSum(reply));
-                            reply.position(0);
-                            this.mToClient.write(reply.array());
-                            //they then use Listen command and single not repeat commands
-
-                        }
-                        else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Device Command
-                        {
-                            medTime = System.currentTimeMillis();
-                            //reply with specific command
-                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
-                            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                            ObjectOutput objectOutput = null;
-                            objectOutput = new ObjectOutputStream(byteArrayOutputStream);
-
-                            mSysDev.writeObject((ObjectOutputStream) objectOutput);
-                            byte[] dataObjectArray = byteArrayOutputStream.toByteArray();
-
-                            this.mToClient.write(0x03);//size of the object may vary greatly
-                            ByteBuffer b = ByteBuffer.allocate(5);
-                            b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
-                            b.put((byte)0x03);
-                            b.putInt(dataObjectArray.length);
-
-                            //this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
-                            this.mToClient.write(b.array());
-                            this.mToClient.write(dataObjectArray);//write object to client
-                        }
-                        else {
-
-                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
-                            if(readCount == -1 || (data[0] == 0 && data[1] == 0))
+                        for (byte b : data) {
+                            if(counter < length )
                             {
-                                return;
+                                result += "[" + counter++ + "]=" + b + "\n";
                             }
-                            this.mRawFecpCmd = new FecpCommand(new RawDataCmd(ByteBuffer.wrap(data)), this);
-
-                            //set to be a higher priority
-                            //check if it is a master command
-                            //send to FecpCmdHandler
-                            mCmdHandler.addFecpCommand(this.mRawFecpCmd);
                         }
+                        Log.d("IN_DATA", result);
+                        this.handleRequest(data);
 
-                        long endTime = System.currentTimeMillis();
-                        if(medTime == 0)
-                        {
-                            medTime = endTime;
-                        }
-                        Log.d("SERVER_SEND_TIME","Server Full:" + (endTime -startTime ) + "mSec Part:" + (endTime - medTime));
-                        //clear everything from in buffer
-                    } catch (Exception e) {
-                        e.printStackTrace();
+//                        this.clientSocket.getOutputStream().write(helloWorld.getBytes());
+//
+//                        this.clientSocket.getOutputStream().write(data);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+
+                    //log data that is received
+            } catch (Exception e) {
+                    Log.d("NO_COMM", "Nothing to receive");
+//                e.printStackTrace();
+            }
+        }
+    }
+
+
+//        public void run2() {
+//            while (!Thread.currentThread().isInterrupted()) {
+//                try {
+//                    long startTime = System.currentTimeMillis();
+//                    long medTime = 0;
+//                    byte[] data = new byte[64];
+//
+//
+////                    this.inFromClient.read(data, 0, 3);//read the first 3 bytes
+//                    this.clientSocket.getInputStream().read(data, 0, 3);
+//                    try {
+//                        //created the command
+//                        //check what the command is, and my current master configuration
+//
+//                        if(data[0] == (byte)0x02 && data[2] == (byte)0x82)//addressing the Main device for sys info
+//                        {
+//                            //read the rest of the data
+////                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
+//                            int readCount = this.clientSocket.getInputStream().read(data, 3, 61);
+//                            //return System Info command with appropriate system configuration
+//                            ByteBuffer reply = mSysDev.getSysInfoSts().getReplyBuffer();
+//
+//                            reply.position(0);
+//                            reply.put(0, (byte) 0x03);//portal device
+//                            if(mSysDev.getConfig() == SystemConfiguration.SLAVE || mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
+//                                reply.put(4, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
+//                            }
+//                            else if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER) {
+//                                reply.put(4, (byte)SystemConfiguration.PORTAL_TO_MASTER.ordinal());//portal device
+//                            }
+//
+//                            byte length = reply.get(1);
+//                            reply.position(length-1);
+//                            reply.put(Command.getCheckSum(reply));
+//                            reply.position(0);
+//                            this.mToClient.write(reply.array());
+//                            //they then use Listen command and single not repeat commands
+//
+//                        }
+//                        else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Device Command
+//                        {
+//                            medTime = System.currentTimeMillis();
+//                            //reply with specific command
+//                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
+//                            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                            ObjectOutput objectOutput = null;
+//                            objectOutput = new ObjectOutputStream(byteArrayOutputStream);
+//
+//                            mSysDev.writeObject((ObjectOutputStream) objectOutput);
+//                            byte[] dataObjectArray = byteArrayOutputStream.toByteArray();
+//
+//                            this.mToClient.write(0x03);//size of the object may vary greatly
+//                            ByteBuffer b = ByteBuffer.allocate(5);
+//                            b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
+//                            b.put((byte)0x03);
+//                            b.putInt(dataObjectArray.length);
+//
+//                            //this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
+//                            this.mToClient.write(b.array());
+//                            this.mToClient.write(dataObjectArray);//write object to client
+//                        }
+//                        else {
+//
+//                            int readCount = 0;//read the rest of the data in the command
+//                            try {
+//                                readCount = this.inFromClient.read(data, 3, 61);
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                                ByteBuffer buff = ByteBuffer.allocate(64);
+//                                buff.order(ByteOrder.LITTLE_ENDIAN);
+//                                String errMessage = "Error with the message 0 data was send";
+//                                buff.put(errMessage.getBytes());
+//                                buff.position(0);
+//                                this.mToClient.write(buff.array(), 0, 64);//error with message reply
+//                            }
+//                            if(readCount == -1 || (data[0] == 0 && data[1] == 0))
+//                            {
+//                                //read to the end of the input stream
+//                                while(this.inFromClient.available()>0)
+//                                {
+//                                    this.inFromClient.read();
+//
+//
+//                                }
+//                                ByteBuffer buff = ByteBuffer.allocate(64);
+//                                buff.order(ByteOrder.LITTLE_ENDIAN);
+//                                String errMessage = "Error with the message 0 data was send";
+//                                buff.put(errMessage.getBytes());
+//                                buff.position(0);
+//                                this.mToClient.write(buff.array(), 0, 64);//error with message reply
+//                                return;
+//                            }
+//                            this.mRawFecpCmd = new FecpCommand(new RawDataCmd(ByteBuffer.wrap(data)), this);
+//
+//                            //set to be a higher priority
+//                            //check if it is a master command
+//                            //send to FecpCmdHandler
+//                            mCmdHandler.addFecpCommand(this.mRawFecpCmd);
+//                        }
+//
+//                        long endTime = System.currentTimeMillis();
+//                        if(medTime == 0)
+//                        {
+//                            medTime = endTime;
+//                        }
+//                        Log.d("SERVER_SEND_TIME","Server Full:" + (endTime -startTime ) + "mSec Part:" + (endTime - medTime));
+//                        //clear everything from in buffer
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+
+        private void handleRequest(byte[] buff)
+        {
+            long startTime = System.currentTimeMillis();
+            long medTime = 0;
+            byte[] data = buff;
+            try {
+                //created the command
+                //check what the command is, and my current master configuration
+
+                if(data[0] == (byte)0x02 && data[2] == (byte)0x82)//addressing the Main device for sys info
+                {
+                    //read the rest of the data
+                    //int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
+                    //return System Info command with appropriate system configuration
+                    ByteBuffer reply = mSysDev.getSysInfoSts().getReplyBuffer();
+
+                    reply.position(0);
+                    reply.put(0, (byte) 0x03);//portal device
+                    if(mSysDev.getConfig() == SystemConfiguration.SLAVE || mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
+                        reply.put(4, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
+                    }
+                    else if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER) {
+                        reply.put(4, (byte)SystemConfiguration.PORTAL_TO_MASTER.ordinal());//portal device
+                    }
+
+                    byte length = reply.get(1);
+                    reply.position(length-1);
+                    reply.put(Command.getCheckSum(reply));
+                    reply.position(0);
+                    this.mToClient.write(reply.array());
+                    this.mToClient.flush();
+                    //they then use Listen command and single not repeat commands
+
                 }
+                else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Device Command
+                {
+                    medTime = System.currentTimeMillis();
+                    //reply with specific command
+//                    int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
+                   // int readCount = this.clientSocket.getInputStream().read(data, 3, 61);
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    ObjectOutput objectOutput = null;
+                    objectOutput = new ObjectOutputStream(byteArrayOutputStream);
+
+                    mSysDev.writeObject((ObjectOutputStream) objectOutput);
+                    byte[] dataObjectArray = byteArrayOutputStream.toByteArray();
+
+                    //this.mToClient.write(0x03);//size of the object may vary greatly
+                    ByteBuffer b = ByteBuffer.allocate(5 + dataObjectArray.length);
+                    b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
+                    b.put((byte)0x03);
+                    b.putInt(dataObjectArray.length);
+                    b.put(dataObjectArray);
+
+
+                    //this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
+                    this.mToClient.write(b.array());
+                    this.mToClient.flush();
+                    //this.mToClient.write(dataObjectArray);//write object to client
+                }
+                else {
+
+                    int readCount = 0;//read the rest of the data in the command
+//                    try {
+//                        //readCount = this.inFromClient.read(data, 3, 61);
+//                        //readCount = this.clientSocket.getInputStream().read(data, 3, 61);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                        ByteBuffer errBuff = ByteBuffer.allocate(64);
+//                        errBuff.order(ByteOrder.LITTLE_ENDIAN);
+//                        String errMessage = "Error with the message 0 data was send";
+//                        errBuff.put(errMessage.getBytes());
+//                        errBuff.position(0);
+//                        this.mToClient.write(errBuff.array(), 0, 64);//error with message reply
+//                        this.mToClient.flush();
+//                    }
+                    if(readCount == -1 || (data[0] == 0 && data[1] == 0))
+                    {
+                        //read to the end of the input stream
+//                        while(this.inFromClient.available()>0)
+//                        {
+//                            this.inFromClient.read();
+//
+//
+//                        }
+                        ByteBuffer errBuff = ByteBuffer.allocate(64);
+                        errBuff.order(ByteOrder.LITTLE_ENDIAN);
+                        String errMessage = "Error with the message 0 data was send";
+                        errBuff.put(errMessage.getBytes());
+                        errBuff.position(0);
+//                        this.mToClient.write(errBuff.array(), 0, 64);//error with message reply
+//                        this.mToClient.flush();
+                        return;
+                    }
+                    this.mRawFecpCmd = new FecpCommand(new RawDataCmd(ByteBuffer.wrap(data)), this);
+
+                    //set to be a higher priority
+                    //check if it is a master command
+                    //send to FecpCmdHandler
+                    mCmdHandler.addFecpCommand(this.mRawFecpCmd);
+                }
+
+                long endTime = System.currentTimeMillis();
+                if(medTime == 0)
+                {
+                    medTime = endTime;
+                }
+                Log.d("SERVER_SEND_TIME","Server Full:" + (endTime -startTime ) + "mSec Part:" + (endTime - medTime));
+                //clear everything from in buffer
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 

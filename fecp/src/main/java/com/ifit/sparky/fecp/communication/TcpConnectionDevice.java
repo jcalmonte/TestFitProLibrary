@@ -7,11 +7,18 @@
  */
 package com.ifit.sparky.fecp.communication;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 
 public class TcpConnectionDevice extends ConnectionDevice {
 
     protected InetSocketAddress mIpAddress;
+    protected Socket mSocket;//socket to connect to
+
+    protected BufferedOutputStream sendStream;
+    protected BufferedInputStream readStream;
 
     /**
      * Default constructor of the Tcp Connection Device
@@ -21,6 +28,7 @@ public class TcpConnectionDevice extends ConnectionDevice {
         super();
         this.mCommType = CommType.TCP;
         this.mIpAddress = new InetSocketAddress("192.168.1.1", 8090);
+        this.mSocket = new Socket();
     }
 
     /**
@@ -33,6 +41,7 @@ public class TcpConnectionDevice extends ConnectionDevice {
         super();
         this.mCommType = CommType.TCP;
         this.mIpAddress = new InetSocketAddress(ipAddress, portNumber);
+//        this.mSocket = new Socket();
     }
 
     /**
@@ -44,6 +53,7 @@ public class TcpConnectionDevice extends ConnectionDevice {
         super();
         this.mCommType = CommType.TCP;
         this.mIpAddress = ipAddress;
+//        this.mSocket = new Socket();
     }
 
     /**
@@ -60,5 +70,37 @@ public class TcpConnectionDevice extends ConnectionDevice {
      */
     public void setIpAddress(InetSocketAddress ipAddress) {
         this.mIpAddress = ipAddress;
+    }
+
+    /**
+     * Gets the currently connected socket
+     * @return Socket that may be connected
+     */
+    public Socket getSocket() {
+        return mSocket;
+    }
+
+    /**
+     * Sets the socket that we are interested in
+     * @param socket socket that the device is connected to.
+     */
+    public void setSocket(Socket socket) {
+        this.mSocket = socket;
+    }
+
+    public BufferedOutputStream getSendStream() {
+        return sendStream;
+    }
+
+    public void setSendStream(BufferedOutputStream sendStream) {
+        this.sendStream = sendStream;
+    }
+
+    public BufferedInputStream getReadStream() {
+        return readStream;
+    }
+
+    public void setReadStream(BufferedInputStream readStream) {
+        this.readStream = readStream;
     }
 }
