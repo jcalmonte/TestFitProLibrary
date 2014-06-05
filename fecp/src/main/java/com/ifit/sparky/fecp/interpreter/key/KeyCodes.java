@@ -299,7 +299,7 @@ public enum KeyCodes {
      * @return the Keycode
      * @throws InvalidKeyCodeException if Keycode doesn't exist throw
      */
-    public static KeyCodes getKeyCode(long value) throws InvalidKeyCodeException
+    public static KeyCodes getKeyCode(int value) throws InvalidKeyCodeException
     {
         //go through all Keycodes and if it equals then return it.
 

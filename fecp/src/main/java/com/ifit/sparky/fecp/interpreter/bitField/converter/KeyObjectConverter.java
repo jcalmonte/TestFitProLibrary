@@ -13,10 +13,9 @@ import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class KeyObjectConverter extends BitfieldDataConverter implements Serializable {
 
@@ -35,19 +34,23 @@ public class KeyObjectConverter extends BitfieldDataConverter implements Seriali
     @Override
     public BitfieldDataConverter getData() throws Exception
     {
-        this.mRawData.position(0);
+        ByteBuffer buff;
+        buff = ByteBuffer.allocate(this.mRawData.length);
+        buff.order(ByteOrder.LITTLE_ENDIAN);
+        buff.put(this.mRawData);
+        buff.position(0);
 
         //convert the Next 2 bytes into the CookedKeycode
-        this.mKey.setCode(this.mRawData.getShort());
+        this.mKey.setCode(buff.getShort());
 
         //convert the first 4 bytes into the rawKeycode value
-        this.mKey.setRawKeyCode(this.mRawData.getLong());
+        this.mKey.setRawKeyCode(buff.getLong());
 
         //convert the Next 2 bytes into the Time it was pressed in seconds
-        this.mKey.setTimePressed(this.mRawData.getShort());
+        this.mKey.setTimePressed(buff.getShort());
 
         //converts the Next 2 Bytes into how long it was held
-        this.mKey.setTimeHeld(this.mRawData.getShort());
+        this.mKey.setTimeHeld(buff.getShort());
 
         return this;
     }
@@ -61,15 +64,15 @@ public class KeyObjectConverter extends BitfieldDataConverter implements Seriali
 
 
     @Override
-    public void writeObject(ObjectOutputStream stream) throws IOException {
+    public void writeObject(ByteBuffer stream) throws IOException {
 
-        stream.writeObject(this.mKey);
+        this.mKey.writeObject(stream);
     }
 
     @Override
-    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
 
-        this.mKey = (KeyObject)stream.readObject();
+        this.mKey.readObject(stream);
     }
 
     /**

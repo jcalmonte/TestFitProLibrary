@@ -10,8 +10,6 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
@@ -61,15 +59,15 @@ public class InclineConverter extends BitfieldDataConverter implements Serializa
     }
 
     @Override
-    public void writeObject(ObjectOutputStream stream) throws IOException {
+    public void writeObject(ByteBuffer stream) throws IOException {
 
-        stream.writeDouble(this.mIncline);
+        stream.putDouble(this.mIncline);
     }
 
     @Override
-    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
 
-        this.mIncline = stream.readDouble();
+        this.mIncline = stream.getDouble();
     }
 
     /**

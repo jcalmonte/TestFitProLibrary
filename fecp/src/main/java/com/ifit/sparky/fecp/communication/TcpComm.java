@@ -26,7 +26,6 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -84,11 +83,12 @@ public class TcpComm implements CommInterface {
             if(this.mConnectionDevice == null) {
                 if (this.mSocket == null) {
                     this.mSocket = new Socket();
-                    this.mSocket.setSendBufferSize(4096);
-                    this.mSocket.setReceiveBufferSize(4096);
+                    this.mSocket.setSendBufferSize(1024);
+                    this.mSocket.setReceiveBufferSize(1024);
                     this.mSocket.connect(this.mIpAddress, 10000);
                 }
-                this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority
+                //this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority does nothing
+                this.mSocket.setTcpNoDelay(true);
                 this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
                 this.mFromMachine = this.mSocket.getInputStream();
             }
@@ -156,201 +156,58 @@ public class TcpComm implements CommInterface {
     public ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout) {
         ByteBuffer resultBuffer = ByteBuffer.allocate(64);
         resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                long startTime = System.currentTimeMillis();
-                long medTime = 0;
-                byte[] data = new byte[64];
-
-                String helloWorld = "HelloWorld Back to you";
-                buff.position(0);
-
-                //clear input before sending
-                while (this.mSocket.getInputStream().available() != 0)
-                {
-                    this.mSocket.getInputStream().read();
-                }
-
-                //this.mSocket.getOutputStream().write(buff.array());
-                this.mToMachine.write(buff.array());
-                this.mToMachine.flush();
-                //this.mSocket.getOutputStream().write(helloWorld.getBytes());
-
-                //assume it worked
-                this.mSocket.getInputStream().read(data, 0, 64);//at least 64
-                buff.position(0);
-                if(data[0] == (byte)0x03 && buff.get() == (byte)0x03 && data[2] != (byte)0x82)//custom handle for special objects.
-                {
-                    ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
-                    tempSizeBuff.order(ByteOrder.LITTLE_ENDIAN);
-                    tempSizeBuff.put(data,1,4);
-                    tempSizeBuff.position(0);
-                    int dataSize = tempSizeBuff.getInt();
-                    byte[] sysObjectData = new byte[(dataSize - 64)+5];//for the size and the dev id
-                    this.mSocket.getInputStream().read(sysObjectData, 0, sysObjectData.length);
-                    resultBuffer = ByteBuffer.allocate(dataSize);
-                    resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
-                    resultBuffer.put(data,5, data.length-5);
-                    resultBuffer.put(sysObjectData);
-                    if(resultBuffer.position()!= dataSize)
-                    {
-                        return null;
-                    }
-                }
-                else {
-                    resultBuffer.put(data);
-                }
-
-                String result = "raw Server data=\n";
-                int counter = 0;
-                int length = data[1];
-
-                for (byte b : data) {
-                    if(counter < length )
-                    {
-                        result += "[" + counter++ + "]=" + b + "\n";
-                    }
-                }
-                Log.d("IN_DATA", result);
-                resultBuffer.position(0);
-                return resultBuffer;
-                //log data that is received
-            } catch (Exception e) {
-                e.printStackTrace();
+        try {
+            byte[] data = new byte[2000];//shouldn't every get to many
+            buff.position(0);
+            //clear input before sending
+            while (this.mSocket.getInputStream().available() != 0)
+            {
+                this.mSocket.getInputStream().read();
             }
+
+            //this.mSocket.getOutputStream().write(buff.array());
+            this.mToMachine.write(buff.array());
+            this.mToMachine.flush();
+            //this.mSocket.getOutputStream().write(helloWorld.getBytes());
+
+            //assume it worked
+            int bytesRead =this.mSocket.getInputStream().read(data);//at least 64
+            //read all of the data available
+            buff.position(0);
+            if(data[0] == (byte)0x03 && buff.get() == (byte)0x03)//custom handle for special objects.
+            {
+                //get all of the data into a Byte buffer except the first byte
+                //max size 2K bytes
+//                int bytesRead = this.mSocket.getInputStream().read(sysObjectData);
+                resultBuffer = ByteBuffer.allocate(bytesRead -1);
+                resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                resultBuffer.put(data, 1, bytesRead-1);//exclude the Dev Id
+            }
+            else {
+                resultBuffer.put(data, 0, 64);
+            }
+
+            String result = "raw Server data size="+resultBuffer.capacity()+" actual size="+resultBuffer.position()+" data=\n";
+            int counter = 0;
+            int length = data[1];
+
+            for (byte b : data) {
+                if(counter < length )
+                {
+                    result += "[" + counter++ + "]=" + b + "\n";
+                }
+            }
+            Log.d("IN_DATA", result);
+            resultBuffer.position(0);
+            return resultBuffer;
+            //log data that is received
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-     public ByteBuffer temp(ByteBuffer buff, int timeout) {
-        try {
-            if(this.mConnectionDevice == null) {
-                if (this.mSocket == null) {
-//                    this.mSocket = new Socket();
-                    this.mSocket = new Socket(this.mIpAddress.getAddress(), 8090);
-//                    this.mSocket.connect(this.mIpAddress, 10000);
-                }
-                this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority
-                this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
-                this.mFromMachine = this.mSocket.getInputStream();
-            }
-            else
-            {
-                this.mSocket = this.mConnectionDevice.getSocket();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        byte[] data;
-        ByteBuffer resultBuffer;
-        data = new byte[BUFF_SIZE];//shouldn't ever be longer
-        int bytesRead = 0;
-        resultBuffer = ByteBuffer.allocate(BUFF_SIZE);
-        if(!this.mSocket.isConnected())
-        {
-            for (DeviceConnectionListener listener : this.mConnectionListeners) {
-                listener.onDeviceDisconnected();
-            }
-        }
-        if(this.mSocket.isClosed() || !this.mSocket.isConnected())
-        {
-            //attempt to reconnect
-            this.initializeCommConnection();
 
-        }
-        buff.position(0);
-        try {
-            this.mSocket.setSoTimeout(timeout);
-//            this.mFromMachine.reset();
-            //copy Data to a 64 byte array
-            buff.get(data,0, buff.capacity());//copy all of the elements available
-
-            //send data
-            try {
-//                this.mToMachine.write(data, 0, data.length);
-                this.mToMachine.write(data);
-                //this.mConnectionDevice.getSendStream().write(data, 0, data.length);
-                //this.mToMachine.write(data);
-                Thread.sleep(5);
-                Arrays.fill(data, (byte) 0);
-
-                //read from server
-                //read the first byte
-//                bytesRead = this.mConnectionDevice.getReadStream().read(data, 0, 1);
-//                bytesRead = this.mFromMachine.read(data, 0, 1);
-                bytesRead = this.mFromMachine.read(data);
-                //bytesRead = this.mFromMachine.read(data, 0, 1);//read the device
-                if(bytesRead == -1)
-                {
-                    Log.d("BAD_TCP_READ", "invalid Read");
-                    return resultBuffer;
-                }
-                buff.position(0);
-                if(data[0] == (byte)0x03 && buff.get() == (byte)0x03)//custom handle for special objects.
-                {
-                    //Portal Listen command prep for receiving System Object
-                    //read the next 4 bytes
-                    //bytesRead = this.mConnectionDevice.getReadStream().read(data, 1, 4);
-                    bytesRead = this.mFromMachine.read(data, 1, 4);//read the Length of the message
-                    //bytesRead = this.mFromMachine.read(data, 1, 4);//read the Length of the message
-                    ByteBuffer tempSizeBuff = ByteBuffer.allocate(4);
-                    tempSizeBuff.order(ByteOrder.LITTLE_ENDIAN);
-                    tempSizeBuff.put(data,1,4);
-                    tempSizeBuff.position(0);
-                    int dataSize = tempSizeBuff.getInt();
-                    byte[] sysObjectData = new byte[dataSize];
-                    int timeoutCounter = 0;//try for ten times
-                    bytesRead = 0;
-                    while(bytesRead < dataSize && timeoutCounter < 10) {
-
-                        //int readCount = this.mConnectionDevice.getReadStream().read(sysObjectData, bytesRead, dataSize - bytesRead);
-                        int readCount = this.mFromMachine.read(sysObjectData, bytesRead, dataSize-bytesRead);
-                        if(readCount != -1)
-                        {
-                            bytesRead += readCount;
-                        }
-
-                        if(bytesRead != dataSize)
-                        {
-                            Thread.sleep(5);
-                        }
-                        timeoutCounter++;
-                    }
-
-
-
-                    if(bytesRead != dataSize)
-                    {
-                        Log.d("BAD_TCP_READ", "invalid Read Size expected " + dataSize + " actual " + bytesRead);
-                        return resultBuffer;
-                    }
-                    resultBuffer = ByteBuffer.allocate(dataSize);
-                    resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
-                    resultBuffer.position(0);
-                    resultBuffer.put(sysObjectData, 0, dataSize);
-                    if(bytesRead == -1)
-                    {
-                        Log.d("BAD_TCP_READ", "invalid Read");
-                        return resultBuffer;
-
-                    }
-
-                    return resultBuffer;
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //read the first 2 bytes
-            bytesRead = this.mFromMachine.read(data, 1, BUFF_SIZE-1);//read the length
-            resultBuffer.put(data);
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return resultBuffer;
-    }
 
     /**
      * Needs to report error with the err

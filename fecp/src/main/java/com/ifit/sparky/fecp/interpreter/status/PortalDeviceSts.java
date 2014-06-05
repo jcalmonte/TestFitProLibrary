@@ -11,9 +11,6 @@ import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
@@ -40,20 +37,15 @@ public class PortalDeviceSts extends Status implements Serializable {
      */
     @Override
     public void handleStsMsg(ByteBuffer buff) throws Exception {
-        //raw data that is the system device
+        //raw data that is the system device no extra data besides the Raw data
         buff.position(0);
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(buff.array());
-        ObjectInput inObject = null;
-        inObject = new ObjectInputStream(inputStream);
 
         if(this.mSysDev == null)
         {
             this.mSysDev = new SystemDevice();
         }
 
-        this.mSysDev.readObject((ObjectInputStream)inObject);
-        inputStream.close();
-        inObject.close();
+        this.mSysDev.readObject(buff);
         this.setStsId(StatusId.DONE);
     }
 }

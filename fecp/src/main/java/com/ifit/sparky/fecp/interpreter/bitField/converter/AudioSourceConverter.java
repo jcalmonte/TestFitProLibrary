@@ -10,8 +10,6 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
@@ -26,7 +24,6 @@ public class AudioSourceConverter extends BitfieldDataConverter implements Seria
         super();
         this.mAudioSrc = AudioSourceId.NONE;
         this.mDataSize = 1;
-        this.mRawData = ByteBuffer.allocate(this.mDataSize);
     }
 
     @Override
@@ -57,15 +54,15 @@ public class AudioSourceConverter extends BitfieldDataConverter implements Seria
     }
 
     @Override
-    public void writeObject(ObjectOutputStream stream) throws IOException {
+    public void writeObject(ByteBuffer stream) throws IOException {
 
-        stream.writeObject(this.mAudioSrc);
+        stream.put((byte)this.mAudioSrc.getValue());
     }
 
     @Override
-    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
 
-        this.mAudioSrc = (AudioSourceId)stream.readObject();
+        this.mAudioSrc = AudioSourceId.getEnumFromId(stream.get());//just the raw value
     }
 
     /**

@@ -8,6 +8,8 @@
  */
 package com.ifit.sparky.fecp;
 
+import android.util.Log;
+
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
@@ -30,10 +32,12 @@ import com.ifit.sparky.fecp.interpreter.status.PortalDeviceSts;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -55,7 +59,7 @@ public class SystemDevice extends Device implements Serializable{
     //it will send this to all the listeners. this is to make the delay of communication seemless
 
     // this is to clean up the controlling to allow better interfaces to the fitPro
-    private CommInterface mComCntrl;
+
 
     /**
      * the default constructor for the System Device
@@ -353,45 +357,70 @@ public class SystemDevice extends Device implements Serializable{
      * @param stream Stream to be loaded. data size between 1K and 2K
      * @throws IOException
      */
-    public void writeObject(ObjectOutputStream stream) throws IOException
+    public void writeObject(BufferedOutputStream stream) throws IOException
     {
+        ByteBuffer tempBuff = ByteBuffer.allocate(2000);//we don't need all of this, but it will help
+        tempBuff.order(ByteOrder.LITTLE_ENDIAN);
         //write the data we are concerned about
         if(this.mConfig == SystemConfiguration.MASTER)
         {
-            stream.writeObject(SystemConfiguration.PORTAL_TO_MASTER);
+            tempBuff.put((byte) SystemConfiguration.PORTAL_TO_MASTER.getVal());
         }
         else if(this.mConfig == SystemConfiguration.MULTI_MASTER)
         {
-            stream.writeObject(SystemConfiguration.PORTAL_TO_MASTER);
+            tempBuff.put((byte) SystemConfiguration.PORTAL_TO_MASTER.getVal());
         }
         else if(this.mConfig == SystemConfiguration.SLAVE)
         {
             //portal to slave
-            stream.writeObject(SystemConfiguration.PORTAL_TO_SLAVE);
+            tempBuff.put((byte) SystemConfiguration.PORTAL_TO_SLAVE.getVal());
         }
         else
         {
-            stream.writeObject(this.mConfig);
+            tempBuff.put((byte) this.mConfig.getVal());
+        }
+        tempBuff.putInt(this.mModel);
+        tempBuff.putInt(this.mPartNumber);
+        tempBuff.putDouble(this.mCpuUse);
+        tempBuff.putInt(this.mNumberOfTasks);
+        tempBuff.putInt(this.mIntervalTime);
+        tempBuff.putInt(this.mCpuFrequency);
+
+        tempBuff.put((byte)this.mMcuName.length());//length of string
+        tempBuff.put(this.mMcuName.getBytes());
+
+        tempBuff.put((byte)this.mConsoleName.length());//length of string
+        tempBuff.put(this.mConsoleName.getBytes());
+
+        DeviceInfo info = this.getInfo();
+
+        tempBuff.put((byte)info.getDevId().getVal());
+        tempBuff.put((byte)info.getSWVersion());
+        tempBuff.put((byte)info.getHWVersion());
+        tempBuff.putInt(info.getSerialNumber());
+        tempBuff.putInt(info.getManufactureNumber());
+        tempBuff.put((byte) info.getSections());
+        //put the number of bitfields
+        tempBuff.put((byte)info.getSupportedBitfields().size());
+
+        for (BitFieldId fieldId : info.getSupportedBitfields()) {
+            tempBuff.put((byte)fieldId.getVal());
         }
 
-        stream.writeInt(this.mModel);
-        stream.writeInt(this.mPartNumber);
-        stream.writeDouble(this.mCpuUse);
-        stream.writeInt(this.mNumberOfTasks);
-        stream.writeInt(this.mIntervalTime);
-        stream.writeInt(this.mCpuFrequency);
-        stream.writeObject(this.mMcuName);
-        stream.writeObject(this.mConsoleName);
-        stream.writeObject(this.getInfo());
+        tempBuff.put((byte) this.mCurrentSystemData.size());
+
         int dataSize = this.mCurrentSystemData.size();
 
-        stream.writeInt(dataSize);
-
         for (Map.Entry<BitFieldId, BitfieldDataConverter> entry : this.mCurrentSystemData.entrySet()) {
-            stream.writeObject(entry.getKey());
-            entry.getValue().writeObject(stream);
-
+            tempBuff.put((byte)entry.getKey().getVal());//store the key id
+            //store the value associated with that key
+            //just the raw data
+            entry.getValue().writeObject(tempBuff);
         }
+        //write all the data to the stream
+        int currPosition = tempBuff.position();
+        tempBuff.position(0);
+        stream.write(tempBuff.array(), 0, currPosition);
     }
 
     /**
@@ -401,32 +430,74 @@ public class SystemDevice extends Device implements Serializable{
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException
     {
-        this.mConfig = (SystemConfiguration)stream.readObject();
-        this.mModel = stream.readInt();
-        this.mPartNumber = stream.readInt();
-        this.mCpuUse= stream.readDouble();
-        this.mNumberOfTasks = stream.readInt();
-        this.mIntervalTime = stream.readInt();
-        this.mCpuFrequency = stream.readInt();
-        this.mMcuName = (String)stream.readObject();
-        this.mConsoleName = (String)stream.readObject();
-        this.setDeviceInfo((DeviceInfo)stream.readObject());
 
-        int currDataSize = stream.readInt();
+        BitFieldId key  = BitFieldId.KPH;//first bit anyway
+        BitfieldDataConverter value;
+        int i = 0;
+        try {
+            this.mConfig = SystemConfiguration.convert(stream.get());
+            this.mModel = stream.getInt();
+            this.mPartNumber = stream.getInt();
+            this.mCpuUse= stream.getDouble();
+            this.mNumberOfTasks = stream.getInt();
+            this.mIntervalTime = stream.getInt();
+            this.mCpuFrequency = stream.getInt();
 
-        if(this.mCurrentSystemData == null)
-        {
-            this.mCurrentSystemData =  new TreeMap<BitFieldId, BitfieldDataConverter>();
-        }
+            int strLength = stream.get();
+            byte[] strArr = new byte[strLength];
+            stream.get(strArr, 0, strLength);
+            String str = new String( strArr, Charset.forName("UTF-8") );
+            this.mMcuName = str;
 
-        for(int i = 0; i < currDataSize-1; i++)
-        {
-            BitFieldId key = (BitFieldId)stream.readObject();
-            BitfieldDataConverter value = key.getConverter();
-            value.readObject(stream);
-            this.mCurrentSystemData.put(key, value);
+            strLength = stream.get();
+            strArr = new byte[strLength];
+            stream.get(strArr, 0, strLength);
+            str = new String( strArr, Charset.forName("UTF-8") );
+
+            this.mConsoleName = str;
+            //get the device info
+            DeviceInfo info = this.getInfo();
+
+            info.setDevId(DeviceId.getDeviceId(stream.get()));
+            info.setSWVersion(stream.get());
+            info.setHWVersion(stream.get());
+            info.setSerialNumber(stream.getInt());
+            info.setManufactureNumber(stream.getInt());
+            int sections = stream.get();//not necessary
+            int numOfBitFields = stream.get();
+
+            for(i = 0; i < numOfBitFields; i++)
+            {
+                info.addBitfield(BitFieldId.getBitFieldId(stream.get()));
+            }
+
+            int currDataSize = stream.get();
+            if(this.mCurrentSystemData == null)
+            {
+                this.mCurrentSystemData =  new TreeMap<BitFieldId, BitfieldDataConverter>();
+            }
+
+            for(i = 0; i < currDataSize; i++)
+            {
+                key = BitFieldId.getBitFieldId(stream.get());
+                value = key.getConverter();
+                value.readObject(stream);
+                this.mCurrentSystemData.put(key, value);
+            }
+
+
+        } catch (ClassNotFoundException e) {
+            if(key != null) {
+                Log.d("Data_Interpret", "key=" + key.getDescription() + " i=" + i);
+            }
+            e.printStackTrace();
+        } catch (Exception e) {
+            if(key != null) {
+                Log.d("Data_Interpret", "key=" + key.getDescription() + " i=" + i);
+            }
+            e.printStackTrace();
         }
     }
 

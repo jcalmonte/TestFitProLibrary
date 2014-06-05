@@ -11,15 +11,13 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public abstract class BitfieldDataConverter implements Serializable {
 
-    protected ByteBuffer mRawData;
+    protected byte[] mRawData;
     protected int mDataSize;
     protected long mTimeRecieved;
 
@@ -28,8 +26,8 @@ public abstract class BitfieldDataConverter implements Serializable {
      */
     public BitfieldDataConverter()
     {
-        this.mRawData = ByteBuffer.allocate(8);//max cap needed
-        this.mRawData.order(ByteOrder.LITTLE_ENDIAN);
+        //this.mRawData = ByteBuffer.allocate(8);//max cap needed
+        //this.mRawData.order(ByteOrder.LITTLE_ENDIAN);
     }
 
     /**
@@ -40,9 +38,8 @@ public abstract class BitfieldDataConverter implements Serializable {
      */
     public void setRawData(ByteBuffer rawData, int size) throws InvalidBitFieldException
     {
-        this.mRawData = rawData;
-        this.mRawData.order(ByteOrder.LITTLE_ENDIAN);
-        if(this.mRawData.capacity() != size)
+        this.mRawData = rawData.array();
+        if(this.mRawData.length != size)
         {
             throw new InvalidBitFieldException(rawData, size);
         }
@@ -61,20 +58,23 @@ public abstract class BitfieldDataConverter implements Serializable {
 
         long rawLong;//to get all the values of the int correctly
 
-        this.mRawData.position(0);
+        ByteBuffer buffer = ByteBuffer.allocate(this.mRawData.length);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(this.mRawData);
+        buffer.position(0);
 
         if(this.mDataSize == 1)
         {
             //value needs to be unsigned
-            rawLong = (this.mRawData.get(0) & 0xFF);//require for unsigned values
+            rawLong = (buffer.get(0) & 0xFF);//require for unsigned values
         }
         else if(this.mDataSize == 2)
         {
-            rawLong = (this.mRawData.getShort(0) & 0xFFFF);
+            rawLong = (buffer.getShort(0) & 0xFFFF);
         }
         else if(this.mDataSize == 4)
         {
-            rawLong = this.mRawData.getInt(0);// & 0xFFFFFFFF;
+            rawLong = buffer.getInt(0);// & 0xFFFFFFFF;
         }
         else
         {
@@ -134,9 +134,9 @@ public abstract class BitfieldDataConverter implements Serializable {
         this.mTimeRecieved = time;
     }
 
-    public abstract void writeObject(ObjectOutputStream stream) throws IOException;
+    public abstract void writeObject(ByteBuffer stream) throws IOException;
 
-    public abstract void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException;
+    public abstract void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException;
 
 
 }

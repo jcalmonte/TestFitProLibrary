@@ -19,10 +19,7 @@ import com.ifit.sparky.fecp.interpreter.command.RawDataCmd;
 import com.ifit.sparky.fecp.interpreter.status.RawDataSts;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -121,7 +118,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     socket = mServerSock.accept();
-                    socket.setKeepAlive(true);
+                    socket.setKeepAlive(false);
                     CommunicationThread commThread = new CommunicationThread(socket);
                     new Thread(commThread).start();
 
@@ -148,9 +145,10 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             this.clientSocket = clientSocket;
 
             try {
-                this.clientSocket.setSendBufferSize(4096);
-                this.clientSocket.setReceiveBufferSize(4096);
+                this.clientSocket.setSendBufferSize(2000);
+                this.clientSocket.setReceiveBufferSize(200);
                 //this.inFromClient = new BufferedInputStream(this.clientSocket.getInputStream());
+                this.clientSocket.setTcpNoDelay(true);//disable Nagle's Algorithm
                 this.mToClient = new BufferedOutputStream(this.clientSocket.getOutputStream());
                 this.clientSocket.setSoTimeout(5000);//timeout after 5 secs
 
@@ -160,15 +158,33 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
         }
 
         public void run() {
+
+            int runningCheck = 0;//if it has been to long close socket
+            long startTime;
             while (!Thread.currentThread().isInterrupted()) {
                 try {
 
+                    startTime = System.currentTimeMillis();
                     if(true|| this.clientSocket.getInputStream().available()!=0)
                     {
-                        long startTime = System.currentTimeMillis();
-                        long medTime = 0;
+
                         byte[] data = new byte[64];
-                        this.clientSocket.getInputStream().read(data, 0, 64);
+                        int readCount = this.clientSocket.getInputStream().read(data, 0, 64);
+                        if(readCount == -1)
+                        {
+                            runningCheck++;
+                        }
+                        else
+                        {
+                            runningCheck = 0;
+                        }
+                        if(runningCheck > 50)
+                        {
+                            //system is disconnected
+                            this.clientSocket.close();
+                            this.mToClient.close();
+                            return;
+                        }
                         //this.inFromClient.read(data);
 
                         String result = "raw client " + this.clientSocket.getInetAddress().getHostAddress() +":" + this.clientSocket.getPort() +"data=\n";
@@ -188,8 +204,10 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 //
 //                        this.clientSocket.getOutputStream().write(data);
                     }
-
                     //log data that is received
+                    long endTime = System.currentTimeMillis();
+
+                    Log.d("SERVER_SEND_TIME","Server Full:" + (endTime -startTime ));
             } catch (Exception e) {
                     Log.d("NO_COMM", "Nothing to receive");
 //                e.printStackTrace();
@@ -316,8 +334,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 
         private void handleRequest(byte[] buff)
         {
-            long startTime = System.currentTimeMillis();
-            long medTime = 0;
+
             byte[] data = buff;
             try {
                 //created the command
@@ -350,27 +367,12 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                 }
                 else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Device Command
                 {
-                    medTime = System.currentTimeMillis();
                     //reply with specific command
 //                    int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
                    // int readCount = this.clientSocket.getInputStream().read(data, 3, 61);
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    ObjectOutput objectOutput = null;
-                    objectOutput = new ObjectOutputStream(byteArrayOutputStream);
 
-                    mSysDev.writeObject((ObjectOutputStream) objectOutput);
-                    byte[] dataObjectArray = byteArrayOutputStream.toByteArray();
-
-                    //this.mToClient.write(0x03);//size of the object may vary greatly
-                    ByteBuffer b = ByteBuffer.allocate(5 + dataObjectArray.length);
-                    b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
-                    b.put((byte)0x03);
-                    b.putInt(dataObjectArray.length);
-                    b.put(dataObjectArray);
-
-
-                    //this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
-                    this.mToClient.write(b.array());
+                    this.mToClient.write(0x03);
+                    mSysDev.writeObject(this.mToClient);
                     this.mToClient.flush();
                     //this.mToClient.write(dataObjectArray);//write object to client
                 }
@@ -416,12 +418,6 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                     mCmdHandler.addFecpCommand(this.mRawFecpCmd);
                 }
 
-                long endTime = System.currentTimeMillis();
-                if(medTime == 0)
-                {
-                    medTime = endTime;
-                }
-                Log.d("SERVER_SEND_TIME","Server Full:" + (endTime -startTime ) + "mSec Part:" + (endTime - medTime));
                 //clear everything from in buffer
             } catch (Exception e) {
                 e.printStackTrace();

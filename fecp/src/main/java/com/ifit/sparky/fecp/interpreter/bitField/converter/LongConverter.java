@@ -10,8 +10,6 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
@@ -23,7 +21,6 @@ public class LongConverter extends BitfieldDataConverter implements Serializable
         super();
         this.mData = 0;
         this.mDataSize = 4;
-        this.mRawData = ByteBuffer.allocate(this.mDataSize);
     }
 
     @Override
@@ -54,15 +51,15 @@ public class LongConverter extends BitfieldDataConverter implements Serializable
 
 
     @Override
-    public void writeObject(ObjectOutputStream stream) throws IOException {
+    public void writeObject(ByteBuffer stream) throws IOException {
 
-        stream.writeInt(this.mData);
+        stream.putInt(this.mData);
     }
 
     @Override
-    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
 
-        this.mData = stream.readInt();
+        this.mData = stream.getInt();
     }
 
     /**
