@@ -440,6 +440,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             buffer.position(0);
             try {
                 this.mToClient.write(buffer.array());//write the reply back to the server
+                this.mToClient.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }

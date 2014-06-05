@@ -7,8 +7,8 @@
  */
 package com.ifit.sparky.fecp.communication;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -18,7 +18,7 @@ public class TcpConnectionDevice extends ConnectionDevice {
     protected Socket mSocket;//socket to connect to
 
     protected BufferedOutputStream sendStream;
-    protected BufferedInputStream readStream;
+    protected InputStream readStream;
 
     /**
      * Default constructor of the Tcp Connection Device
@@ -96,11 +96,11 @@ public class TcpConnectionDevice extends ConnectionDevice {
         this.sendStream = sendStream;
     }
 
-    public BufferedInputStream getReadStream() {
+    public InputStream getReadStream() {
         return readStream;
     }
 
-    public void setReadStream(BufferedInputStream readStream) {
+    public void setReadStream(InputStream readStream) {
         this.readStream = readStream;
     }
 }

@@ -207,8 +207,6 @@ public class TcpComm implements CommInterface {
         return null;
     }
 
-
-
     /**
      * Needs to report error with the err
      *
@@ -246,13 +244,7 @@ public class TcpComm implements CommInterface {
             public void run() {
                 //gets all the ip address available in this network.
                 InetAddress currentIpAddress = getCurrentIpAddress();
-//                InetAddress currentIpAddress = null;
-//                try {
-//                    currentIpAddress = InetAddress.getLocalHost();
-//                } catch (UnknownHostException e) {
-//                    Log.e("Unknown Host", e.getMessage());
-//                    e.printStackTrace();
-//                }
+
                 if(currentIpAddress == null)
                 {
                     mScanListener.onScanFinish(new ArrayList<ConnectionDevice>());//return an empty array list
@@ -368,16 +360,14 @@ public class TcpComm implements CommInterface {
                     try {
 
                         this.mDev.getSocket().connect(this.mDev.mIpAddress, 10000);//start off with a 5 second timeout
+                        this.mDev.getSocket().setTcpNoDelay(true);//disable Nagle's algorithm
                         //send message to get the System Info
                         try {
-
                             GetSysInfoCmd tempCmd = new GetSysInfoCmd(DeviceId.MAIN);
-                            //this.mDev.setSendStream(new BufferedOutputStream(this.mDev.getSocket().getOutputStream()));
 
-                            //this.mDev.setReadStream(new BufferedInputStream(this.mDev.getSocket().getInputStream()));
-                            //new DataOutputStream(testSocket.getOutputStream());
-                            //readStream = testSocket.getInputStream();
-
+                            this.mDev.setSendStream(new BufferedOutputStream(this.mDev.getSocket().getOutputStream()));
+                            this.mDev.setReadStream(this.mDev.getSocket().getInputStream());
+                            this.mDev.getSocket().setSoTimeout(5000);//just for this initial check
 
                             byte[] data;
                             byte[] readData;
@@ -387,24 +377,18 @@ public class TcpComm implements CommInterface {
                             int bytesRead = 0;
                             resultBuffer = ByteBuffer.allocate(BUFF_SIZE);
 
+                            //get command to send
                             ByteBuffer buff = tempCmd.getCmdMsg();
                             buff.position(0);
+
                             //copy Data to a 64 byte array
                             buff.get(data,0, buff.capacity());//copy all of the elements available
-                            this.mDev.getSocket().setSoTimeout(5000);
-                            this.mDev.getSocket().getOutputStream().write(data, 0, data.length);
-                            //sendStream.write(data, 0, data.length);
-                            int timeoutCount = 0;
-                            while (this.mDev.getSocket().getInputStream().available()==0 && timeoutCount < 10) {
-                                Thread.sleep(5);
-                                timeoutCount++;
-                            }
-                            if(timeoutCount == 10)
-                            {
-                                return;//nothing to connect to
-                            }
+
+                            //send the data
+                            this.mDev.getSendStream().write(data);
+                            this.mDev.getSendStream().flush();//send the data now
+
                             bytesRead = this.mDev.getSocket().getInputStream().read(readData);
-                            //bytesRead = this.mDev.getReadStream().read(readData, 0, readData.length);//read the device
 
                             resultBuffer = ByteBuffer.allocate(data.length);
                             resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -426,15 +410,16 @@ public class TcpComm implements CommInterface {
                         }
 
                     } catch (IOException e) {
-
-                        e.printStackTrace();
+                        Log.d("Invalid Socket", "Failed to connect to ipaddress:"+ this.mDev.getIpAddress().getHostName() + ":"+this.mDev.getIpAddress().getPort());
                     }finally {
                         try {
-                            if(this.mDev.getSocket() != null && !this.isValidDevice)
+                            if(this.mDev.getSocket() != null)// && !this.isValidDevice)
                             {
 //                                this.mDev.getSocket().setSoLinger(true, 0);
+                                this.mDev.getSendStream().close();
                                 this.mDev.getSocket().close();
                             }
+
                         } catch (IOException closeEx) {
                             Log.e("failed to Close", closeEx.getMessage());
                             closeEx.printStackTrace();
@@ -442,8 +427,8 @@ public class TcpComm implements CommInterface {
                     }
                 }
             } catch (Exception ex) {
-
-                ex.printStackTrace();
+                //expected exception
+                Log.d("Invalid IpAddress", "Failed to connect to ipaddress:"+ this.mDev.getIpAddress().getHostName() + ":"+this.mDev.getIpAddress().getPort());
             }
         }
     }
