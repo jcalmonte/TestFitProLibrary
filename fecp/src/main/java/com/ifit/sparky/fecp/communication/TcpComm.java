@@ -36,12 +36,11 @@ public class TcpComm implements CommInterface {
     private TcpConnectionDevice mConnectionDevice;
     private final int BUFF_SIZE = 64;
     private BufferedOutputStream mToMachine;
-    //private ObjectOutputStream mToMachine;
     private InputStream mFromMachine;
     private InetSocketAddress mIpAddress;
-    private int mPort;
     private int mSendTimeout;
     private ScanSystemListener mScanListener;//returns with list of devices or none
+    private boolean enableLogging = false;
 
     private CopyOnWriteArrayList<DeviceConnectionListener> mConnectionListeners;
 
@@ -89,7 +88,6 @@ public class TcpComm implements CommInterface {
                 }
                 //set the timeout for 5 seconds, if so abandon command
                 this.mSocket.setSoTimeout(5000);
-
                 this.mSocket.setTcpNoDelay(true);
                 this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
                 this.mFromMachine = this.mSocket.getInputStream();
@@ -164,14 +162,25 @@ public class TcpComm implements CommInterface {
         {
             //if no connection
             try {
+                if(!this.mSocket.isClosed())
+                {
+                    this.mSocket.close();
+                }
+                //attempt to reopen the socket completely
                 this.mSocket.connect(this.mIpAddress, 5000);
+                this.mSocket.setSoTimeout(5000);
+                this.mSocket.setTcpNoDelay(true);
+                this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
+                this.mFromMachine = this.mSocket.getInputStream();
             }
             catch (IOException ex)
             {
+
                 Log.e("DISCONNECTED_SOCKET", "Socket was disconnected, reconnect Failed");
                 for (DeviceConnectionListener listener : this.mConnectionListeners) {
                     listener.onDeviceDisconnected();
                 }
+
                 return null;
             }
 
@@ -207,17 +216,18 @@ public class TcpComm implements CommInterface {
                 resultBuffer.put(data, 0, 64);
             }
 
-            String result = "raw Server data size="+resultBuffer.capacity()+" actual size="+resultBuffer.position()+" data=\n";
-            int counter = 0;
-            int length = data[1];
+            if(enableLogging) {
+                String result = "raw Server data size=" + resultBuffer.capacity() + " actual size=" + resultBuffer.position() + " data=\n";
+                int counter = 0;
+                int length = data[1];
 
-            for (byte b : data) {
-                if(counter < length )
-                {
-                    result += "[" + counter++ + "]=" + b + "\n";
+                for (byte b : data) {
+                    if (counter < length) {
+                        result += "[" + counter++ + "]=" + b + "\n";
+                    }
                 }
+                Log.d("IN_DATA", result);
             }
-            Log.d("IN_DATA", result);
             resultBuffer.position(0);
             return resultBuffer;
             //log data that is received
