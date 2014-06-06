@@ -17,6 +17,7 @@ import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -37,7 +38,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     private long mFailedSendReceiveTime;
     private int mSuccessfulCmds;
     private int mFailedCmds;
-    private int mAverageCmdPeriodic;
+    private int mAverageCmdPeriodic = Integer.MAX_VALUE;
 
     public FecpCmdHandler(CommInterface commController, SystemDevice sysDev)
     {
@@ -50,7 +51,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         this.mFailedSendReceiveTime = 0;
         this.mSuccessfulCmds = 0;
         this.mFailedCmds = 0;
-        this.mAverageCmdPeriodic = 0;
+        this.mAverageCmdPeriodic = Integer.MAX_VALUE;
     }
 
     /**
@@ -203,7 +204,10 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         }
         long resultTime = endTime - startTime;
         cmd.setCommSendReceiveTime(resultTime);
-        this.mAverageCmdPeriodic += cmd.getFrequency();
+        if(this.mAverageCmdPeriodic > cmd.getFrequency() && cmd.getFrequency() != 0)
+        {
+            this.mAverageCmdPeriodic = cmd.getFrequency();
+        }
         //check if there was an error with the send. if so return Failed
         if(tempBuffer == null || tempBuffer.get(0)== 0)
         {
@@ -233,15 +237,23 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     @Override
     public String getCmdHandlingStats() {
         String details;
-        details = "Successful Cmds: " + this.mSuccessfulCmds + "\n" +
+        double successRate = (this.mSuccessfulCmds + 0.0) / ((this.mSuccessfulCmds + this.mFailedCmds + 0.0));
+        DecimalFormat df = new DecimalFormat("##.##%");
+        DecimalFormat msTime = new DecimalFormat("##.##mSec");
+        double responseTime =  ((this.mSucessfulSendReceiveTime + this.mFailedSendReceiveTime)/(this.mFailedCmds + this.mSuccessfulCmds));
+
+        DecimalFormat freqF = new DecimalFormat("###Hz");
+        double queryFreq = this.mAverageCmdPeriodic;// /(this.mFailedCmds + this.mSuccessfulCmds);
+        queryFreq /= 1000;//convert to 0.001 ms
+        //convert to Hz
+        queryFreq = 1 / queryFreq;
+
+
+        details = "Success Rate:" + df.format(successRate) + "\n" +
+                "Successful Cmds: " + this.mSuccessfulCmds + "\n" +
                 "Failed Cmds: " + this.mFailedCmds + "\n" +
-                "Successful Cmd Time: " + this.mSucessfulSendReceiveTime + " mSec\n" +
-                "Success Rate: " + (this.mSuccessfulCmds + 0.0) / ((this.mSuccessfulCmds + this.mFailedCmds + 0.0)) + "\n" +
-                "Failed Cmd Time: " + this.mFailedSendReceiveTime + " mSec\n" +
-                "total msg Time: " + (this.mSucessfulSendReceiveTime  + this.mFailedSendReceiveTime)+ " mSec\n" +
-                "Average Cmd Time: " +
-                ((this.mSucessfulSendReceiveTime + this.mFailedSendReceiveTime)/(this.mFailedCmds + this.mSuccessfulCmds)) +" mSec\n" +
-                "Average Periodic Send Time: " + this.mAverageCmdPeriodic /(this.mFailedCmds + this.mSuccessfulCmds) + " mSec";
+                "Average Response Cmd Time " + msTime.format(responseTime) + "\n" +
+                "Fastest Query Cmd Frequency: " + freqF.format(queryFreq);//this.mAverageCmdPeriodic /(this.mFailedCmds + this.mSuccessfulCmds) + " mSec";
 
         return details;
     }

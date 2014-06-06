@@ -87,7 +87,9 @@ public class TcpComm implements CommInterface {
                     this.mSocket.setReceiveBufferSize(1024);
                     this.mSocket.connect(this.mIpAddress, 10000);
                 }
-                //this.mSocket.setPerformancePreferences(1, 2, 0);//Latency is the highest priority does nothing
+                //set the timeout for 5 seconds, if so abandon command
+                this.mSocket.setSoTimeout(5000);
+
                 this.mSocket.setTcpNoDelay(true);
                 this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
                 this.mFromMachine = this.mSocket.getInputStream();
@@ -156,6 +158,26 @@ public class TcpComm implements CommInterface {
     public ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout) {
         ByteBuffer resultBuffer = ByteBuffer.allocate(64);
         resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        //check if disconnected
+
+        if(!this.mSocket.isConnected())
+        {
+            //if no connection
+            try {
+                this.mSocket.connect(this.mIpAddress, 5000);
+            }
+            catch (IOException ex)
+            {
+                Log.e("DISCONNECTED_SOCKET", "Socket was disconnected, reconnect Failed");
+                for (DeviceConnectionListener listener : this.mConnectionListeners) {
+                    listener.onDeviceDisconnected();
+                }
+                return null;
+            }
+
+
+        }
+
         try {
             byte[] data = new byte[2000];//shouldn't every get to many
             buff.position(0);
@@ -165,13 +187,11 @@ public class TcpComm implements CommInterface {
                 this.mSocket.getInputStream().read();
             }
 
-            //this.mSocket.getOutputStream().write(buff.array());
             this.mToMachine.write(buff.array());
             this.mToMachine.flush();
-            //this.mSocket.getOutputStream().write(helloWorld.getBytes());
 
             //assume it worked
-            int bytesRead =this.mSocket.getInputStream().read(data);//at least 64
+            int bytesRead =this.mSocket.getInputStream().read(data);//at least 64 or more
             //read all of the data available
             buff.position(0);
             if(data[0] == (byte)0x03 && buff.get() == (byte)0x03)//custom handle for special objects.

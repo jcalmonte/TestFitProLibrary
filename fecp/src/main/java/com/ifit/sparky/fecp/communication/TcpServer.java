@@ -145,8 +145,8 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             this.clientSocket = clientSocket;
 
             try {
-                this.clientSocket.setSendBufferSize(2000);
-                this.clientSocket.setReceiveBufferSize(200);
+                this.clientSocket.setSendBufferSize(1024);
+                this.clientSocket.setReceiveBufferSize(1024);
                 //this.inFromClient = new BufferedInputStream(this.clientSocket.getInputStream());
                 this.clientSocket.setTcpNoDelay(true);//disable Nagle's Algorithm
                 this.mToClient = new BufferedOutputStream(this.clientSocket.getOutputStream());
@@ -348,7 +348,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                     ByteBuffer reply = mSysDev.getSysInfoSts().getReplyBuffer();
 
                     reply.position(0);
-                    reply.put(0, (byte) 0x03);//portal device
+//                    reply.put(0, (byte) 0x03);//portal device
                     if(mSysDev.getConfig() == SystemConfiguration.SLAVE || mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
                         reply.put(4, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
                     }
