@@ -19,7 +19,7 @@ public class FitProTcp extends FecpController {
 
     private InetSocketAddress mIpAddress;
     public final int DEFAULT_PORT = 8090;
-    public final int DEFAULT_TIME_OUT = 5000;
+    public final int DEFAULT_TIME_OUT = 2000;
 
     /**
      * This sets up the FitPro for the wifi connection over TCP

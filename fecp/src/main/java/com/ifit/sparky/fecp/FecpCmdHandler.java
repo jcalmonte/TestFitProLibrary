@@ -39,6 +39,9 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     private int mSuccessfulCmds;
     private int mFailedCmds;
     private int mAverageCmdPeriodic = Integer.MAX_VALUE;
+    private boolean mCommSpeedLogging = false;
+
+    private final int COMM_THREAD_PRIORITY = -7;
 
     public FecpCmdHandler(CommInterface commController, SystemDevice sysDev)
     {
@@ -184,33 +187,28 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
      * @param cmd the command to the Device
      */
     @Override
-    public void sendCommand(FecpCommand cmd) throws Exception{
+    public void sendCommand(FecpCommand cmd) throws Exception {
         long startTime;
         long endTime;
         cmd.incrementCmdSentCounter();
         ByteBuffer tempBuffer = cmd.getCommand().getCmdMsg();
         //send the command and handle the response.
-        if(cmd.getTimeout() == 0)
-        {
+        if (cmd.getTimeout() == 0) {
             startTime = System.currentTimeMillis();
             tempBuffer = this.mCommController.sendAndReceiveCmd(tempBuffer);
             endTime = System.currentTimeMillis();
-        }
-        else
-        {
+        } else {
             startTime = System.currentTimeMillis();
             tempBuffer = this.mCommController.sendAndReceiveCmd(tempBuffer, cmd.getTimeout());
             endTime = System.currentTimeMillis();
         }
         long resultTime = endTime - startTime;
         cmd.setCommSendReceiveTime(resultTime);
-        if(this.mAverageCmdPeriodic > cmd.getFrequency() && cmd.getFrequency() != 0)
-        {
+        if (this.mAverageCmdPeriodic > cmd.getFrequency() && cmd.getFrequency() != 0) {
             this.mAverageCmdPeriodic = cmd.getFrequency();
         }
         //check if there was an error with the send. if so return Failed
-        if(tempBuffer == null || tempBuffer.get(0)== 0)
-        {
+        if (tempBuffer == null || tempBuffer.get(0) == 0) {
             //message failed
             this.mFailedSendReceiveTime += resultTime;
             cmd.getCommand().getStatus().setStsId(StatusId.FAILED);
@@ -219,6 +217,10 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         }
         this.mSucessfulSendReceiveTime += resultTime;
         this.mSuccessfulCmds++;
+        if (mCommSpeedLogging)
+        {
+            Log.d("COMMUNICATION", "cmd time:" + resultTime + "mSec");
+        }
         cmd.getCommand().getStatus().handleStsMsg(tempBuffer);
         cmd.incrementCmdReceivedCounter();
     }
@@ -310,6 +312,9 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         //yes this is an infinite loop.
         try
         {
+            //communications should be a high priority
+            int threadId = android.os.Process.myTid();
+            android.os.Process.setThreadPriority(COMM_THREAD_PRIORITY);
             while(this.mProcessCmds.size() > 0)
             {
                 //set comm active

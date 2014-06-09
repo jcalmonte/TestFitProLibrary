@@ -91,6 +91,7 @@ public class TcpComm implements CommInterface {
                 this.mSocket.setTcpNoDelay(true);
                 this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
                 this.mFromMachine = this.mSocket.getInputStream();
+                Log.d("TCP_CONNECTION", "Initial Connection was successful");
             }
             else
             {
@@ -172,29 +173,28 @@ public class TcpComm implements CommInterface {
                 this.mSocket.setTcpNoDelay(true);
                 this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
                 this.mFromMachine = this.mSocket.getInputStream();
+
+                Log.d("TCP_CONNECTION", "Attempting reconnection was successful");
             }
             catch (IOException ex)
             {
 
-                Log.e("DISCONNECTED_SOCKET", "Socket was disconnected, reconnect Failed");
+                Log.d("TCP_CONNECTION", "Socket was disconnected, reconnect Failed");
                 for (DeviceConnectionListener listener : this.mConnectionListeners) {
                     listener.onDeviceDisconnected();
                 }
-
                 return null;
             }
-
-
         }
 
         try {
             byte[] data = new byte[2000];//shouldn't every get to many
             buff.position(0);
             //clear input before sending
-            while (this.mSocket.getInputStream().available() != 0)
-            {
-                this.mSocket.getInputStream().read();
-            }
+//            while (this.mSocket.getInputStream().available() != 0)
+//            {
+//                this.mSocket.getInputStream().read();
+//            }
 
             this.mToMachine.write(buff.array());
             this.mToMachine.flush();

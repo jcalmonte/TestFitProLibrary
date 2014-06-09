@@ -32,6 +32,8 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
     private int mServerPort = 8090;//default
     private FecpCmdHandleInterface mCmdHandler;
     private SystemDevice mSysDev;
+    private boolean mCommLogging = false;
+    private final int COMM_THREAD_PRIORITY = -7;
 
     public TcpServer(FecpCmdHandleInterface cmdHandler, SystemDevice sysDev)
     {
@@ -135,19 +137,15 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 
 
         private Socket clientSocket;
-        //private InputStream inFromClient;
-//        private BufferedInputStream inFromClient;
-        //private DataOutputStream mToClient;
         private BufferedOutputStream mToClient;
 
         private FecpCommand mRawFecpCmd;
         public CommunicationThread(Socket clientSocket) {
-            this.clientSocket = clientSocket;
 
+            this.clientSocket = clientSocket;
             try {
                 this.clientSocket.setSendBufferSize(1024);
                 this.clientSocket.setReceiveBufferSize(1024);
-                //this.inFromClient = new BufferedInputStream(this.clientSocket.getInputStream());
                 this.clientSocket.setTcpNoDelay(true);//disable Nagle's Algorithm
                 this.mToClient = new BufferedOutputStream(this.clientSocket.getOutputStream());
                 this.clientSocket.setSoTimeout(5000);//timeout after 5 secs
@@ -161,176 +159,62 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 
             int runningCheck = 0;//if it has been to long close socket
             long startTime;
+            long endTime;
+            //increase the thread priority to for faster response
+            int threadId = android.os.Process.myTid();
+            Log.d("SERVER", "previous Thread Priority=" + android.os.Process.getThreadPriority(threadId));
+            android.os.Process.setThreadPriority(COMM_THREAD_PRIORITY);
+            Log.d("SERVER", "post Thread Priority=" + android.os.Process.getThreadPriority(threadId));
+
             while (!Thread.currentThread().isInterrupted()) {
+
+                startTime = System.currentTimeMillis();
                 try {
 
-                    startTime = System.currentTimeMillis();
-                    if(true|| this.clientSocket.getInputStream().available()!=0)
+                    byte[] data = new byte[64];
+                    int readCount = this.clientSocket.getInputStream().read(data, 0, 64);
+                    if(readCount == -1)
                     {
+                        runningCheck++;
+                    }
+                    else
+                    {
+                        runningCheck = 0;
+                    }
+                    if(runningCheck > 50)
+                    {
+                        //system is disconnected
+                        this.clientSocket.close();
+                        this.mToClient.close();
+                        return;
+                    }
 
-                        byte[] data = new byte[64];
-                        int readCount = this.clientSocket.getInputStream().read(data, 0, 64);
-                        if(readCount == -1)
-                        {
-                            runningCheck++;
-                        }
-                        else
-                        {
-                            runningCheck = 0;
-                        }
-                        if(runningCheck > 50)
-                        {
-                            //system is disconnected
-                            this.clientSocket.close();
-                            this.mToClient.close();
-                            return;
-                        }
-                        //this.inFromClient.read(data);
-
-                        String result = "raw client " + this.clientSocket.getInetAddress().getHostAddress() +":" + this.clientSocket.getPort() +"data=\n";
+                    if(mCommLogging) {
+                        String result = "raw client " + this.clientSocket.getInetAddress().getHostAddress() + ":" + this.clientSocket.getPort() + "data=\n";
                         int counter = 0;
                         int length = data[1];
 
                         for (byte b : data) {
-                            if(counter < length )
-                            {
+                            if (counter < length) {
                                 result += "[" + counter++ + "]=" + b + "\n";
                             }
                         }
                         Log.d("IN_DATA", result);
-                        this.handleRequest(data);
-
-//                        this.clientSocket.getOutputStream().write(helloWorld.getBytes());
-//
-//                        this.clientSocket.getOutputStream().write(data);
                     }
-                    //log data that is received
-                    long endTime = System.currentTimeMillis();
+                    this.handleRequest(data);
 
-                    Log.d("SERVER_SEND_TIME","Server Full:" + (endTime -startTime ));
+                    if(mCommLogging) {
+                        //log data that is received
+                        endTime = System.currentTimeMillis();
+                        Log.d("SERVER_SEND_TIME", "Server responseTime:" + (endTime - startTime) + "mSec");
+                    }
             } catch (Exception e) {
-                    Log.d("NO_COMM", "Nothing to receive");
+                    endTime = System.currentTimeMillis();
+                    Log.d("NO_COMM", "Nothing to receive, Time was:" + (endTime - startTime) + "mSec" );
 //                e.printStackTrace();
             }
         }
     }
-
-
-//        public void run2() {
-//            while (!Thread.currentThread().isInterrupted()) {
-//                try {
-//                    long startTime = System.currentTimeMillis();
-//                    long medTime = 0;
-//                    byte[] data = new byte[64];
-//
-//
-////                    this.inFromClient.read(data, 0, 3);//read the first 3 bytes
-//                    this.clientSocket.getInputStream().read(data, 0, 3);
-//                    try {
-//                        //created the command
-//                        //check what the command is, and my current master configuration
-//
-//                        if(data[0] == (byte)0x02 && data[2] == (byte)0x82)//addressing the Main device for sys info
-//                        {
-//                            //read the rest of the data
-////                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
-//                            int readCount = this.clientSocket.getInputStream().read(data, 3, 61);
-//                            //return System Info command with appropriate system configuration
-//                            ByteBuffer reply = mSysDev.getSysInfoSts().getReplyBuffer();
-//
-//                            reply.position(0);
-//                            reply.put(0, (byte) 0x03);//portal device
-//                            if(mSysDev.getConfig() == SystemConfiguration.SLAVE || mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
-//                                reply.put(4, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
-//                            }
-//                            else if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER) {
-//                                reply.put(4, (byte)SystemConfiguration.PORTAL_TO_MASTER.ordinal());//portal device
-//                            }
-//
-//                            byte length = reply.get(1);
-//                            reply.position(length-1);
-//                            reply.put(Command.getCheckSum(reply));
-//                            reply.position(0);
-//                            this.mToClient.write(reply.array());
-//                            //they then use Listen command and single not repeat commands
-//
-//                        }
-//                        else if (data[0] == (byte)0x03 && data[2] == (byte)0x01)//get System Device Command
-//                        {
-//                            medTime = System.currentTimeMillis();
-//                            //reply with specific command
-//                            int readCount = this.inFromClient.read(data, 3, 61);//read the rest of the data in the command
-//                            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//                            ObjectOutput objectOutput = null;
-//                            objectOutput = new ObjectOutputStream(byteArrayOutputStream);
-//
-//                            mSysDev.writeObject((ObjectOutputStream) objectOutput);
-//                            byte[] dataObjectArray = byteArrayOutputStream.toByteArray();
-//
-//                            this.mToClient.write(0x03);//size of the object may vary greatly
-//                            ByteBuffer b = ByteBuffer.allocate(5);
-//                            b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
-//                            b.put((byte)0x03);
-//                            b.putInt(dataObjectArray.length);
-//
-//                            //this.mToClient.writeInt(dataObjectArray.length);//number of bytes coming up
-//                            this.mToClient.write(b.array());
-//                            this.mToClient.write(dataObjectArray);//write object to client
-//                        }
-//                        else {
-//
-//                            int readCount = 0;//read the rest of the data in the command
-//                            try {
-//                                readCount = this.inFromClient.read(data, 3, 61);
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                                ByteBuffer buff = ByteBuffer.allocate(64);
-//                                buff.order(ByteOrder.LITTLE_ENDIAN);
-//                                String errMessage = "Error with the message 0 data was send";
-//                                buff.put(errMessage.getBytes());
-//                                buff.position(0);
-//                                this.mToClient.write(buff.array(), 0, 64);//error with message reply
-//                            }
-//                            if(readCount == -1 || (data[0] == 0 && data[1] == 0))
-//                            {
-//                                //read to the end of the input stream
-//                                while(this.inFromClient.available()>0)
-//                                {
-//                                    this.inFromClient.read();
-//
-//
-//                                }
-//                                ByteBuffer buff = ByteBuffer.allocate(64);
-//                                buff.order(ByteOrder.LITTLE_ENDIAN);
-//                                String errMessage = "Error with the message 0 data was send";
-//                                buff.put(errMessage.getBytes());
-//                                buff.position(0);
-//                                this.mToClient.write(buff.array(), 0, 64);//error with message reply
-//                                return;
-//                            }
-//                            this.mRawFecpCmd = new FecpCommand(new RawDataCmd(ByteBuffer.wrap(data)), this);
-//
-//                            //set to be a higher priority
-//                            //check if it is a master command
-//                            //send to FecpCmdHandler
-//                            mCmdHandler.addFecpCommand(this.mRawFecpCmd);
-//                        }
-//
-//                        long endTime = System.currentTimeMillis();
-//                        if(medTime == 0)
-//                        {
-//                            medTime = endTime;
-//                        }
-//                        Log.d("SERVER_SEND_TIME","Server Full:" + (endTime -startTime ) + "mSec Part:" + (endTime - medTime));
-//                        //clear everything from in buffer
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
 
         private void handleRequest(byte[] buff)
         {
