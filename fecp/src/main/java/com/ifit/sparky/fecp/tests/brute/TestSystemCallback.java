@@ -7,7 +7,7 @@
  */
 package com.ifit.sparky.fecp.tests.brute;
 
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
+import com.ifit.sparky.fecp.communication.SystemStatusListener;
 
 import junit.framework.TestCase;
 
@@ -20,7 +20,7 @@ public class TestSystemCallback extends TestCase {
      */
     public void testCallback_SystemCallback() throws Exception
     {
-        SystemStatusCallback callback = new TempFecpCallbacker();
+        SystemStatusListener callback = new TempFecpCallbacker();
         //test the connect callback
         assertEquals(false, ((TempFecpCallbacker)callback).getIsConnectedStatus());
         callback.systemDeviceConnected(null);

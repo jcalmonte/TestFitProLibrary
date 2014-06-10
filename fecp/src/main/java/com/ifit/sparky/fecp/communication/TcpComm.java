@@ -18,7 +18,6 @@ import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -36,13 +35,12 @@ public class TcpComm implements CommInterface {
     private TcpConnectionDevice mConnectionDevice;
     private final int BUFF_SIZE = 64;
     private BufferedOutputStream mToMachine;
-    private InputStream mFromMachine;
     private InetSocketAddress mIpAddress;
     private int mSendTimeout;
     private ScanSystemListener mScanListener;//returns with list of devices or none
     private boolean enableLogging = false;
 
-    private CopyOnWriteArrayList<DeviceConnectionListener> mConnectionListeners;
+    private CopyOnWriteArrayList<SystemStatusListener> mConnectionListeners;
 
     public TcpComm()
     {
@@ -55,7 +53,7 @@ public class TcpComm implements CommInterface {
         this.mSendTimeout = defaultTimeout;
         if(this.mConnectionListeners == null)
         {
-            this.mConnectionListeners = new CopyOnWriteArrayList<DeviceConnectionListener>();
+            this.mConnectionListeners = new CopyOnWriteArrayList<SystemStatusListener>();
         }
     }
 
@@ -68,7 +66,7 @@ public class TcpComm implements CommInterface {
         this.mSendTimeout = defaultTimeout;
         if(this.mConnectionListeners == null)
         {
-            this.mConnectionListeners = new CopyOnWriteArrayList<DeviceConnectionListener>();
+            this.mConnectionListeners = new CopyOnWriteArrayList<SystemStatusListener>();
         }
     }
 
@@ -87,10 +85,9 @@ public class TcpComm implements CommInterface {
                     this.mSocket.connect(this.mIpAddress, 10000);
                 }
                 //set the timeout for 5 seconds, if so abandon command
-                this.mSocket.setSoTimeout(5000);
+//                this.mSocket.setSoTimeout(5000);
                 this.mSocket.setTcpNoDelay(true);
                 this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
-                this.mFromMachine = this.mSocket.getInputStream();
                 Log.d("TCP_CONNECTION", "Initial Connection was successful");
             }
             else
@@ -105,9 +102,10 @@ public class TcpComm implements CommInterface {
                 // check for the system device
                 return SystemDevice.initializeSystemDevice(this);//get the System Device
             }
-            //todo remove this listener
-            for (DeviceConnectionListener listener : this.mConnectionListeners) {
-                listener.onDeviceConnected();
+
+            for (SystemStatusListener listener : this.mConnectionListeners) {
+                listener.systemDisconnected();
+//                listener.onDeviceConnected();
             }
 
         } catch (Exception e) {
@@ -122,7 +120,7 @@ public class TcpComm implements CommInterface {
      * @param listener the listener for the callbacks
      */
     @Override
-    public void addConnectionListener(DeviceConnectionListener listener) {
+    public void addConnectionListener(SystemStatusListener listener) {
         this.mConnectionListeners.add(listener);
     }
 
@@ -132,6 +130,16 @@ public class TcpComm implements CommInterface {
     @Override
     public void clearConnectionListener() {
         this.mConnectionListeners.clear();
+    }
+
+    /**
+     * gets the list of System Status Listeners
+     *
+     * @return list of all the System Status Listeners
+     */
+    @Override
+    public List<SystemStatusListener> getSystemStatusListeners() {
+        return this.mConnectionListeners;
     }
 
     /**
@@ -169,10 +177,9 @@ public class TcpComm implements CommInterface {
                 }
                 //attempt to reopen the socket completely
                 this.mSocket.connect(this.mIpAddress, 5000);
-                this.mSocket.setSoTimeout(5000);
+//                this.mSocket.setSoTimeout(5000);
                 this.mSocket.setTcpNoDelay(true);
                 this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
-                this.mFromMachine = this.mSocket.getInputStream();
 
                 Log.d("TCP_CONNECTION", "Attempting reconnection was successful");
             }
@@ -180,24 +187,28 @@ public class TcpComm implements CommInterface {
             {
 
                 Log.d("TCP_CONNECTION", "Socket was disconnected, reconnect Failed");
-                for (DeviceConnectionListener listener : this.mConnectionListeners) {
-                    listener.onDeviceDisconnected();
+                for (SystemStatusListener listener : this.mConnectionListeners) {
+                    listener.systemDisconnected();
+//                    listener.onDeviceDisconnected();
                 }
                 return null;
             }
         }
 
         try {
+            this.mSocket.setSoTimeout(timeout);
+
+            //read all previous data before beginning
+            while(this.mSocket.getInputStream().available() > 0)
+            {
+                this.mSocket.getInputStream().read();//discard the unknown data
+            }
             byte[] data = new byte[2000];//shouldn't every get to many
             buff.position(0);
             //clear input before sending
-//            while (this.mSocket.getInputStream().available() != 0)
-//            {
-//                this.mSocket.getInputStream().read();
-//            }
-
             this.mToMachine.write(buff.array());
             this.mToMachine.flush();
+            Thread.sleep(5);//wait for the data to get there before jumping forward
 
             //assume it worked
             int bytesRead =this.mSocket.getInputStream().read(data);//at least 64 or more
@@ -338,9 +349,7 @@ public class TcpComm implements CommInterface {
                 mScanListener.onScanFinish(possibleDevices);
             }
         });
-
         scanThread.start();
-
     }
 
     private InetAddress getCurrentIpAddress()
@@ -397,7 +406,7 @@ public class TcpComm implements CommInterface {
 
                             this.mDev.setSendStream(new BufferedOutputStream(this.mDev.getSocket().getOutputStream()));
                             this.mDev.setReadStream(this.mDev.getSocket().getInputStream());
-                            this.mDev.getSocket().setSoTimeout(5000);//just for this initial check
+                            this.mDev.getSocket().setSoTimeout(10000);//just for this initial check
 
                             byte[] data;
                             byte[] readData;

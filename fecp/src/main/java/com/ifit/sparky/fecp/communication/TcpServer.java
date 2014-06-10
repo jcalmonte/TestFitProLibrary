@@ -24,8 +24,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 
-public class TcpServer implements CommInterface.DeviceConnectionListener {
+public class TcpServer implements SystemStatusListener {
 
     private ServerSocket mServerSock;
     private Thread mServerThread;
@@ -33,23 +34,71 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
     private FecpCmdHandleInterface mCmdHandler;
     private SystemDevice mSysDev;
     private boolean mCommLogging = false;
-    private final int COMM_THREAD_PRIORITY = -7;
+    private final int COMM_THREAD_PRIORITY = -17;//major priority
+    private ServerDataCallback mServerDataCallback;
 
+
+    /**
+     * Creates a Server with the System device to allob for
+     * @param cmdHandler Handler for the commands. Sending and receiving.
+     * @param sysDev System device for other devices to query information about the machine.
+     */
     public TcpServer(FecpCmdHandleInterface cmdHandler, SystemDevice sysDev)
     {
-        this.mCmdHandler = cmdHandler;
-        this.mSysDev = sysDev;
-        this.mServerThread = new Thread(new ServerThread());
-        this.mCmdHandler.getCommController().addConnectionListener(this);
-
+        initializeServer(cmdHandler, sysDev, this.mServerPort, null);
     }
 
-    public TcpServer(FecpCmdHandleInterface cmdHandler, int portNumber)
+    /**
+     * Creates a server with the different port number to broadcast on.
+     * @param cmdHandler Handler for the commands. Sending and receiving.
+     * @param sysDev System device for other devices to query information about the machine.
+     * @param portNumber The new port for the Communication
+     */
+    public TcpServer(FecpCmdHandleInterface cmdHandler, SystemDevice sysDev, int portNumber)
     {
-        this.mServerPort = portNumber;
+        initializeServer(cmdHandler, sysDev, portNumber, null);
+    }
+
+    /**
+     * This creates a server that can handle
+     * @param cmdHandler handles sending messages directly to the machine.
+     * @param sysDev System device for other devices to query information about the machine.
+     * @param callback feeds status information through the callback
+     */
+    public TcpServer(FecpCmdHandleInterface cmdHandler, SystemDevice sysDev, ServerDataCallback callback)
+    {
+        initializeServer(cmdHandler, sysDev, this.mServerPort, callback);
+    }
+
+    /**
+     * This creates a server that can handle
+     * @param cmdHandler handles sending messages directly to the machine.
+     * @param sysDev System device for other devices to query information about the machine.
+     * @param portNumber the port number for the systems
+     * @param callback feeds status information through the callback
+     */
+    public TcpServer(FecpCmdHandleInterface cmdHandler, SystemDevice sysDev, int portNumber, ServerDataCallback callback) {
+        initializeServer(cmdHandler, sysDev, portNumber, callback);
+    }
+
+    /**
+     * initializes all of the items that are apart of the TCP server
+     * @param cmdHandler the command handler for messages from clients
+     * @param sysDev the system device to give to clients
+     * @param portNumber the port number for the systems
+     * @param callback callback to give data back to those whom implement
+     */
+    private void initializeServer(FecpCmdHandleInterface cmdHandler, SystemDevice sysDev, int portNumber, ServerDataCallback callback) {
+
         this.mCmdHandler = cmdHandler;
-        this.mServerThread = new Thread(new ServerThread());
+        this.mSysDev = sysDev;
+        this.mServerPort = portNumber;
         this.mCmdHandler.getCommController().addConnectionListener(this);
+        if(callback != null) {
+            this.mServerDataCallback = callback;
+        }
+
+        this.mServerThread = new Thread(new ServerThread());
     }
 
     /**
@@ -87,13 +136,11 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
         return false;
     }
 
+    /**
+     * this method is called when the system is disconnected. this is the same as the Communications disconnect
+     */
     @Override
-    public void onDeviceConnected() {
-        //don't start the server waiting for validation on the machine type
-    }
-
-    @Override
-    public void onDeviceDisconnected() {
+    public void systemDisconnected() {
         //stop the server thread
         try {
             this.mServerSock.close();//can't have a connection if there is no device
@@ -101,6 +148,28 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
             e.printStackTrace();
         }
     }
+
+    /**
+     * This is called after system is connected, and the communications is setup.
+     *
+     * @param dev the System device that is connected. null if attempt failed
+     */
+    @Override
+    public void systemDeviceConnected(SystemDevice dev) {
+
+        //don't start the server waiting for validation on the machine type
+    }
+
+    /**
+     * This will be called when the communication layer is connected. this is a lower level of
+     * communication notification.
+     */
+    @Override
+    public void systemCommunicationConnected() {
+
+        //don't start the server waiting for validation on the machine type
+    }
+
 
     private class ServerThread implements Runnable{
 
@@ -138,41 +207,61 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 
         private Socket clientSocket;
         private BufferedOutputStream mToClient;
+        private int mSuccessfulMsg;
+        private int mFailedMsg;
+        private ArrayList<Long> mRunningSendTimeSum;//running sum of 10 samples
+        private ArrayList<Long> mRunningReceiveTimeSum;//running sum of 10 samples
+        private long mCurrentSendTime;
+        private long mCurrentReceiveTime;
 
         private FecpCommand mRawFecpCmd;
         public CommunicationThread(Socket clientSocket) {
 
             this.clientSocket = clientSocket;
+            this.mRunningSendTimeSum = new ArrayList<Long>();
+            this.mRunningReceiveTimeSum = new ArrayList<Long>();
             try {
                 this.clientSocket.setSendBufferSize(1024);
                 this.clientSocket.setReceiveBufferSize(1024);
                 this.clientSocket.setTcpNoDelay(true);//disable Nagle's Algorithm
                 this.mToClient = new BufferedOutputStream(this.clientSocket.getOutputStream());
-                this.clientSocket.setSoTimeout(5000);//timeout after 5 secs
+                this.clientSocket.setSoTimeout(1000);//timeout after 5 secs
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        public void run() {
+        public void run()
+        {
 
             int runningCheck = 0;//if it has been to long close socket
-            long startTime;
+            long startTime;//start to send is the read time, and from send to end is the send time
+            long sendTime;
             long endTime;
             //increase the thread priority to for faster response
             int threadId = android.os.Process.myTid();
-            Log.d("SERVER", "previous Thread Priority=" + android.os.Process.getThreadPriority(threadId));
+            Log.d("SERVER", "previous Thread(" + threadId+ ") Priority=" + android.os.Process.getThreadPriority(threadId));
             android.os.Process.setThreadPriority(COMM_THREAD_PRIORITY);
             Log.d("SERVER", "post Thread Priority=" + android.os.Process.getThreadPriority(threadId));
 
-            while (!Thread.currentThread().isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted())
+            {
 
                 startTime = System.currentTimeMillis();
                 try {
 
+                    if(runningCheck > 5)//5 seconds of timeout disconnect
+                    {
+                        //system is disconnected
+                        this.clientSocket.close();
+                        this.mToClient.close();
+                        return;
+                    }
+
                     byte[] data = new byte[64];
                     int readCount = this.clientSocket.getInputStream().read(data, 0, 64);
+                    sendTime = System.currentTimeMillis();
                     if(readCount == -1)
                     {
                         runningCheck++;
@@ -180,13 +269,6 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                     else
                     {
                         runningCheck = 0;
-                    }
-                    if(runningCheck > 50)
-                    {
-                        //system is disconnected
-                        this.clientSocket.close();
-                        this.mToClient.close();
-                        return;
                     }
 
                     if(mCommLogging) {
@@ -203,18 +285,67 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
                     }
                     this.handleRequest(data);
 
+                    endTime = System.currentTimeMillis();
+                    this.mSuccessfulMsg++;
                     if(mCommLogging) {
                         //log data that is received
-                        endTime = System.currentTimeMillis();
                         Log.d("SERVER_SEND_TIME", "Server responseTime:" + (endTime - startTime) + "mSec");
                     }
-            } catch (Exception e) {
+
+
+
+
+                } catch (Exception e) {
+                    sendTime = System.currentTimeMillis();
                     endTime = System.currentTimeMillis();
+                    runningCheck++;
                     Log.d("NO_COMM", "Nothing to receive, Time was:" + (endTime - startTime) + "mSec" );
-//                e.printStackTrace();
+                    this.mFailedMsg++;
+//                  e.printStackTrace();
+                }
+
+                //send stats
+                if(mServerDataCallback != null)
+                {
+                    this.mCurrentSendTime = (endTime -sendTime);
+                    this.mCurrentReceiveTime = (sendTime - startTime);
+                    if(this.mRunningReceiveTimeSum.size() > 10)
+                    {
+                        this.mRunningReceiveTimeSum.remove(0);
+                    }
+                    if(this.mRunningSendTimeSum.size() > 10)
+                    {
+                        this.mRunningSendTimeSum.remove(0);
+                    }
+                    this.mRunningReceiveTimeSum.add(this.mCurrentReceiveTime);
+                    this.mRunningSendTimeSum.add(this.mCurrentSendTime);
+
+                    long sendTimeSum = 0;
+                    long receiveTimeSum = 0;
+
+                    for (Long sample : this.mRunningSendTimeSum) {
+                        sendTimeSum += sample;
+                    }
+                    for (Long sample : this.mRunningReceiveTimeSum) {
+                        receiveTimeSum += sample;
+                    }
+
+                    double sendAverageTime = (sendTimeSum + 0.0)/ this.mRunningSendTimeSum.size();
+                    double receiveAverageTime = (receiveTimeSum + 0.0)/ this.mRunningReceiveTimeSum.size();
+
+                    String ServerStatus;
+                    ServerStatus = "Server Stats: "+ "IpAddress"+ this.clientSocket.getInetAddress().getHostAddress()+"\n"
+                            + "total msgs:" + (this.mSuccessfulMsg + this.mFailedMsg) + "\n"
+                            + "SuccessRate:" + (100*(this.mSuccessfulMsg / (this.mFailedMsg + this.mSuccessfulMsg + 0.0))) + "\n"
+                            + "AverageSendTime: " + sendAverageTime + "mSec\n"
+                            + "AverageReceiveTime: " + receiveAverageTime + "mSec\n";
+                    mServerDataCallback.serverStats(ServerStatus);
+                }
+
+
+
             }
         }
-    }
 
         private void handleRequest(byte[] buff)
         {
@@ -331,6 +462,7 @@ public class TcpServer implements CommInterface.DeviceConnectionListener {
 
         }
     }
+
 
 
 }

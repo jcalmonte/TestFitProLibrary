@@ -11,7 +11,6 @@ import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.communication.TcpComm;
 import com.ifit.sparky.fecp.communication.TcpConnectionDevice;
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 
 import java.net.InetSocketAddress;
 
@@ -25,11 +24,10 @@ public class FitProTcp extends FecpController {
      * This sets up the FitPro for the wifi connection over TCP
      * @param ipAddress the ip address
      * @param port port to communicate over
-     * @param callback the connection status callback
      * @throws Exception
      */
-    public FitProTcp(String ipAddress, int port, SystemStatusCallback callback) throws Exception {
-        super(CommType.TCP, callback);
+    public FitProTcp(String ipAddress, int port) throws Exception {
+        super(CommType.TCP);
         this.mIpAddress = new InetSocketAddress(ipAddress, port);
         this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
     }
@@ -37,11 +35,10 @@ public class FitProTcp extends FecpController {
     /**
      * This sets up the FitPro for the wifi connection over TCP Uses default Port of 8090
      * @param ipAddress the ip address
-     * @param callback the connection status callback
      * @throws Exception
      */
-    public FitProTcp(String ipAddress, SystemStatusCallback callback) throws Exception {
-        super(CommType.TCP, callback);
+    public FitProTcp(String ipAddress) throws Exception {
+        super(CommType.TCP);
         this.mIpAddress = new InetSocketAddress(ipAddress, DEFAULT_PORT);
         this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
     }
@@ -49,11 +46,10 @@ public class FitProTcp extends FecpController {
     /**
      * This sets up the FitPro for the wifi connection over TCP
      * @param ipAddress the ip address
-     * @param callback the connection status callback
      * @throws Exception
      */
-    public FitProTcp(InetSocketAddress ipAddress, SystemStatusCallback callback) throws Exception {
-        super(CommType.TCP, callback);
+    public FitProTcp(InetSocketAddress ipAddress) throws Exception {
+        super(CommType.TCP);
         this.mIpAddress = ipAddress;
         this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
     }
@@ -61,11 +57,10 @@ public class FitProTcp extends FecpController {
     /**
      * This sets up the FitPro for the wifi connection over TCP
      * @param connectionDev the Socket and the Device to connect to
-     * @param callback the connection status callback
      * @throws Exception
      */
-    public FitProTcp(TcpConnectionDevice connectionDev, SystemStatusCallback callback) throws Exception {
-        super(CommType.TCP, callback);
+    public FitProTcp(TcpConnectionDevice connectionDev) throws Exception {
+        super(CommType.TCP);
         this.mIpAddress = connectionDev.getIpAddress();
         this.mCommController = new TcpComm(connectionDev, DEFAULT_TIME_OUT);
     }
@@ -113,7 +108,8 @@ public class FitProTcp extends FecpController {
      * Scans for all of the available Devices
      * @param listener callback for when it finishes scanning, may contain no Devices
      */
-    public void scanForSystems(CommInterface.ScanSystemListener listener) {
-        this.mCommController.scanForSystems(listener);
+    public static void scanForSystems(CommInterface.ScanSystemListener listener) {
+        new TcpComm().scanForSystems(listener);
+
     }
 }

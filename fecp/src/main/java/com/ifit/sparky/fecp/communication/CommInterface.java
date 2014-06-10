@@ -17,11 +17,10 @@ import java.util.List;
 
 public interface CommInterface {
 
-    //todo check if this may be combined with SystemStatusCallback
-    public interface DeviceConnectionListener{
-        void onDeviceConnected();
-        void onDeviceDisconnected();
-    }
+//    public interface DeviceConnectionListener{
+//        void onDeviceConnected();
+//        void onDeviceDisconnected();
+//    }
 
     /**
      * This interface will allow for an asynchronous callback to reply with all of the available
@@ -40,12 +39,19 @@ public interface CommInterface {
      * Handles multiple listeners so we can notify both ifit and the fecp controller.
      * @param listener the listener for the callbacks
      */
-    void addConnectionListener(DeviceConnectionListener listener);
+    void addConnectionListener(SystemStatusListener listener);
 
     /**
      * Removes all the Connection listeners,
      */
     void clearConnectionListener();
+
+    /**
+     * gets the list of System Status Listeners
+     * @return list of all the System Status Listeners
+     */
+    List<SystemStatusListener> getSystemStatusListeners();
+
 
     /**
      * sends the command and waits for the reply to handle the buffer

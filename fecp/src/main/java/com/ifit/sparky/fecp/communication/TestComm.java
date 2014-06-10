@@ -12,10 +12,11 @@ import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
+import java.util.List;
 
 public class TestComm implements CommInterface {
 
-    private LinkedList<DeviceConnectionListener> mUsbConnectionListener;
+    private LinkedList<SystemStatusListener> mUsbConnectionListener;
     public TestComm()
     {
         //nothing to do.
@@ -37,7 +38,7 @@ public class TestComm implements CommInterface {
      * @param listener the listener for the callbacks
      */
     @Override
-    public void addConnectionListener(DeviceConnectionListener listener) {
+    public void addConnectionListener(SystemStatusListener listener) {
 
     }
 
@@ -101,5 +102,15 @@ public class TestComm implements CommInterface {
     @Override
     public void scanForSystems(ScanSystemListener listener) {
 
+    }
+
+    /**
+     * gets the list of System Status Listeners
+     *
+     * @return list of all the System Status Listeners
+     */
+    @Override
+    public List<SystemStatusListener> getSystemStatusListeners() {
+        return this.mUsbConnectionListener;
     }
 }

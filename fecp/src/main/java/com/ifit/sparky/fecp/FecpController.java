@@ -11,22 +11,23 @@ import android.os.Looper;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.communication.ServerDataCallback;
+import com.ifit.sparky.fecp.communication.SystemStatusListener;
 import com.ifit.sparky.fecp.communication.TcpServer;
 import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 public class FecpController implements ErrorReporting {
     //Fecp System Version number
     private final int VERSION = 1;
     private CommType mCommType;
-    protected SystemStatusCallback statusCallback;
     protected SystemDevice mSysDev;
     protected boolean mIsConnected;
     protected CommInterface mCommController;
@@ -37,28 +38,16 @@ public class FecpController implements ErrorReporting {
     /**
      * This is for Fecp connections that don't req
      * @param type Communication type
-     * @param callback callback for the system
+     *  callback callback for the system
      * @throws Exception
      */
-    public FecpController(CommType type, SystemStatusCallback callback) throws Exception {
+    public FecpController(CommType type) throws Exception {
 
-        if(callback == null)
-        {
-            throw new Exception("SystemStatusCallback callback is null, Can't be null");
-        }
         this.mCommType = type;
-        this.statusCallback = callback;
+//        this.statusCallback = callback;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
         this.mIsConnected = false;
         this.mSysErrorControl = new ErrorCntrl(this);
-    }
-
-    /**
-     *
-     * @throws Exception
-     */
-    public void initializeConnection() throws Exception{
-        this.initializeConnection(null);
     }
 
     /**
@@ -66,11 +55,24 @@ public class FecpController implements ErrorReporting {
      *
      * @param listener this listens for changes in the connection
      */
-    public void initializeConnection(CommInterface.DeviceConnectionListener listener) throws Exception {
+    public void initializeConnection(SystemStatusListener listener) throws Exception {
+        this.initializeConnection(listener, null);//just doesn't use it.
+    }
 
-        if(listener != null) {
-            this.mCommController.addConnectionListener(listener);
+    /**
+     * Initializes the connection and sets up the communication
+     *
+     * @param listener this listens for changes in the connection
+     * @param dataCallback a callback to get data about the server
+     */
+    public void initializeConnection(SystemStatusListener listener, final ServerDataCallback dataCallback) throws Exception {
+
+         if(listener == null)
+        {
+            throw new Exception("SystemStatusListener callback is null, Can't be null");
         }
+
+        this.mCommController.addConnectionListener(listener);
         //start a thread to initialize the connection
         new Thread(new Runnable() {
             @Override
@@ -81,7 +83,10 @@ public class FecpController implements ErrorReporting {
                 if(mSysDev == null ||mSysDev.getInfo().getDevId() == DeviceId.NONE)
                 {
                     mIsConnected = false;
-                    statusCallback.systemDeviceConnected(mSysDev);//May be Null
+                    for (SystemStatusListener statusListener : mCommController.getSystemStatusListeners()) {
+                        statusListener.systemDeviceConnected(mSysDev);
+                    }
+//                    statusCallback.systemDeviceConnected(mSysDev);//May be Null
                     return;
                 }
                 mIsConnected = true;
@@ -89,13 +94,16 @@ public class FecpController implements ErrorReporting {
 
                 if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER ) {
                     //on port 8090.
-                    mTcpServer = new TcpServer(mCmdHandleInterface, mSysDev);//currently accepting connections
+                    mTcpServer = new TcpServer(mCmdHandleInterface, mSysDev, dataCallback);//currently accepting connections
                     mTcpServer.startServer();//start the server
                 }
 
                 mCommController.setupErrorReporting(mSysErrorControl);
                 mCommController.setCommActive(false);
-                statusCallback.systemDeviceConnected(mSysDev);
+//                statusCallback.systemDeviceConnected(mSysDev);
+                for (SystemStatusListener statusListener : mCommController.getSystemStatusListeners()) {
+                    statusListener.systemDeviceConnected(mSysDev);
+                }
 
                 Looper.myLooper().quit();
             }
@@ -205,16 +213,12 @@ public class FecpController implements ErrorReporting {
         this.mSysErrorControl.clearOnErrorEventListener();
 
     }
-
     /**
-     * Adds an interceptor to the Fecp Controller, redirecting all commands to the CmdInterceptor.
-     * This command is meant for testing Ifit code, not the fecp controller or the brain board.
-     * @param interceptor interceptor to handle all commands going to the device.
+     * Gets the List of System Status connection listeners
+     * @return list of System Status Connection listeners
      */
-    public void addInterceptor(CmdInterceptor interceptor)
-    {
-        this.mCmdHandleInterface.addInterceptor(interceptor);
-        //this will get the data from fecp controller that the interceptor needs
+    public List<SystemStatusListener> clearConnectionListener() {
+        return mCommController.getSystemStatusListeners();
     }
 
     public String getCommunicationStats()
@@ -227,6 +231,17 @@ public class FecpController implements ErrorReporting {
     }
 
     /**
+     * Adds an interceptor to the Fecp Controller, redirecting all commands to the CmdInterceptor.
+     * This command is meant for testing Ifit code, not the fecp controller or the brain board.
+     * @param interceptor interceptor to handle all commands going to the device.
+     */
+    public void addInterceptor(CmdInterceptor interceptor)
+    {
+        this.mCmdHandleInterface.addInterceptor(interceptor);
+        //this will get the data from fecp controller that the interceptor needs
+    }
+
+    /**
      * This is a loophole for Testing Ifits code. It is apart of the interceptor process.
      * @param device The system that ifit will be communicating with.
      */
@@ -235,7 +250,4 @@ public class FecpController implements ErrorReporting {
         this.mSysDev = device;
     }
 
-    public void clearConnectionListener() {
-        mCommController.clearConnectionListener();
-    }
 }

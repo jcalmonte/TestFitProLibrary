@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,9 +40,11 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     private int mSuccessfulCmds;
     private int mFailedCmds;
     private int mAverageCmdPeriodic = Integer.MAX_VALUE;
+
+    private CopyOnWriteArrayList<Long> mAverageResponseTime;//running sum of 10 samples
     private boolean mCommSpeedLogging = false;
 
-    private final int COMM_THREAD_PRIORITY = -7;
+    private final int COMM_THREAD_PRIORITY = -17;
 
     public FecpCmdHandler(CommInterface commController, SystemDevice sysDev)
     {
@@ -49,6 +52,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         this.idAssigner = 1;//start with 1
         this.mProcessCmds =new Vector<FecpCommand>();
         this.mPeriodicCmds = new Vector<FecpCommand>();
+        this.mAverageResponseTime = new CopyOnWriteArrayList<Long>();
         this.mSysDev = sysDev;
         this.mSucessfulSendReceiveTime = 0;
         this.mFailedSendReceiveTime = 0;
@@ -217,6 +221,12 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         }
         this.mSucessfulSendReceiveTime += resultTime;
         this.mSuccessfulCmds++;
+        if(this.mAverageResponseTime.size() > 25)
+        {
+            this.mAverageResponseTime.remove(0);
+        }
+        this.mAverageResponseTime.add(resultTime);
+
         if (mCommSpeedLogging)
         {
             Log.d("COMMUNICATION", "cmd time:" + resultTime + "mSec");
@@ -249,12 +259,17 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         queryFreq /= 1000;//convert to 0.001 ms
         //convert to Hz
         queryFreq = 1 / queryFreq;
+        double averageResponseRate = 0.0;
+        for (Long sample : this.mAverageResponseTime) {
+            averageResponseRate += sample;
+        }
+        averageResponseRate /= this.mAverageResponseTime.size();
 
 
         details = "Success Rate:" + df.format(successRate) + "\n" +
                 "Successful Cmds: " + this.mSuccessfulCmds + "\n" +
                 "Failed Cmds: " + this.mFailedCmds + "\n" +
-                "Average Response Cmd Time " + msTime.format(responseTime) + "\n" +
+                "Average Response Cmd Time " + msTime.format(averageResponseRate) + "\n" +
                 "Fastest Query Cmd Frequency: " + freqF.format(queryFreq);//this.mAverageCmdPeriodic /(this.mFailedCmds + this.mSuccessfulCmds) + " mSec";
 
         return details;
