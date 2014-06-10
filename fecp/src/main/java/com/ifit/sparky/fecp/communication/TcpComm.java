@@ -39,6 +39,8 @@ public class TcpComm implements CommInterface {
     private int mSendTimeout;
     private ScanSystemListener mScanListener;//returns with list of devices or none
     private boolean enableLogging = false;
+    private int mValidConnectionCount = 0;
+    private final int VALID_CONNECTION_COUNT_LIMIT = 18;
 
     private CopyOnWriteArrayList<SystemStatusListener> mConnectionListeners;
 
@@ -165,9 +167,9 @@ public class TcpComm implements CommInterface {
     public ByteBuffer sendAndReceiveCmd(ByteBuffer buff, int timeout) {
         ByteBuffer resultBuffer = ByteBuffer.allocate(64);
         resultBuffer.order(ByteOrder.LITTLE_ENDIAN);
-        //check if disconnected
 
-        if(!this.mSocket.isConnected())
+        //check if disconnected
+        if(!this.mSocket.isConnected() || VALID_CONNECTION_COUNT_LIMIT < this.mValidConnectionCount)
         {
             //if no connection
             try {
@@ -175,12 +177,15 @@ public class TcpComm implements CommInterface {
                 {
                     this.mSocket.close();
                 }
-                //attempt to reopen the socket completely
+                this.mSocket = new Socket();
                 this.mSocket.connect(this.mIpAddress, 5000);
+                //attempt to reopen the socket completely
 //                this.mSocket.setSoTimeout(5000);
                 this.mSocket.setTcpNoDelay(true);
                 this.mToMachine = new BufferedOutputStream(this.mSocket.getOutputStream());
-
+                for (SystemStatusListener listener : this.mConnectionListeners) {
+                    listener.systemCommunicationConnected();
+                }
                 Log.d("TCP_CONNECTION", "Attempting reconnection was successful");
             }
             catch (IOException ex)
@@ -189,7 +194,6 @@ public class TcpComm implements CommInterface {
                 Log.d("TCP_CONNECTION", "Socket was disconnected, reconnect Failed");
                 for (SystemStatusListener listener : this.mConnectionListeners) {
                     listener.systemDisconnected();
-//                    listener.onDeviceDisconnected();
                 }
                 return null;
             }
@@ -212,6 +216,7 @@ public class TcpComm implements CommInterface {
 
             //assume it worked
             int bytesRead =this.mSocket.getInputStream().read(data);//at least 64 or more
+            this.mValidConnectionCount = 0;
             //read all of the data available
             buff.position(0);
             if(data[0] == (byte)0x03 && buff.get() == (byte)0x03)//custom handle for special objects.
@@ -239,11 +244,13 @@ public class TcpComm implements CommInterface {
                 }
                 Log.d("IN_DATA", result);
             }
+
             resultBuffer.position(0);
             return resultBuffer;
             //log data that is received
         } catch (Exception e) {
             e.printStackTrace();
+            this.mValidConnectionCount++;
         }
         return null;
     }
