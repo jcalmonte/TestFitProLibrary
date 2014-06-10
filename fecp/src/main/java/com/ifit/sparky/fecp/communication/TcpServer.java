@@ -34,7 +34,7 @@ public class TcpServer implements SystemStatusListener {
     private FecpCmdHandleInterface mCmdHandler;
     private SystemDevice mSysDev;
     private boolean mCommLogging = false;
-    private final int COMM_THREAD_PRIORITY = -17;//major priority
+    private final int COMM_THREAD_PRIORITY = -10;//major priority
     private ServerDataCallback mServerDataCallback;
 
 

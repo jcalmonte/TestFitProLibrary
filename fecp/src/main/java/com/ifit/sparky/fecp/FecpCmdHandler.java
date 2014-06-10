@@ -44,7 +44,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     private CopyOnWriteArrayList<Long> mAverageResponseTime;//running sum of 10 samples
     private boolean mCommSpeedLogging = false;
 
-    private final int COMM_THREAD_PRIORITY = -17;
+    private final int COMM_THREAD_PRIORITY = -10;
 
     public FecpCmdHandler(CommInterface commController, SystemDevice sysDev)
     {
