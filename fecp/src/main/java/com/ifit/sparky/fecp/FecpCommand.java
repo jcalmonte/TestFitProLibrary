@@ -7,6 +7,7 @@
  */
 package com.ifit.sparky.fecp;
 
+import com.ifit.sparky.fecp.communication.FecpCmdHandleInterface;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 
 import java.util.List;

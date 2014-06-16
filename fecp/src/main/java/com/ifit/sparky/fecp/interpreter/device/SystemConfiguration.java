@@ -5,7 +5,7 @@
  * @version 1
  * This is to determine the mode and the type of communication that ifit can have with the device.
  */
-package com.ifit.sparky.fecp;
+package com.ifit.sparky.fecp.interpreter.device;
 
 public enum SystemConfiguration {
     SLAVE("Ifit has complete control, if communication is lost system stops."),

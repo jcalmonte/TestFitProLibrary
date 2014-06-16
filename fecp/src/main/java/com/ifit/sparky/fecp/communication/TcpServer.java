@@ -9,10 +9,9 @@ package com.ifit.sparky.fecp.communication;
 
 import android.util.Log;
 
-import com.ifit.sparky.fecp.FecpCmdHandleInterface;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.OnCommandReceivedListener;
-import com.ifit.sparky.fecp.SystemConfiguration;
+import com.ifit.sparky.fecp.interpreter.device.SystemConfiguration;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.RawDataCmd;
@@ -26,7 +25,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 
-public class TcpServer implements SystemStatusListener {
+//local class as to prevent any external control of starting it or stopping it.
+class TcpServer implements SystemStatusListener {
 
     private ServerSocket mServerSock;
     private Thread mServerThread;
@@ -36,7 +36,6 @@ public class TcpServer implements SystemStatusListener {
     private boolean mCommLogging = false;
     private final int COMM_THREAD_PRIORITY = -17;//major priority
     private ServerDataCallback mServerDataCallback;
-
 
     /**
      * Creates a Server with the System device to allob for
@@ -364,10 +363,10 @@ public class TcpServer implements SystemStatusListener {
 
                     reply.position(0);
 //                    reply.put(0, (byte) 0x03);//portal device
-                    if(mSysDev.getConfig() == SystemConfiguration.SLAVE || mSysDev.getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
+                    if(mSysDev.getSysDevInfo().getConfig() == SystemConfiguration.SLAVE || mSysDev.getSysDevInfo().getConfig() == SystemConfiguration.PORTAL_TO_SLAVE) {
                         reply.put(4, (byte)SystemConfiguration.PORTAL_TO_SLAVE.ordinal());//portal device
                     }
-                    else if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER) {
+                    else if(mSysDev.getSysDevInfo().getConfig() == SystemConfiguration.MASTER || mSysDev.getSysDevInfo().getConfig() == SystemConfiguration.MULTI_MASTER) {
                         reply.put(4, (byte)SystemConfiguration.PORTAL_TO_MASTER.ordinal());//portal device
                     }
 

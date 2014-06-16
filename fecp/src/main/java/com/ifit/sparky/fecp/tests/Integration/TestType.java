@@ -1,18 +1,5 @@
 package com.ifit.sparky.fecp.tests.Integration;
 
-import android.content.Intent;
-import android.content.res.Resources;
-import android.util.Log;
-import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.FecpController;
-import com.ifit.sparky.fecp.SystemConfiguration;
-import com.ifit.sparky.fecp.communication.CommType;
-import com.ifit.sparky.fecp.interpreter.command.Command;
-import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
-import com.ifit.sparky.fecp.interpreter.device.Device;
-import com.ifit.sparky.fecp.interpreter.device.DeviceId;
-import android.app.Activity;
-
 /**
  * Created by eetestlab on 1/27/14.
  * This class is the way for the testing system to determine what type of

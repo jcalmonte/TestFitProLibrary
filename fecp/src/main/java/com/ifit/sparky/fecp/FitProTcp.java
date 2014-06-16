@@ -9,6 +9,7 @@ package com.ifit.sparky.fecp;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.communication.TcpComm;
 import com.ifit.sparky.fecp.communication.TcpConnectionDevice;
 

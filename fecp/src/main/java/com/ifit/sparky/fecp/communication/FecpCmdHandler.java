@@ -5,12 +5,15 @@
  * @version 1
  * handles the common items as far as what to send and what to receive.
  */
-package com.ifit.sparky.fecp;
+package com.ifit.sparky.fecp.communication;
 
 import android.util.Log;
 
-import com.ifit.sparky.fecp.communication.CommInterface;
+import com.ifit.sparky.fecp.FecpCommand;
+import com.ifit.sparky.fecp.OnCommandReceivedListener;
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
@@ -25,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
+class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
 
     private CommInterface mCommController;
     private Vector<FecpCommand> mProcessCmds;
@@ -81,8 +84,15 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
     {
         if(cmd.getCmdIndexNum() != 0)
         {
-            return;//already in the list. don't add
+            throw new InvalidCommandException("Command Already Added, can't add the same command Twice");
         }
+
+        //check if the device is a valid device
+        if(cmd.getCommand().getDevId() != DeviceId.PORTAL && !CmdValidator.ValidateDevice(this.mSysDev, cmd.getCommand().getDevId()))
+        {
+            throw new InvalidCommandException("Invalid Device," + cmd.getCommand().getDevId() + "System doesn't support this command");
+        }
+
 
         //check if thread is set
         cmd.setSendHandler(this);
@@ -100,9 +110,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         {
             this.processFecpCommand(cmd);
         }
-
     }
-
 
     /**
      * Adds the command to the list to be sent
@@ -110,32 +118,31 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
      * @param cmd the command to be sent.
      * @param highPriority the command to be sent.
      */
-    @Override
-    public void addFecpCommand(FecpCommand cmd, boolean highPriority) throws Exception
-    {
-        if(cmd.getCmdIndexNum() != 0)
-        {
-            return;//already in the list. don't add
-        }
-
-        //check if thread is set
-        cmd.setSendHandler(this);
-        //check if the thread is running
-        if(cmd.getFrequency() != 0)
-        {
-            cmd.setCmdIndexNum(this.idAssigner++);//unique
-            this.mPeriodicCmds.add(cmd);
-            if(this.idAssigner == Integer.MAX_VALUE) {
-                this.idAssigner = 1;//roll over gracefully
-            }
-            cmd.setFutureScheduleTask(this.mThreadManager.scheduleAtFixedRate(cmd, 0, cmd.getFrequency(), TimeUnit.MILLISECONDS));
-        }
-        else
-        {
-            this.processFecpCommand(cmd);
-        }
-
-    }
+//    public void addFecpCommand(FecpCommand cmd, boolean highPriority) throws Exception
+//    {
+//        if(cmd.getCmdIndexNum() != 0)
+//        {
+//            return;//already in the list. don't add
+//        }
+//
+//        //check if thread is set
+//        cmd.setSendHandler(this);
+//        //check if the thread is running
+//        if(cmd.getFrequency() != 0)
+//        {
+//            cmd.setCmdIndexNum(this.idAssigner++);//unique
+//            this.mPeriodicCmds.add(cmd);
+//            if(this.idAssigner == Integer.MAX_VALUE) {
+//                this.idAssigner = 1;//roll over gracefully
+//            }
+//            cmd.setFutureScheduleTask(this.mThreadManager.scheduleAtFixedRate(cmd, 0, cmd.getFrequency(), TimeUnit.MILLISECONDS));
+//        }
+//        else
+//        {
+//            this.processFecpCommand(cmd);
+//        }
+//
+//    }
 
     /**
      * Removes the command if it matches the Command id and the Device ID.
@@ -190,8 +197,8 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
      *
      * @param cmd the command to the Device
      */
-    @Override
-    public void sendCommand(FecpCommand cmd) throws Exception {
+
+    private void sendCommand(FecpCommand cmd) throws Exception {
         long startTime;
         long endTime;
         cmd.incrementCmdSentCounter();
@@ -265,7 +272,6 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         }
         averageResponseRate /= this.mAverageResponseTime.size();
 
-
         details = "Success Rate:" + df.format(successRate) + "\n" +
                 "Successful Cmds: " + this.mSuccessfulCmds + "\n" +
                 "Failed Cmds: " + this.mFailedCmds + "\n" +
@@ -288,6 +294,7 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         {
             this.mProcessCmds.add(cmd);
         }
+
         if(this.mCurrentThread == null || !this.mCurrentThread.isAlive())
         {
             this.mCurrentThread = new Thread(this);
@@ -295,28 +302,6 @@ public class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         }
     }
 
-    /**
-     * adds the command to the queue, in order to be ready to send.
-     *
-     * @param cmd          the command to be sent.
-     * @param highPriority
-     */
-    @Override
-    public void processFecpCommand(FecpCommand cmd, boolean highPriority) {
-
-        //add to list of commands to send as soon as possible
-        //check if already in the list
-        if(!this.mProcessCmds.contains(cmd))
-        {
-            this.mProcessCmds.insertElementAt(cmd, 0);//highest Priority
-            this.mProcessCmds.add(cmd);
-        }
-        if(this.mCurrentThread == null || !this.mCurrentThread.isAlive())
-        {
-            this.mCurrentThread = new Thread(this);
-            this.mCurrentThread.start();
-        }
-    }
 
     /**
      * implements runnable

@@ -5,9 +5,9 @@
  * @version 1
  * This will have the requirements for what to send and receive for each command.
  */
-package com.ifit.sparky.fecp;
+package com.ifit.sparky.fecp.communication;
 
-import com.ifit.sparky.fecp.communication.CommInterface;
+import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
@@ -27,25 +27,11 @@ public interface FecpCmdHandleInterface {
     void addFecpCommand(FecpCommand cmd)throws Exception;
 
     /**
-     * Adds the command to the list to be sent
-     *
-     * @param cmd the command to be sent.
-     * @param highPriority the command to be sent.
-     */
-    void addFecpCommand(FecpCommand cmd, boolean highPriority) throws Exception;
-
-
-    /**
      * adds the command to the queue, in order to be ready to send.
      * @param cmd the command to be sent.
      */
     void processFecpCommand(FecpCommand cmd);
 
-    /**
-     * adds the command to the queue, in order to be ready to send.
-     * @param cmd the command to be sent.
-     */
-    void processFecpCommand(FecpCommand cmd, boolean highPriority);
 
     /**
      * Removes the command if it matches the Command id and the Device ID.
@@ -61,11 +47,6 @@ public interface FecpCmdHandleInterface {
      */
     boolean removeFecpCommand(FecpCommand cmd);
 
-    /**
-     * Sends the command to the Fecp Communication Controller
-     * @param cmd the command to the Device
-     */
-    void sendCommand(FecpCommand cmd)throws Exception;
 
     /**
      * This will add the interceptor for testing to validate commands going to the

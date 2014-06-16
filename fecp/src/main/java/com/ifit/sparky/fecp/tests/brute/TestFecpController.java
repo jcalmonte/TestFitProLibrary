@@ -11,7 +11,7 @@ package com.ifit.sparky.fecp.tests.brute;
 import android.content.Context;
 import android.test.ServiceTestCase;
 
-import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 

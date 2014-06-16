@@ -9,6 +9,16 @@ package com.ifit.sparky.fecp.interpreter.command;
 
 public class InvalidCommandException extends Exception {
 
+
+    /**
+     * Exception if there is a bad Command id int
+     * @param str bad int used
+     */
+    public InvalidCommandException(String str)
+    {
+        super(str);
+    }
+
     /**
      * Exception if there is a bad Command id int
      * @param badId bad int used

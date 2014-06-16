@@ -249,7 +249,8 @@ public class TcpComm implements CommInterface {
             return resultBuffer;
             //log data that is received
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("tcp_comm", "Message dropped");
+//            e.printStackTrace();
             this.mValidConnectionCount++;
         }
         return null;

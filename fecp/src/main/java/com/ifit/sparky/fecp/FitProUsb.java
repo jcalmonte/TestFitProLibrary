@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.communication.UsbComm;
 
 public class FitProUsb extends FecpController {

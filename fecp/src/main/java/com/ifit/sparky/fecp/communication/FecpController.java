@@ -5,20 +5,18 @@
  * @version 1
  * This controller will handle all the different aspects of the communication to the system.
  */
-package com.ifit.sparky.fecp;
+package com.ifit.sparky.fecp.communication;
 
 import android.os.Looper;
 
-import com.ifit.sparky.fecp.communication.CommInterface;
-import com.ifit.sparky.fecp.communication.CommType;
-import com.ifit.sparky.fecp.communication.ServerDataCallback;
-import com.ifit.sparky.fecp.communication.SystemStatusListener;
-import com.ifit.sparky.fecp.communication.TcpServer;
+import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.SystemConfiguration;
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
@@ -44,7 +42,6 @@ public class FecpController implements ErrorReporting {
     public FecpController(CommType type) throws Exception {
 
         this.mCommType = type;
-//        this.statusCallback = callback;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
         this.mIsConnected = false;
         this.mSysErrorControl = new ErrorCntrl(this);
@@ -86,13 +83,12 @@ public class FecpController implements ErrorReporting {
                     for (SystemStatusListener statusListener : mCommController.getSystemStatusListeners()) {
                         statusListener.systemDeviceConnected(mSysDev);
                     }
-//                    statusCallback.systemDeviceConnected(mSysDev);//May be Null
                     return;
                 }
                 mIsConnected = true;
                 mCmdHandleInterface = new FecpCmdHandler(mCommController, mSysDev);
 
-                if(mSysDev.getConfig() == SystemConfiguration.MASTER || mSysDev.getConfig() == SystemConfiguration.MULTI_MASTER ) {
+                if(mSysDev.getSysDevInfo().getConfig() == SystemConfiguration.MASTER || mSysDev.getSysDevInfo().getConfig() == SystemConfiguration.MULTI_MASTER ) {
                     //on port 8090.
                     mTcpServer = new TcpServer(mCmdHandleInterface, mSysDev, dataCallback);//currently accepting connections
                     mTcpServer.startServer();//start the server
@@ -100,7 +96,6 @@ public class FecpController implements ErrorReporting {
 
                 mCommController.setupErrorReporting(mSysErrorControl);
                 mCommController.setCommActive(false);
-//                statusCallback.systemDeviceConnected(mSysDev);
                 for (SystemStatusListener statusListener : mCommController.getSystemStatusListeners()) {
                     statusListener.systemDeviceConnected(mSysDev);
                 }
@@ -153,6 +148,11 @@ public class FecpController implements ErrorReporting {
      * @param cmd the command to send to the device
      */
     public void addCmd(FecpCommand cmd) throws Exception {
+
+        //smarter Command validity detection
+        //this will compare it with the System device
+
+
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
 
