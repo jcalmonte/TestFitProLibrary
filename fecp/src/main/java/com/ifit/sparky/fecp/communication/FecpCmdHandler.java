@@ -88,7 +88,7 @@ class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
         }
 
         //check if the device is a valid device
-        if(cmd.getCommand().getDevId() != DeviceId.PORTAL && !CmdValidator.ValidateDevice(this.mSysDev, cmd.getCommand().getDevId()))
+        if(cmd.getCommand().getDevId() != DeviceId.PORTAL && cmd.getCommand().getCmdId() != CommandId.RAW && !CmdValidator.ValidateDevice(this.mSysDev, cmd.getCommand().getDevId()))
         {
             throw new InvalidCommandException("Invalid Device," + cmd.getCommand().getDevId() + "System doesn't support this command");
         }

@@ -8,7 +8,6 @@
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -65,6 +64,20 @@ public class SystemDeviceInfo {
         {
             this.mConsoleName += buff.get();
         }
+    }
+
+    public SystemDeviceInfo()
+    {
+        this.mConfig = SystemConfiguration.SLAVE;
+        this.mConsoleName = "";
+        this.mModel = 0;
+        this.mPartNumber = 0;
+        this.mCpuUse = 0.0;
+        this.mNumberOfTasks = 0;
+        this.mIntervalTime = 0;
+        this.mCpuFrequency = 0;
+        this.mMcuName = "";
+        this.mConsoleName = "";
     }
 
 
@@ -144,10 +157,10 @@ public class SystemDeviceInfo {
 
     /**
      * Writes the Stream of the systemDev Info
-     * @param stream of the System Dev Info
+     * @param buff of the System Dev Info
      * @throws IOException if there is a issue adding the info to the stream.
      */
-    public void writeObject(BufferedOutputStream stream)throws IOException
+    public void writeObject(ByteBuffer buff)throws IOException
     {
         ByteBuffer tempBuff = ByteBuffer.allocate(2000);//we don't need all of this, but it will help
         tempBuff.order(ByteOrder.LITTLE_ENDIAN);
@@ -155,38 +168,34 @@ public class SystemDeviceInfo {
 
         if(this.mConfig== SystemConfiguration.MASTER)
         {
-            tempBuff.put((byte) SystemConfiguration.PORTAL_TO_MASTER.getVal());
+            buff.put((byte) SystemConfiguration.PORTAL_TO_MASTER.getVal());
         }
         else if(this.mConfig == SystemConfiguration.MULTI_MASTER)
         {
-            tempBuff.put((byte) SystemConfiguration.PORTAL_TO_MASTER.getVal());
+            buff.put((byte) SystemConfiguration.PORTAL_TO_MASTER.getVal());
         }
         else if(this.mConfig == SystemConfiguration.SLAVE)
         {
             //portal to slave
-            tempBuff.put((byte) SystemConfiguration.PORTAL_TO_SLAVE.getVal());
+            buff.put((byte) SystemConfiguration.PORTAL_TO_SLAVE.getVal());
         }
         else
         {
-            tempBuff.put((byte) this.mConfig.getVal());
+            buff.put((byte) this.mConfig.getVal());
         }
-        tempBuff.putInt(this.mModel);
-        tempBuff.putInt(this.mPartNumber);
-        tempBuff.putDouble(this.mCpuUse);
-        tempBuff.putInt(this.mNumberOfTasks);
-        tempBuff.putInt(this.mIntervalTime);
-        tempBuff.putInt(this.mCpuFrequency);
+        buff.putInt(this.mModel);
+        buff.putInt(this.mPartNumber);
+        buff.putDouble(this.mCpuUse);
+        buff.putInt(this.mNumberOfTasks);
+        buff.putInt(this.mIntervalTime);
+        buff.putInt(this.mCpuFrequency);
 
-        tempBuff.put((byte)this.mMcuName.length());//length of string
-        tempBuff.put(this.mMcuName.getBytes());
+        buff.put((byte)this.mMcuName.length());//length of string
+        buff.put(this.mMcuName.getBytes());
 
-        tempBuff.put((byte)this.mConsoleName.length());//length of string
-        tempBuff.put(this.mConsoleName.getBytes());
+        buff.put((byte)this.mConsoleName.length());//length of string
+        buff.put(this.mConsoleName.getBytes());
 
-        //write all the data to the stream
-        int currPosition = tempBuff.position();
-        tempBuff.position(0);
-        stream.write(tempBuff.array(), 0, currPosition);
     }
 
     public void readObject(ByteBuffer stream) throws IOException

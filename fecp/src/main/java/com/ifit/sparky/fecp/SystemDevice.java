@@ -60,6 +60,7 @@ public class SystemDevice extends Device implements Serializable{
     public SystemDevice() throws Exception
     {
         super();
+        this.mSysDevInfo = new SystemDeviceInfo();
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
     }
 
@@ -69,6 +70,7 @@ public class SystemDevice extends Device implements Serializable{
     public SystemDevice(DeviceId id) throws Exception
     {
         super(id);
+        this.mSysDevInfo = new SystemDeviceInfo();
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
     }
 
@@ -82,6 +84,7 @@ public class SystemDevice extends Device implements Serializable{
     {
         super(dev.getCommandSet().values(), dev.getSubDeviceList(),dev.getInfo());
 
+        this.mSysDevInfo = new SystemDeviceInfo();
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
     }
 
@@ -91,6 +94,7 @@ public class SystemDevice extends Device implements Serializable{
     public SystemDevice(DeviceId id, SystemConfiguration config) throws Exception
     {
         super(id);
+        this.mSysDevInfo = new SystemDeviceInfo();
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
     }
 
@@ -176,12 +180,12 @@ public class SystemDevice extends Device implements Serializable{
     public void writeObject(BufferedOutputStream stream) throws IOException
     {
         //start of reading the system info
-        this.mSysDevInfo.writeObject(stream);
 
         ByteBuffer tempBuff = ByteBuffer.allocate(2000);//we don't need all of this, but it will help
         tempBuff.order(ByteOrder.LITTLE_ENDIAN);
         //write the data we are concerned about
 
+        this.mSysDevInfo.writeObject(tempBuff);
         DeviceInfo info = this.getInfo();
 
         tempBuff.put((byte)info.getDevId().getVal());

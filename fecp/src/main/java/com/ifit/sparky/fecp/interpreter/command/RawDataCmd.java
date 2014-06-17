@@ -18,6 +18,7 @@ public class RawDataCmd extends Command implements Serializable {
 
     public RawDataCmd(ByteBuffer buffer)
     {
+        this.setCmdId(CommandId.RAW);
         this.mRawSendBuffer = buffer;
         try {
             this.setStatus(new RawDataSts());
