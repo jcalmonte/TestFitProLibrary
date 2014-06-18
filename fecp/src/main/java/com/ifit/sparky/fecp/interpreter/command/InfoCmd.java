@@ -8,8 +8,10 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -31,7 +33,7 @@ public class InfoCmd extends Command implements CommandInterface, Serializable {
     /**
      * default constructor
      */
-    public InfoCmd(DeviceId devId) throws Exception
+    public InfoCmd(DeviceId devId) throws InvalidStatusException, InvalidCommandException
     {
         super(new InfoSts(devId),CMD_LENGTH,CommandId.GET_INFO,devId);
     }
@@ -43,7 +45,7 @@ public class InfoCmd extends Command implements CommandInterface, Serializable {
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
 

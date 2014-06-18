@@ -10,6 +10,7 @@
 package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+import com.ifit.sparky.fecp.interpreter.key.InvalidKeyCodeException;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class KeyObjectConverter extends BitfieldDataConverter implements Seriali
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
         ByteBuffer buff;
         buff = ByteBuffer.allocate(this.mRawData.length);
@@ -41,7 +42,11 @@ public class KeyObjectConverter extends BitfieldDataConverter implements Seriali
         buff.position(0);
 
         //convert the Next 2 bytes into the CookedKeycode
-        this.mKey.setCode(buff.getShort());
+        try {
+            this.mKey.setCode(buff.getShort());
+        } catch (InvalidKeyCodeException e) {
+            throw new InvalidBitFieldException(e.getMessage());
+        }
 
         //convert the first 4 bytes into the rawKeycode value
         this.mKey.setRawKeyCode(buff.getLong());

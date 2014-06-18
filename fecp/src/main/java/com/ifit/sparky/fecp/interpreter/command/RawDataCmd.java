@@ -7,6 +7,7 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.status.RawDataSts;
 
 import java.io.Serializable;
@@ -35,7 +36,7 @@ public class RawDataCmd extends Command implements Serializable {
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception {
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
         return this.mRawSendBuffer;
     }
 
@@ -46,7 +47,7 @@ public class RawDataCmd extends Command implements Serializable {
      * @throws Exception
      */
     @Override
-    public Command getCommandCopy() throws Exception {
+    public Command getCommandCopy() throws InvalidCommandException {
         Command tempCmd = new RawDataCmd(this.mRawSendBuffer);
         return tempCmd;
     }

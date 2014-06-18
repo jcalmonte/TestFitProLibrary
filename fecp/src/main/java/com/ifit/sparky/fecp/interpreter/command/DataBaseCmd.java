@@ -8,6 +8,7 @@
 package com.ifit.sparky.fecp.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ public class DataBaseCmd implements Serializable {
      * @param copyData the data to copy over
      * @throws Exception
      */
-    public DataBaseCmd(DataBaseCmd copyData) throws Exception
+    public DataBaseCmd(DataBaseCmd copyData)
     {
         this.mNumOfDataBytes = copyData.mNumOfDataBytes;
 
@@ -140,7 +141,7 @@ public class DataBaseCmd implements Serializable {
      * Gets the buffer from the start of the Number of bytes to the end of the last data object.
      * @return buffer formatted for the Write data portion of the command
      */
-    public ByteBuffer getWriteMsgData() throws Exception{
+    public ByteBuffer getWriteMsgData() throws InvalidBitFieldException{
         int buffSize = 0;
 
         //add headerSize
@@ -161,7 +162,7 @@ public class DataBaseCmd implements Serializable {
     /**
      * Gets the buffer from the start of the Number of bytes to the end of the last data object.
      */
-    public void getWriteMsgData(ByteBuffer buffer) throws Exception{
+    public void getWriteMsgData(ByteBuffer buffer) throws InvalidBitFieldException {
         ByteBuffer tempBuff;
         //populate the header
         getMsgDataHeader(buffer);
@@ -219,7 +220,7 @@ public class DataBaseCmd implements Serializable {
      * @param buffer that holds all the raw data.
      * @return Map(specifically a TreeMap) of all the BitfieldIds and BitfieldDataConverters received.
      */
-    public Map<BitFieldId, BitfieldDataConverter> handleReadData(ByteBuffer buffer) throws Exception
+    public Map<BitFieldId, BitfieldDataConverter> handleReadData(ByteBuffer buffer) throws InvalidBitFieldException
     {
         //todo change comparator to be in a different location.
         TreeMap<BitFieldId, BitfieldDataConverter> map;

@@ -12,6 +12,7 @@ import android.util.Log;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.SystemDevice;
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
@@ -81,7 +82,7 @@ class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
      * @param cmd the command to be sent.
      */
     @Override
-    public void addFecpCommand(FecpCommand cmd) throws Exception
+    public void addFecpCommand(FecpCommand cmd) throws InvalidCommandException, InvalidBitFieldException
     {
         if(cmd.getCmdIndexNum() != 0)
         {

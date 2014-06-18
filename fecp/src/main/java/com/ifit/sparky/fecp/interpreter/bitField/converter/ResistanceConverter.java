@@ -28,7 +28,7 @@ public class ResistanceConverter extends BitfieldDataConverter implements Serial
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
         this.mResistance = this.getRawToInt();
         this.mResistance /= 100.0;

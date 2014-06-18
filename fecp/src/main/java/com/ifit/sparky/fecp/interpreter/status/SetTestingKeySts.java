@@ -24,7 +24,7 @@ public class SetTestingKeySts extends Status implements StatusInterface, Seriali
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public SetTestingKeySts(DeviceId devId) throws Exception
+    public SetTestingKeySts(DeviceId devId) throws InvalidStatusException
     {
         super(StatusId.DEV_NOT_SUPPORTED, MIN_STS_LENGTH, CommandId.SET_TESTING_KEY, devId);
         this.mIsKeySupported = false;
@@ -44,8 +44,7 @@ public class SetTestingKeySts extends Status implements StatusInterface, Seriali
      * @param buff the msg that came from the usb. only str
      */
     @Override
-    public void handleStsMsg(ByteBuffer buff) throws Exception
-    {
+    public void handleStsMsg(ByteBuffer buff) throws Exception {
         super.handleStsMsg(buff);
 
         //now parse the data

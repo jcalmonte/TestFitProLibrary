@@ -34,7 +34,7 @@ public class WriteReadDataSts extends Status implements StatusInterface, Seriali
      * @param devId the device id
      * @throws Exception
      */
-    public WriteReadDataSts(DeviceId devId) throws Exception
+    public WriteReadDataSts(DeviceId devId) throws InvalidStatusException
     {
         //Min length is 5 bytes
         super(StatusId.DEV_NOT_SUPPORTED, MIN_STS_LENGTH, CommandId.WRITE_READ_DATA, devId);

@@ -47,8 +47,7 @@ public class CalibrateSts extends Status implements StatusInterface, Serializabl
      * @param buff the msg that came from the usb. only str
      */
     @Override
-    public void handleStsMsg(ByteBuffer buff) throws Exception
-    {
+    public void handleStsMsg(ByteBuffer buff) throws Exception {
         super.handleStsMsg(buff);
 
         //now parse the data

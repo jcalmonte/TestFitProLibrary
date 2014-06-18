@@ -28,7 +28,7 @@ public class InclineConverter extends BitfieldDataConverter implements Serializa
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
         //need to cast as a signed value of a short.
         this.mIncline = (short)this.getRawToInt();

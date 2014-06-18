@@ -24,7 +24,7 @@ public class GetCmdsSts extends Status implements StatusInterface, Serializable 
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public GetCmdsSts(DeviceId devId) throws Exception
+    public GetCmdsSts(DeviceId devId) throws InvalidStatusException
     {
         super(StatusId.DEV_NOT_SUPPORTED, MIN_STS_LENGTH, CommandId.GET_SUPPORTED_COMMANDS, devId);
         this.mCmdList = new HashSet<CommandId>();

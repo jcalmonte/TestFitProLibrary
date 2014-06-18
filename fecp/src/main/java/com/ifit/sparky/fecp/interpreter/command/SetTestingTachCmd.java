@@ -8,7 +8,9 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 import com.ifit.sparky.fecp.interpreter.status.SetTestingKeySts;
 import com.ifit.sparky.fecp.interpreter.status.SetTestingTachSts;
 
@@ -26,7 +28,7 @@ public class SetTestingTachCmd extends Command implements CommandInterface, Seri
     /**
      * default constructor
      */
-    public SetTestingTachCmd() throws Exception
+    public SetTestingTachCmd() throws InvalidCommandException, InvalidStatusException
     {
         super();
         this.setCmdId(CommandId.SET_TESTING_TACH);
@@ -43,7 +45,7 @@ public class SetTestingTachCmd extends Command implements CommandInterface, Seri
      * @param devId The device id which the command is being sent to.
      * @throws Exception invalid commands, and device ids
      */
-    public SetTestingTachCmd(DeviceId devId) throws Exception
+    public SetTestingTachCmd(DeviceId devId) throws InvalidCommandException, InvalidStatusException
     {
         super(new SetTestingTachSts(devId),CMD_LENGTH,CommandId.SET_TESTING_TACH,devId);
         this.mTachCount = 0;
@@ -91,7 +93,7 @@ public class SetTestingTachCmd extends Command implements CommandInterface, Seri
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
         short tempActualSpeed;

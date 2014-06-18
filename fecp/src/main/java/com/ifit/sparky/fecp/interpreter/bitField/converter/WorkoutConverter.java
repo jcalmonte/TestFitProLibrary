@@ -27,7 +27,7 @@ public class WorkoutConverter extends BitfieldDataConverter implements Serializa
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception {
+    public BitfieldDataConverter getData() throws InvalidBitFieldException {
         int temp = (int)this.getRawToInt();
         this.mWorkout = WorkoutId.values()[temp];
         return this;

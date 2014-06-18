@@ -24,7 +24,7 @@ public class LongConverter extends BitfieldDataConverter implements Serializable
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception {
+    public BitfieldDataConverter getData() throws InvalidBitFieldException {
         this.mData = (int)this.getRawToInt();
         return this;
     }

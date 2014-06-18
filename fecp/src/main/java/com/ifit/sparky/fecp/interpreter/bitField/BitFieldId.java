@@ -138,7 +138,7 @@ public enum BitFieldId {
      * @return the data as an Bitfield data converter
      * @throws Exception
      */
-    public BitfieldDataConverter getData(ByteBuffer rawData) throws Exception
+    public BitfieldDataConverter getData(ByteBuffer rawData) throws InvalidBitFieldException
     {
         this.mConverter.setRawData(rawData, this.mByteSize);
         return this.mConverter.getData();

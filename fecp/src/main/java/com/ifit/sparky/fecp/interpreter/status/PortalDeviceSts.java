@@ -19,7 +19,7 @@ public class PortalDeviceSts extends Status implements Serializable {
 
     private static final int STS_LENGTH = 6;
     private SystemDevice mSysDev;
-    public PortalDeviceSts(DeviceId devId) throws Exception
+    public PortalDeviceSts(DeviceId devId) throws InvalidStatusException
     {
         super(StatusId.DEV_NOT_SUPPORTED, 0, CommandId.PORTAL_DEV_LISTEN, devId);//0 length due to unknown
 

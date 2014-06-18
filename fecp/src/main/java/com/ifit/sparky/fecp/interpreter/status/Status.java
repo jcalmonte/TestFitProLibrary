@@ -48,7 +48,7 @@ public class Status implements StatusInterface, Serializable{
      * @param cmdId the command Id
      * @param devId the Device Id
      */
-    public Status(StatusId stsId, int length, CommandId cmdId, DeviceId devId) throws Exception
+    public Status(StatusId stsId, int length, CommandId cmdId, DeviceId devId) throws InvalidStatusException
     {
         this.mStsId = stsId;
 
@@ -58,7 +58,7 @@ public class Status implements StatusInterface, Serializable{
         }
         else
         {
-            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+            throw new InvalidStatusException("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
         }
 
         this.mCmdId = cmdId;
@@ -123,7 +123,7 @@ public class Status implements StatusInterface, Serializable{
      * @param length the Length of the message
      * @throws Exception if the length is outside of the bounds
      */
-    public void setLength(int length) throws Exception
+    public void setLength(int length) throws InvalidStatusException
     {
         if(length <= MAX_MSG_LENGTH && length >= 0)
         {
@@ -131,7 +131,7 @@ public class Status implements StatusInterface, Serializable{
         }
         else
         {
-            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+            throw new InvalidStatusException("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
         }
     }
 

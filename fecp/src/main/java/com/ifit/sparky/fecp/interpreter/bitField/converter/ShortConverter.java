@@ -24,7 +24,7 @@ public class ShortConverter extends BitfieldDataConverter implements Serializabl
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception {
+    public BitfieldDataConverter getData() throws InvalidBitFieldException {
         this.mData = (int)this.getRawToInt();
         return this;
     }

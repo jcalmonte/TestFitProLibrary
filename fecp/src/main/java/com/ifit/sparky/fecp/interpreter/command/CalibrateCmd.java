@@ -7,6 +7,7 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.CalibrateSts;
 
@@ -62,7 +63,7 @@ public class CalibrateCmd extends Command implements CommandInterface, Serializa
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
         buff = super.getCmdMsg();

@@ -25,7 +25,7 @@ public class SpeedConverter extends BitfieldDataConverter implements Serializabl
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
         this.mSpeed = (double)this.getRawToInt();
         this.mSpeed /= 100;

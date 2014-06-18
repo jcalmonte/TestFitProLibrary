@@ -52,7 +52,7 @@ public abstract class BitfieldDataConverter implements Serializable {
      * @return int value from the byte array
      * @throws Exception if the number of bytes and the required size don't match up
      */
-    protected long getRawToInt() throws Exception
+    protected long getRawToInt() throws InvalidBitFieldException
     {
         //depending on the size convert to int
 
@@ -78,7 +78,7 @@ public abstract class BitfieldDataConverter implements Serializable {
         }
         else
         {
-            throw new Exception("DataSizeCurrentlyNotSupported");
+            throw new InvalidBitFieldException("DataSizeCurrentlyNotSupported");
         }
         return rawLong;
     }
@@ -121,7 +121,7 @@ public abstract class BitfieldDataConverter implements Serializable {
         return tempBuff;
     }
 
-    public abstract BitfieldDataConverter getData()throws Exception;
+    public abstract BitfieldDataConverter getData()throws InvalidBitFieldException;
 
     public abstract ByteBuffer convertData(Object obj)throws InvalidBitFieldException;
 

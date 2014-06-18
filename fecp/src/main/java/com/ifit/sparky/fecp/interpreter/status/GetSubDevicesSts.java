@@ -25,7 +25,7 @@ public class GetSubDevicesSts extends Status implements StatusInterface, Seriali
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public GetSubDevicesSts(DeviceId devId) throws Exception
+    public GetSubDevicesSts(DeviceId devId) throws InvalidStatusException
     {
         super(StatusId.DEV_NOT_SUPPORTED, MIN_STS_LENGTH, CommandId.GET_SUPPORTED_DEVICES, devId);
         this.mDeviceList = new HashSet<DeviceId>();

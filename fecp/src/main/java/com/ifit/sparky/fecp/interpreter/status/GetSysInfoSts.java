@@ -25,7 +25,7 @@ public class GetSysInfoSts extends Status implements StatusInterface, Serializab
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public GetSysInfoSts(DeviceId devId) throws Exception
+    public GetSysInfoSts(DeviceId devId) throws InvalidStatusException
     {
         super(StatusId.DEV_NOT_SUPPORTED, STS_LENGTH, CommandId.GET_SYSTEM_INFO, devId);
     }

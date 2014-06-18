@@ -7,8 +7,9 @@
  */
 package com.ifit.sparky.fecp.interpreter.status;
 
-import com.ifit.sparky.fecp.interpreter.command.*;
-import com.ifit.sparky.fecp.interpreter.device.*;
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -23,7 +24,7 @@ public class InfoSts extends Status implements StatusInterface, Serializable {
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public InfoSts(DeviceId devId) throws Exception
+    public InfoSts(DeviceId devId) throws InvalidStatusException
     {
         //Min length is 14 bytes
         super(StatusId.DEV_NOT_SUPPORTED, STS_LENGTH, CommandId.GET_INFO, devId);

@@ -25,7 +25,7 @@ public class CaloriesConverter extends BitfieldDataConverter implements Serializ
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
         this.mCalories = (double)this.getRawToInt();
         this.mCalories /= 10000;

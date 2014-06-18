@@ -25,7 +25,7 @@ public class WeightConverter extends BitfieldDataConverter implements Serializab
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
         this.mWeight = (double)this.getRawToInt();
         this.mWeight /= 100;

@@ -81,7 +81,7 @@ public enum CommandId {
         }
         if(this.mCommandClass == null)
         {
-            throw new Exception("Command not supported yet");
+            throw new InvalidCommandException("Command not supported yet");
         }
         //create an instance of the specific feature
         Class<?>  className = this.mCommandClass;

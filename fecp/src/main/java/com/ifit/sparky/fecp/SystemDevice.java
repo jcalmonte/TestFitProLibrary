@@ -19,6 +19,7 @@ import com.ifit.sparky.fecp.interpreter.command.GetCmdsCmd;
 import com.ifit.sparky.fecp.interpreter.command.GetSubDevicesCmd;
 import com.ifit.sparky.fecp.interpreter.command.GetSysInfoCmd;
 import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
+import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.command.PortalDeviceCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
@@ -30,6 +31,7 @@ import com.ifit.sparky.fecp.interpreter.status.GetSubDevicesSts;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.GetTaskInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.InfoSts;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 import com.ifit.sparky.fecp.interpreter.status.PortalDeviceSts;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
@@ -57,7 +59,7 @@ public class SystemDevice extends Device implements Serializable{
     /**
      * the default constructor for the System Device
      */
-    public SystemDevice() throws Exception
+    public SystemDevice() throws InvalidStatusException, InvalidCommandException
     {
         super();
         this.mSysDevInfo = new SystemDeviceInfo();
@@ -67,7 +69,7 @@ public class SystemDevice extends Device implements Serializable{
     /**
      * the default constructor for the System Device
      */
-    public SystemDevice(DeviceId id) throws Exception
+    public SystemDevice(DeviceId id) throws InvalidStatusException, InvalidCommandException
     {
         super(id);
         this.mSysDevInfo = new SystemDeviceInfo();
@@ -80,7 +82,7 @@ public class SystemDevice extends Device implements Serializable{
      * @param dev the device that will be the System Device
      * @throws Exception
      */
-    public SystemDevice(Device dev) throws Exception
+    public SystemDevice(Device dev) throws InvalidStatusException, InvalidCommandException
     {
         super(dev.getCommandSet().values(), dev.getSubDeviceList(),dev.getInfo());
 
@@ -91,14 +93,14 @@ public class SystemDevice extends Device implements Serializable{
     /**
      * the default constructor for the System Device
      */
-    public SystemDevice(DeviceId id, SystemConfiguration config) throws Exception
+    public SystemDevice(DeviceId id, SystemConfiguration config) throws InvalidStatusException, InvalidCommandException
     {
         super(id);
         this.mSysDevInfo = new SystemDeviceInfo();
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
     }
 
-    public SystemDevice(GetSysInfoSts sts) throws Exception
+    public SystemDevice(GetSysInfoSts sts) throws InvalidStatusException, InvalidCommandException
     {
         super(sts.getDevId());
 
@@ -279,8 +281,7 @@ public class SystemDevice extends Device implements Serializable{
      * initializes the System device in a variety of ways to clean up the system.
      * @param comm the communication interface for initializing the system.
      */
-    public static SystemDevice initializeSystemDevice(CommInterface comm) throws Exception
-    {
+    public static SystemDevice initializeSystemDevice(CommInterface comm) throws Exception{
         GetSysInfoCmd sysInfoCmd;
         SystemDevice resultDevice;
         Device tempDevice;
@@ -327,7 +328,7 @@ public class SystemDevice extends Device implements Serializable{
         return resultDevice;
     }
 
-    private static Device getInitialDevice(CommInterface comm, DeviceId devId) throws Exception
+    private static Device getInitialDevice(CommInterface comm, DeviceId devId) throws  Exception
     {
         Device dev = new Device(devId);//
         Set<DeviceId> subDeviceList;
@@ -354,19 +355,19 @@ public class SystemDevice extends Device implements Serializable{
 
     }
 
-    private static DeviceInfo getDevicesInfo(CommInterface comm, DeviceId devId) throws Exception {
+    private static DeviceInfo getDevicesInfo(CommInterface comm, DeviceId devId) throws Exception{
         Command cmd = new InfoCmd(devId);
         cmd.getStatus().handleStsMsg(comm.sendAndReceiveCmd(cmd.getCmdMsg()));
         return ((InfoSts) cmd.getStatus()).getInfo();
         }
 
-    private static Set<CommandId> getSupportedCommands(CommInterface comm, DeviceId devId) throws Exception {
+    private static Set<CommandId> getSupportedCommands(CommInterface comm, DeviceId devId) throws  Exception{
         Command cmd = new GetCmdsCmd(devId);
         cmd.getStatus().handleStsMsg(comm.sendAndReceiveCmd(cmd.getCmdMsg()));
         return ((GetCmdsSts) cmd.getStatus()).getSupportedCommands();
         }
 
-    private static Set<DeviceId> getSupportedSubDevices(CommInterface comm, DeviceId devId) throws Exception {
+    private static Set<DeviceId> getSupportedSubDevices(CommInterface comm, DeviceId devId) throws  Exception {
         Command cmd = new GetSubDevicesCmd(devId);
         cmd.getStatus().handleStsMsg(comm.sendAndReceiveCmd(cmd.getCmdMsg()));
         return ((GetSubDevicesSts) cmd.getStatus()).getSubDevices();

@@ -7,7 +7,9 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 import com.ifit.sparky.fecp.interpreter.status.PortalDeviceSts;
 
 import java.io.Serializable;
@@ -28,7 +30,7 @@ public class PortalDeviceCmd extends Command implements Serializable {
         //no data to send down
     }
 
-    public PortalDeviceCmd(DeviceId devId) throws Exception
+    public PortalDeviceCmd(DeviceId devId) throws InvalidCommandException, InvalidStatusException
     {
         super(new PortalDeviceSts(devId), CMD_LENGTH, CommandId.PORTAL_DEV_LISTEN, devId);
 
@@ -40,7 +42,7 @@ public class PortalDeviceCmd extends Command implements Serializable {
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
         buff = super.getCmdMsg();

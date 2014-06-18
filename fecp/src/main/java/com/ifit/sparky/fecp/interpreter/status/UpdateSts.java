@@ -23,7 +23,7 @@ public class UpdateSts extends Status implements StatusInterface, Serializable {
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public UpdateSts(DeviceId devId) throws Exception
+    public UpdateSts(DeviceId devId) throws InvalidStatusException
     {
         super(StatusId.DEV_NOT_SUPPORTED, STS_LENGTH, CommandId.UPDATE, devId);
 
@@ -43,8 +43,7 @@ public class UpdateSts extends Status implements StatusInterface, Serializable {
      * @param buff the msg that came from the usb. only str
      */
     @Override
-    public void handleStsMsg(ByteBuffer buff) throws Exception
-    {
+    public void handleStsMsg(ByteBuffer buff) throws Exception {
         super.handleStsMsg(buff);
 
         //now parse the data

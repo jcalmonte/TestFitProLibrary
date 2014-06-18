@@ -27,7 +27,7 @@ public class AudioSourceConverter extends BitfieldDataConverter implements Seria
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception {
+    public BitfieldDataConverter getData() throws InvalidBitFieldException {
         int temp = (int)this.getRawToInt();
         this.mAudioSrc = AudioSourceId.values()[temp];
         return this;

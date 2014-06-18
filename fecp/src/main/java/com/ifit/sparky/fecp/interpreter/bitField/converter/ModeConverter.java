@@ -27,7 +27,7 @@ public class ModeConverter extends BitfieldDataConverter implements Serializable
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception {
+    public BitfieldDataConverter getData() throws InvalidBitFieldException {
         int temp = (int)this.getRawToInt();
         this.mMode = ModeId.values()[temp];
         return this;
