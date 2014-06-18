@@ -8,6 +8,8 @@
  */
 package com.ifit.sparky.fecp.interpreter.status;
 
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
@@ -17,7 +19,8 @@ public class RawDataSts extends Status implements Serializable {
 
     public RawDataSts()
     {
-
+        super();
+        this.setCmdId(CommandId.RAW);
     }
 
     /**

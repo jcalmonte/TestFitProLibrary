@@ -203,7 +203,7 @@ public class Status implements StatusInterface, Serializable{
             //set actual byte to be the device id
             this.setDevId(DeviceId.getDeviceId(actualByte));
         }
-        if(actualByte != (byte)this.mDevId.getVal())
+        if(this.getCmdId() != CommandId.RAW && actualByte != (byte)this.mDevId.getVal())
         {
             throw new InvalidDeviceException(actualByte, this.mDevId);
         }
@@ -212,7 +212,7 @@ public class Status implements StatusInterface, Serializable{
 
         //check if the command id matches
         actualByte = buff.get();
-        if(actualByte != (byte)this.mCmdId.getVal())
+        if(this.getCmdId() != CommandId.RAW && actualByte != (byte)this.mCmdId.getVal())
         {
             throw new InvalidCommandException(this.mCmdId, actualByte);
         }
