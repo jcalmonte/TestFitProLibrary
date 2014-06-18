@@ -14,6 +14,7 @@ import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
+import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
@@ -87,11 +88,30 @@ class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
             throw new InvalidCommandException("Command Already Added, can't add the same command Twice");
         }
 
-        //check if the device is a valid device
-        if(cmd.getCommand().getDevId() != DeviceId.PORTAL && cmd.getCommand().getCmdId() != CommandId.RAW && !CmdValidator.ValidateDevice(this.mSysDev, cmd.getCommand().getDevId()))
+        //check if it is a portal or Raw command
+        if(cmd.getCommand().getDevId() != DeviceId.PORTAL && cmd.getCommand().getCmdId() != CommandId.RAW)
         {
-            throw new InvalidCommandException("Invalid Device," + cmd.getCommand().getDevId() + "System doesn't support this command");
+
+            //check if the device is a valid device
+            if(!CmdValidator.ValidateDevice(this.mSysDev, cmd.getCommand().getDevId())) {
+                throw new InvalidCommandException("Invalid Device(" + cmd.getCommand().getDevId().name()+":"+cmd.getCommand().getDevId().getVal() + "), System doesn't support this Device");
+            }
+
+            //check if the Command is supported by that device
+            if(!CmdValidator.ValidateCommand(this.mSysDev, cmd.getCommand().getDevId(), cmd.getCommand().getCmdId())) {
+                throw new InvalidCommandException("Invalid Command for the device("
+                        + cmd.getCommand().getDevId().name()
+                        + ":" + cmd.getCommand().getDevId().getVal()+ "),That Device doesn't support "
+                        +cmd.getCommand().getCmdId().name() + " command("
+                        + cmd.getCommand().getCmdId().getVal()+")");
+            }
+            //check if it is a writeReadData command, and check if it is valid
+            if(cmd.getCommand().getCmdId() == CommandId.WRITE_READ_DATA)
+            {
+                CmdValidator.ValidateBitfieldCmd(this.mSysDev, (WriteReadDataCmd)cmd.getCommand());//throws exception if invalid
+            }
         }
+
 
 
         //check if thread is set
@@ -197,7 +217,6 @@ class FecpCmdHandler implements FecpCmdHandleInterface, Runnable{
      *
      * @param cmd the command to the Device
      */
-
     private void sendCommand(FecpCommand cmd) throws Exception {
         long startTime;
         long endTime;
