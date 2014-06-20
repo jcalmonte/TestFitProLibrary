@@ -49,4 +49,15 @@ public enum AudioSourceId {
     {
         return this.mValue;
     }
+
+    public static AudioSourceId getEnumFromId(int id)
+    {
+        for (AudioSourceId audioSourceId : AudioSourceId.values()) {
+            if(id == audioSourceId.getValue())
+            {
+                return audioSourceId;
+            }
+        }
+        return AudioSourceId.NONE;//default to none
+    }
 }

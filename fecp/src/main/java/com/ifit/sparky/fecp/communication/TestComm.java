@@ -7,14 +7,16 @@
  */
 package com.ifit.sparky.fecp.communication;
 
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
+import java.util.List;
 
 public class TestComm implements CommInterface {
 
-    private LinkedList<DeviceConnectionListener> mUsbConnectionListener;
+    private LinkedList<SystemStatusListener> mUsbConnectionListener;
     public TestComm()
     {
         //nothing to do.
@@ -25,8 +27,9 @@ public class TestComm implements CommInterface {
      * Initializes the connection to the communication items.
      */
     @Override
-    public void initializeCommConnection() {
+    public SystemDevice initializeCommConnection() {
 
+        return null;
     }
 
     /**
@@ -35,7 +38,7 @@ public class TestComm implements CommInterface {
      * @param listener the listener for the callbacks
      */
     @Override
-    public void addConnectionListener(DeviceConnectionListener listener) {
+    public void addConnectionListener(SystemStatusListener listener) {
 
     }
 
@@ -78,5 +81,36 @@ public class TestComm implements CommInterface {
     @Override
     public void setupErrorReporting(ErrorReporting errReporterCallBack) {
 
+    }
+
+    /**
+     * Used to determined if we should attempt to reconnect to the machine, or if nothing is going on.
+     *
+     * @param active true for communicating, false for no communication.
+     */
+    @Override
+    public void setCommActive(boolean active) {
+        //currently does nothing.
+    }
+
+    /**
+     * This allows the user to scan for all of the different devices, when finished scanning it will
+     * Call the listener to allow them to select with
+     *
+     * @param listener listener to be called after scanning is complete.
+     */
+    @Override
+    public void scanForSystems(ScanSystemListener listener) {
+
+    }
+
+    /**
+     * gets the list of System Status Listeners
+     *
+     * @return list of all the System Status Listeners
+     */
+    @Override
+    public List<SystemStatusListener> getSystemStatusListeners() {
+        return this.mUsbConnectionListener;
     }
 }

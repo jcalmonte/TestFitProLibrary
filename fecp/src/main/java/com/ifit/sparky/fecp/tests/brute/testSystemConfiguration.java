@@ -7,7 +7,7 @@
  */
 package com.ifit.sparky.fecp.tests.brute;
 
-import com.ifit.sparky.fecp.SystemConfiguration;
+import com.ifit.sparky.fecp.interpreter.device.SystemConfiguration;
 
 import junit.framework.TestCase;
 

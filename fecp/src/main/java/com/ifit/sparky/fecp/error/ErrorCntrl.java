@@ -7,11 +7,9 @@
  */
 package com.ifit.sparky.fecp.error;
 
-import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.communication.FecpController;
 
 import java.nio.ByteBuffer;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.LinkedList;
 
 public class ErrorCntrl implements ErrorReporting{
@@ -38,45 +36,22 @@ public class ErrorCntrl implements ErrorReporting{
     @Override
     public void sendErrorObject(ByteBuffer buffer) {
         //handles the message and converts it into a System Error
-        SystemError sysError = new SystemError();
-        Calendar currentTime = GregorianCalendar.getInstance();
-        sysError.setErrorTime(currentTime);
-        sysError.setErrorType(ErrorMsgType.getMsgType(buffer.get()));
-        sysError.setErrorNumber(this.mErrorCount++);
+        //find the type of error msg it is
+        ErrorMsgType errType;
+        errType = ErrorMsgType.getMsgType(buffer.get());
+        SystemError sysError;
 
-        if(sysError.getErrorType() == ErrorMsgType.DEFAULT)
+        if(errType == ErrorMsgType.BITFIELD_ERR_MSG)
         {
-            sysError.setErrCode(ErrorCode.getErrorCode(buffer.getShort()));
-            sysError.setLineNumber(buffer.getShort());
-            //get the file for the buffer
-            String tempStr = "";
-
-            for(int i = buffer.position(); i < buffer.capacity(); i++)
-            {
-                char tempValue = (char)buffer.get();
-                if(tempValue == ':')
-                {
-                    break;
-                }
-                tempStr += tempValue;
-
-            }
-            sysError.setFileName(tempStr);
-            tempStr = "";
-            for(int i = buffer.position(); i < buffer.capacity(); i++)
-            {
-                char tempValue = (char)buffer.get();
-                tempStr += tempValue;
-            }
-
-            sysError.setFunctionName(tempStr);
-            this.mSystemErrors.add(sysError);
-
+            sysError = new BitfieldError();
         }
-        else
+        else// default
         {
-
+            sysError = new SystemError();
         }
+        sysError.handleErrorBuffer(buffer, this.mErrorCount++);
+        this.mSystemErrors.add(sysError);
+
         //the list only holds the last 10 errors
         //todo figure a solution for more errors
         if(this.mSystemErrors.size() > 10)

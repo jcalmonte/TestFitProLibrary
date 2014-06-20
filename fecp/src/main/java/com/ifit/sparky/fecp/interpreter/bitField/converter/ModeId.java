@@ -51,4 +51,15 @@ public enum ModeId {
     {
         return this.mValue;
     }
+
+    public static ModeId getEnumFromId(int id)
+    {
+        for (ModeId enumId : ModeId.values()) {
+            if(id == enumId.getValue())
+            {
+                return enumId;
+            }
+        }
+        return ModeId.UNKNOWN;//default to none
+    }
 }

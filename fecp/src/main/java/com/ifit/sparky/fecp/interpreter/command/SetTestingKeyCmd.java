@@ -8,13 +8,16 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.key.KeyCodes;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 import com.ifit.sparky.fecp.interpreter.status.SetTestingKeySts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class SetTestingKeyCmd extends Command implements CommandInterface{
+public class SetTestingKeyCmd extends Command implements CommandInterface, Serializable {
 
     private static final int CMD_LENGTH = 10;
     private boolean mKeyOverride;
@@ -41,7 +44,7 @@ public class SetTestingKeyCmd extends Command implements CommandInterface{
     /**
      * default constructor
      */
-    public SetTestingKeyCmd(DeviceId devId) throws Exception
+    public SetTestingKeyCmd(DeviceId devId) throws InvalidStatusException, InvalidCommandException
     {
         super(new SetTestingKeySts(devId),CMD_LENGTH,CommandId.SET_TESTING_KEY,devId);
         this.mKeyOverride = false;
@@ -89,7 +92,7 @@ public class SetTestingKeyCmd extends Command implements CommandInterface{
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
 
@@ -127,7 +130,7 @@ public class SetTestingKeyCmd extends Command implements CommandInterface{
      * @throws Exception if
      */
     @Override
-    public Command getCommandCopy() throws Exception {
+    public Command getCommandCopy() throws InvalidCommandException, InvalidStatusException {
         Command tempCmd = new SetTestingKeyCmd(this.getDevId());
         ((SetTestingKeyCmd)tempCmd).setIsSingleClick(this.mIsSingleClick);
         ((SetTestingKeyCmd)tempCmd).setTimeHeld(this.mTimeHeld);

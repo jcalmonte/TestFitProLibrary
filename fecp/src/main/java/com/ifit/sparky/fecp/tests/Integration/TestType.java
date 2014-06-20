@@ -1,18 +1,5 @@
 package com.ifit.sparky.fecp.tests.Integration;
 
-import android.content.Intent;
-import android.content.res.Resources;
-import android.util.Log;
-import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.FecpController;
-import com.ifit.sparky.fecp.SystemConfiguration;
-import com.ifit.sparky.fecp.communication.CommType;
-import com.ifit.sparky.fecp.interpreter.command.Command;
-import com.ifit.sparky.fecp.interpreter.command.InfoCmd;
-import com.ifit.sparky.fecp.interpreter.device.Device;
-import com.ifit.sparky.fecp.interpreter.device.DeviceId;
-import android.app.Activity;
-
 /**
  * Created by eetestlab on 1/27/14.
  * This class is the way for the testing system to determine what type of
@@ -40,13 +27,13 @@ public class TestType extends TestIntegration{
 //        //attempt to initialize a connection with the FECP controller
 //        //access the FECP library
 //        try{
-//            FecpController fecpController = new FecpController(TestType.this, getIntent(), CommType.USB_COMMUNICATION, null);}
+//            FecpController fecpController = new FecpController(TestType.this, getIntent(), CommType.USB, null);}
 //            fecpController.initializeConnection();
 //            catch (Exception e)
 //            {
 //                    Log.e("Device failed", e.getMessage()));
 //            try {
-//                machineCommand = new FecpCommand(); getIntent(), CommType.USB_COMMUNICATION, null);
+//                machineCommand = new FecpCommand(); getIntent(), CommType.USB, null);
 //
 //            }catch (Exception exit){
 //

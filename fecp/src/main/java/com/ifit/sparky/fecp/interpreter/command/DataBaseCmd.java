@@ -8,8 +8,13 @@
 package com.ifit.sparky.fecp.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Comparator;
@@ -17,7 +22,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
-public class DataBaseCmd{
+public class DataBaseCmd implements Serializable {
 
     /**
      * the data to be sent or to be received
@@ -45,7 +50,7 @@ public class DataBaseCmd{
      * @param copyData the data to copy over
      * @throws Exception
      */
-    public DataBaseCmd(DataBaseCmd copyData) throws Exception
+    public DataBaseCmd(DataBaseCmd copyData)
     {
         this.mNumOfDataBytes = copyData.mNumOfDataBytes;
 
@@ -136,7 +141,7 @@ public class DataBaseCmd{
      * Gets the buffer from the start of the Number of bytes to the end of the last data object.
      * @return buffer formatted for the Write data portion of the command
      */
-    public ByteBuffer getWriteMsgData() throws Exception{
+    public ByteBuffer getWriteMsgData() throws InvalidBitFieldException{
         int buffSize = 0;
 
         //add headerSize
@@ -157,7 +162,7 @@ public class DataBaseCmd{
     /**
      * Gets the buffer from the start of the Number of bytes to the end of the last data object.
      */
-    public void getWriteMsgData(ByteBuffer buffer) throws Exception{
+    public void getWriteMsgData(ByteBuffer buffer) throws InvalidBitFieldException {
         ByteBuffer tempBuff;
         //populate the header
         getMsgDataHeader(buffer);
@@ -215,7 +220,7 @@ public class DataBaseCmd{
      * @param buffer that holds all the raw data.
      * @return Map(specifically a TreeMap) of all the BitfieldIds and BitfieldDataConverters received.
      */
-    public Map<BitFieldId, BitfieldDataConverter> handleReadData(ByteBuffer buffer) throws Exception
+    public Map<BitFieldId, BitfieldDataConverter> handleReadData(ByteBuffer buffer) throws InvalidBitFieldException
     {
         //todo change comparator to be in a different location.
         TreeMap<BitFieldId, BitfieldDataConverter> map;
@@ -259,5 +264,38 @@ public class DataBaseCmd{
         }
         return result;
     }
+
+
+    private void writeObject(ObjectOutputStream stream) throws IOException
+    {
+        stream.writeInt(this.mNumOfDataBytes);
+        stream.writeInt(this.mMsgData.size());
+        for (Map.Entry<BitFieldId, Object> entry : this.mMsgData.entrySet()) {
+
+            stream.writeObject(entry.getKey());
+            stream.writeObject(entry.getValue());
+        }
+
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException
+    {
+        this.mNumOfDataBytes = stream.readInt();
+        int size = stream.readInt();
+        if(this.mMsgData == null)
+        {
+            this.mMsgData = new TreeMap<BitFieldId, Object>();
+        }
+
+        for(int i = 0; i < size; i++)
+        {
+            BitFieldId key = (BitFieldId)stream.readObject();
+            Object value = stream.readObject();
+            this.mMsgData.put(key, value);
+        }
+
+
+    }
+
 
 }

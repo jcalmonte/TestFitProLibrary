@@ -11,7 +11,7 @@ package com.ifit.sparky.fecp.tests.brute;
 import android.content.Context;
 import android.test.ServiceTestCase;
 
-import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
@@ -34,9 +34,9 @@ public class TestFecpController extends TestCase {
         c = getTestContext();
         callback = new TempFecpCallbacker();
 
-        controller = new FecpController(c, null, CommType.USB_COMMUNICATION, callback);
+        controller = new FecpController(CommType.USB);
 
-        assertEquals(CommType.USB_COMMUNICATION, controller.getCommType());
+        assertEquals(CommType.USB, controller.getCommType());
         assertEquals(DeviceId.MAIN, controller.getSysDev().getInfo().getDevId());
         assertEquals(false, controller.getIsConnected());
     }
@@ -49,14 +49,11 @@ public class TestFecpController extends TestCase {
 
         c = getTestContext();
         callback = new TempFecpCallbacker();
-        controller = new FecpController(c, null, CommType.USB_COMMUNICATION, callback);
+        controller = new FecpController(CommType.USB);
 
-        assertEquals(CommType.USB_COMMUNICATION, controller.getCommType());
+        assertEquals(CommType.USB, controller.getCommType());
         assertEquals(DeviceId.MAIN, controller.getSysDev().getInfo().getDevId());
         assertEquals(false, controller.getIsConnected());
-
-        //controller.initializeConnection();
-
 
     }
 

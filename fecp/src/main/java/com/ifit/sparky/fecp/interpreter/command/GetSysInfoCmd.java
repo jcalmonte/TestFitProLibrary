@@ -8,12 +8,15 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class GetSysInfoCmd extends Command implements CommandInterface{
+public class GetSysInfoCmd extends Command implements CommandInterface, Serializable {
 
     private static final int CMD_LENGTH = 6;
     private boolean mFetchMcuName;
@@ -35,7 +38,7 @@ public class GetSysInfoCmd extends Command implements CommandInterface{
     /**
      * default constructor
      */
-    public GetSysInfoCmd(DeviceId devId) throws Exception
+    public GetSysInfoCmd(DeviceId devId) throws InvalidCommandException, InvalidStatusException
     {
         super(new GetSysInfoSts(devId),CMD_LENGTH,CommandId.GET_SYSTEM_INFO,devId);
     }
@@ -79,7 +82,7 @@ public class GetSysInfoCmd extends Command implements CommandInterface{
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
 
@@ -113,7 +116,7 @@ public class GetSysInfoCmd extends Command implements CommandInterface{
      * @throws Exception if
      */
     @Override
-    public Command getCommandCopy() throws Exception {
+    public Command getCommandCopy() throws InvalidStatusException, InvalidCommandException {
         Command tempCmd = new GetSysInfoCmd(this.getDevId());
         ((GetSysInfoCmd)tempCmd).setGetConsoleName(this.mFetchConsoleName);
         ((GetSysInfoCmd)tempCmd).setGetMcuName(this.mFetchMcuName);

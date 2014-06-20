@@ -9,9 +9,11 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class AudioSourceConverter extends BitfieldDataConverter {
+public class AudioSourceConverter extends BitfieldDataConverter implements Serializable{
     private AudioSourceId mAudioSrc;
 
     /**
@@ -22,11 +24,10 @@ public class AudioSourceConverter extends BitfieldDataConverter {
         super();
         this.mAudioSrc = AudioSourceId.NONE;
         this.mDataSize = 1;
-        this.mRawData = ByteBuffer.allocate(this.mDataSize);
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception {
+    public BitfieldDataConverter getData() throws InvalidBitFieldException {
         int temp = (int)this.getRawToInt();
         this.mAudioSrc = AudioSourceId.values()[temp];
         return this;
@@ -52,6 +53,18 @@ public class AudioSourceConverter extends BitfieldDataConverter {
         return this.getRawFromData(this.mAudioSrc.getValue());
     }
 
+    @Override
+    public void writeObject(ByteBuffer stream) throws IOException {
+
+        stream.put((byte)this.mAudioSrc.getValue());
+    }
+
+    @Override
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
+
+        this.mAudioSrc = AudioSourceId.getEnumFromId(stream.get());//just the raw value
+    }
+
     /**
      * gets the data as an int regardless of size
      * @return the data as an int
@@ -60,4 +73,5 @@ public class AudioSourceConverter extends BitfieldDataConverter {
     {
         return this.mAudioSrc;
     }
+
 }

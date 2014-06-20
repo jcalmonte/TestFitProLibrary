@@ -8,19 +8,22 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.GetCmdsSts;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class GetCmdsCmd extends Command implements CommandInterface{
+public class GetCmdsCmd extends Command implements CommandInterface, Serializable {
 
     private static final int MIN_CMD_LENGTH = 4;
 
     /**
      * default constructor
      */
-    public GetCmdsCmd() throws Exception
+    public GetCmdsCmd() throws InvalidStatusException, InvalidCommandException
     {
         super();
         this.setCmdId(CommandId.GET_SUPPORTED_COMMANDS);
@@ -33,13 +36,13 @@ public class GetCmdsCmd extends Command implements CommandInterface{
      * @param devId the device id for the command
      * @throws Exception
      */
-    public GetCmdsCmd(DeviceId devId) throws Exception
+    public GetCmdsCmd(DeviceId devId) throws InvalidStatusException, InvalidCommandException
     {
         super(new GetCmdsSts(devId), MIN_CMD_LENGTH, CommandId.GET_SUPPORTED_COMMANDS, devId);
     }
 
     @Override
-    public Command getCommandCopy() throws Exception{
+    public Command getCommandCopy() throws InvalidStatusException, InvalidCommandException{
         return new GetCmdsCmd(this.getDevId());
     }
 
@@ -50,7 +53,7 @@ public class GetCmdsCmd extends Command implements CommandInterface{
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
 

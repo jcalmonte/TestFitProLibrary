@@ -9,12 +9,16 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
-import com.ifit.sparky.fecp.interpreter.device.*;
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.InvalidDeviceException;
 import com.ifit.sparky.fecp.interpreter.status.Status;
 
-import java.nio.*;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
-public abstract class Command implements CommandInterface{
+public abstract class Command implements CommandInterface, Serializable{
 
     private final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
@@ -42,7 +46,7 @@ public abstract class Command implements CommandInterface{
      * @param devId Device id for the message being sent.
      * @throws Exception if the length is out of bounds
      */
-    public Command(int length, CommandId cmdId, DeviceId devId) throws Exception
+    public Command(int length, CommandId cmdId, DeviceId devId) throws InvalidCommandException
     {
         this.mStatus = new Status();
         if(length <= MAX_MSG_LENGTH && length >= 0)
@@ -51,7 +55,7 @@ public abstract class Command implements CommandInterface{
         }
         else
         {
-            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+            throw new InvalidCommandException("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
         }
 
         this.mCmdId = cmdId;
@@ -66,7 +70,7 @@ public abstract class Command implements CommandInterface{
      * @param devId the device id for the command being sent.
      * @throws Exception if the length is to large.
      */
-    public Command(Status sts, int length, CommandId cmdId, DeviceId devId) throws Exception
+    public Command(Status sts, int length, CommandId cmdId, DeviceId devId) throws InvalidCommandException
     {
         this.mStatus = new Status();
         // if the sts command id doesn't match there is a mistake, there may be a few exceptions.
@@ -86,7 +90,7 @@ public abstract class Command implements CommandInterface{
         }
         else
         {
-            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+            throw new InvalidCommandException("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
         }
 
         this.mCmdId = cmdId;
@@ -151,7 +155,7 @@ public abstract class Command implements CommandInterface{
      * @param length of the message being sent
      * @throws Exception if the length is out of bounds
      */
-    public void setLength(int length) throws Exception
+    public void setLength(int length) throws InvalidCommandException
     {
         if(length <= MAX_MSG_LENGTH && length >= 0)
         {
@@ -159,7 +163,7 @@ public abstract class Command implements CommandInterface{
         }
         else
         {
-            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+            throw new InvalidCommandException("Invalid Length, Max =" + MAX_MSG_LENGTH + " Requested Length="+length);
         }
     }
 
@@ -238,7 +242,7 @@ public abstract class Command implements CommandInterface{
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
         buff = ByteBuffer.allocate(this.mLength);
@@ -255,14 +259,13 @@ public abstract class Command implements CommandInterface{
      * Helper function to check if the length of the message is to large
      * @throws Exception if the message is to large
      */
-    protected void checkMsgSize() throws Exception
+    protected void checkMsgSize() throws InvalidCommandException
     {
         if(this.mLength > this.MAX_MSG_LENGTH)
         {
-            throw new Exception("Message is to large. Max=("
+            throw new InvalidCommandException("Message is to large. Max=("
                     + this.MAX_MSG_LENGTH + ") your message size=(" + this.mLength + ")");
         }
     }
-
 
 }

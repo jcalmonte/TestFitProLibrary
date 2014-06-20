@@ -7,7 +7,7 @@
  */
 package com.ifit.sparky.fecp.tests.brute;
 
-import com.ifit.sparky.fecp.SystemConfiguration;
+import com.ifit.sparky.fecp.interpreter.device.SystemConfiguration;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
@@ -44,17 +44,17 @@ public class TestSystemDevice  extends TestCase {
         device = new SystemDevice();
 
         assertEquals(DeviceId.NONE, device.getInfo().getDevId());//just to test the super constructor
-        assertEquals(SystemConfiguration.SLAVE, device.getConfig());
+        assertEquals(SystemConfiguration.SLAVE, device.getSysDevInfo().getConfig());
 
         //test 2nd constructor
         device = new SystemDevice(DeviceId.INCLINE_TRAINER);
         assertEquals(DeviceId.INCLINE_TRAINER, device.getInfo().getDevId());//just to test the super constructor
-        assertEquals(SystemConfiguration.SLAVE, device.getConfig());
+        assertEquals(SystemConfiguration.SLAVE, device.getSysDevInfo().getConfig());
 
         //test 3rd constructor
         device = new SystemDevice(DeviceId.TREADMILL, SystemConfiguration.MASTER);
         assertEquals(DeviceId.TREADMILL, device.getInfo().getDevId());//just to test the super constructor
-        assertEquals(SystemConfiguration.MASTER, device.getConfig());
+        assertEquals(SystemConfiguration.MASTER, device.getSysDevInfo().getConfig());
     }
 
     /** Tests the Getters and Setters.
@@ -67,11 +67,10 @@ public class TestSystemDevice  extends TestCase {
         device = new SystemDevice();
 
         //test set Config setter
-        assertEquals(SystemConfiguration.SLAVE, device.getConfig());//make sure it is slave first
-        device.setConfig(SystemConfiguration.MULTI_MASTER);
+        assertEquals(SystemConfiguration.SLAVE, device.getSysDevInfo().getConfig());//make sure it is slave first
+//        device.setConfig(SystemConfiguration.MULTI_MASTER);
 
-        assertEquals(SystemConfiguration.MULTI_MASTER, device.getConfig());//make sure it is slave first
-
+//        assertEquals(SystemConfiguration.MULTI_MASTER, device.getConfig());//make sure it is slave first
 
 
     }

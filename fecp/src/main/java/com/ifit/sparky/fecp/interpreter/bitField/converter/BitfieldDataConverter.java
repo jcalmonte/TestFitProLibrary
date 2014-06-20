@@ -10,21 +10,24 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public abstract class BitfieldDataConverter {
+public abstract class BitfieldDataConverter implements Serializable {
 
-    protected ByteBuffer mRawData;
+    protected byte[] mRawData;
     protected int mDataSize;
+    protected long mTimeRecieved;
 
     /**
      * Default Constructor.
      */
     public BitfieldDataConverter()
     {
-        this.mRawData = ByteBuffer.allocate(8);//max cap needed
-        this.mRawData.order(ByteOrder.LITTLE_ENDIAN);
+        //this.mRawData = ByteBuffer.allocate(8);//max cap needed
+        //this.mRawData.order(ByteOrder.LITTLE_ENDIAN);
     }
 
     /**
@@ -35,9 +38,8 @@ public abstract class BitfieldDataConverter {
      */
     public void setRawData(ByteBuffer rawData, int size) throws InvalidBitFieldException
     {
-        this.mRawData = rawData;
-        this.mRawData.order(ByteOrder.LITTLE_ENDIAN);
-        if(this.mRawData.capacity() != size)
+        this.mRawData = rawData.array();
+        if(this.mRawData.length != size)
         {
             throw new InvalidBitFieldException(rawData, size);
         }
@@ -50,30 +52,33 @@ public abstract class BitfieldDataConverter {
      * @return int value from the byte array
      * @throws Exception if the number of bytes and the required size don't match up
      */
-    protected long getRawToInt() throws Exception
+    protected long getRawToInt() throws InvalidBitFieldException
     {
         //depending on the size convert to int
 
         long rawLong;//to get all the values of the int correctly
 
-        this.mRawData.position(0);
+        ByteBuffer buffer = ByteBuffer.allocate(this.mRawData.length);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(this.mRawData);
+        buffer.position(0);
 
         if(this.mDataSize == 1)
         {
             //value needs to be unsigned
-            rawLong = (this.mRawData.get(0) & 0xFF);//require for unsigned values
+            rawLong = (buffer.get(0) & 0xFF);//require for unsigned values
         }
         else if(this.mDataSize == 2)
         {
-            rawLong = (this.mRawData.getShort(0) & 0xFFFF);
+            rawLong = (buffer.getShort(0) & 0xFFFF);
         }
         else if(this.mDataSize == 4)
         {
-            rawLong = this.mRawData.getInt(0);// & 0xFFFFFFFF;
+            rawLong = buffer.getInt(0);// & 0xFFFFFFFF;
         }
         else
         {
-            throw new Exception("DataSizeCurrentlyNotSupported");
+            throw new InvalidBitFieldException("DataSizeCurrentlyNotSupported");
         }
         return rawLong;
     }
@@ -116,8 +121,22 @@ public abstract class BitfieldDataConverter {
         return tempBuff;
     }
 
-    public abstract BitfieldDataConverter getData()throws Exception;
+    public abstract BitfieldDataConverter getData()throws InvalidBitFieldException;
 
     public abstract ByteBuffer convertData(Object obj)throws InvalidBitFieldException;
+
+    /**
+     * This is to keep track of when the data was last received
+     * @param time time sample in the form of a long
+     */
+    public void setTimeRecieved(long time)
+    {
+        this.mTimeRecieved = time;
+    }
+
+    public abstract void writeObject(ByteBuffer stream) throws IOException;
+
+    public abstract void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException;
+
 
 }

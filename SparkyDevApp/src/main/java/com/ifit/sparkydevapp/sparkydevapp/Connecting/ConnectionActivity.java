@@ -1,4 +1,4 @@
-package com.ifit.sparkydevapp.sparkydevapp.Connecting;
+package com.ifit.sparkydevapp.sparkydevapp.connecting;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,12 +8,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.ifit.sparky.fecp.communication.CommType;
 import com.ifit.sparkydevapp.sparkydevapp.ItemListActivity;
 import com.ifit.sparkydevapp.sparkydevapp.R;
 
 public class ConnectionActivity extends Activity implements View.OnClickListener{
 
     private Button connectButton;
+    private Button wifiConnectButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,7 +23,9 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
 
         //assign gui elements
         this.connectButton = (Button) findViewById(R.id.buttonConnect);
+        this.wifiConnectButton = (Button) findViewById(R.id.buttonWifiConnect);
         connectButton.setOnClickListener(this);
+        wifiConnectButton.setOnClickListener(this);
 
 
     }
@@ -57,8 +61,18 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         if(v == this.connectButton)
         {
             //start the other intent, if the connection failed come back to here
-            Intent itemListIntent = new Intent(v.getContext(), ItemListActivity.class);
+            Intent itemListIntent = new Intent(getApplicationContext(), ItemListActivity.class);
+
+            itemListIntent.putExtra("commInterface", CommType.USB_COMMUNICATION.ordinal());
+
             startActivity(itemListIntent);
+            finish();
+        }
+        else if(v == this.wifiConnectButton)
+        {
+            //Switch to the TCP connection activity
+            Intent wifiConnect = new Intent(v.getContext(), WifiConnectActivity.class);
+            startActivity(wifiConnect);
             finish();
         }
     }

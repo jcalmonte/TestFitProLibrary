@@ -8,7 +8,8 @@
 package com.ifit.sparky.fecp.error;
 
 public enum ErrorMsgType {
-    DEFAULT(0);
+    DEFAULT(0),
+    BITFIELD_ERR_MSG(2);
 
     private byte mErrorMsgType;
 

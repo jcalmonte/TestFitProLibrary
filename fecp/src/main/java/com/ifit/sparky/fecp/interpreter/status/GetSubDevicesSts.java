@@ -10,11 +10,12 @@ package com.ifit.sparky.fecp.interpreter.status;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GetSubDevicesSts extends Status implements StatusInterface {
+public class GetSubDevicesSts extends Status implements StatusInterface, Serializable {
 
     private static final int MIN_STS_LENGTH = 6;
     private HashSet<DeviceId> mDeviceList;
@@ -24,7 +25,7 @@ public class GetSubDevicesSts extends Status implements StatusInterface {
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public GetSubDevicesSts(DeviceId devId) throws Exception
+    public GetSubDevicesSts(DeviceId devId) throws InvalidStatusException
     {
         super(StatusId.DEV_NOT_SUPPORTED, MIN_STS_LENGTH, CommandId.GET_SUPPORTED_DEVICES, devId);
         this.mDeviceList = new HashSet<DeviceId>();

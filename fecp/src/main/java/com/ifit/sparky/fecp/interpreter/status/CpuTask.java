@@ -7,9 +7,10 @@
  */
 package com.ifit.sparky.fecp.interpreter.status;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class CpuTask implements Comparable<CpuTask> {
+public class CpuTask implements Comparable<CpuTask>, Serializable {
 
     //items dealing with the CPU
     private int mTaskIndex;

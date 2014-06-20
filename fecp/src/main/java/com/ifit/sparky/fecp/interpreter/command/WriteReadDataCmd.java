@@ -9,14 +9,17 @@
 package com.ifit.sparky.fecp.interpreter.command;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 import com.ifit.sparky.fecp.interpreter.status.WriteReadDataSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;
 
-public class WriteReadDataCmd extends Command implements CommandInterface{
+public class WriteReadDataCmd extends Command implements CommandInterface, Serializable {
 
     private static final int MIN_CMD_LENGTH = 6;//2 section bytes
 
@@ -27,7 +30,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * Default constructor for the write data command no device specified
      * @throws Exception
      */
-    public WriteReadDataCmd() throws Exception
+    public WriteReadDataCmd() throws InvalidCommandException, InvalidStatusException
     {
         super();
         this.setCmdId(CommandId.WRITE_READ_DATA);
@@ -41,7 +44,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * @param devId the device id of the command
      * @throws Exception
      */
-    public WriteReadDataCmd(DeviceId devId) throws Exception
+    public WriteReadDataCmd(DeviceId devId) throws InvalidCommandException, InvalidStatusException
     {
         super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_READ_DATA, devId);
         this.mData = new DataBaseCmd();
@@ -53,7 +56,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * @param writeData the data that you want to write to on the device
      * @throws Exception
      */
-    public WriteReadDataCmd(DeviceId devId, Map<BitFieldId, Object> writeData) throws Exception
+    public WriteReadDataCmd(DeviceId devId, Map<BitFieldId, Object> writeData) throws InvalidCommandException, InvalidStatusException, InvalidBitFieldException
     {
         super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_READ_DATA, devId);
         this.mData = new DataBaseCmd();
@@ -70,7 +73,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
     public WriteReadDataCmd(DeviceId devId,
                             Map<BitFieldId,
                             Object> writeData,
-                            Collection<BitFieldId> readBitIds) throws Exception
+                            Collection<BitFieldId> readBitIds) throws  InvalidCommandException, InvalidStatusException, InvalidBitFieldException
     {
         super(new WriteReadDataSts(devId), MIN_CMD_LENGTH, CommandId.WRITE_READ_DATA, devId);
         this.mData = new DataBaseCmd();
@@ -84,13 +87,13 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * @param data the data to write
      * @exception Exception
      */
-    public void addWriteData(BitFieldId id, Object data) throws Exception
+    public void addWriteData(BitFieldId id, Object data) throws InvalidBitFieldException, InvalidCommandException
     {
         DataBaseCmd readData;
         int tempLength;
         if(id.getReadOnly())
         {
-            throw new Exception("Invalid BitfieldId "+ id.getDescription()+" This bitfield is read only");
+            throw new InvalidBitFieldException("Invalid BitfieldId "+ id.getDescription()+" This bitfield is read only");
         }
 
         readData = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
@@ -110,7 +113,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      *                  and the object to write(int,double, etc..).
      * @exception Exception
      */
-    public void addWriteData(Map<BitFieldId, Object> writeData) throws Exception
+    public void addWriteData(Map<BitFieldId, Object> writeData) throws InvalidBitFieldException, InvalidCommandException
     {
         for(Map.Entry<BitFieldId, Object> entry : writeData.entrySet())
         {
@@ -122,7 +125,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * Adds a Bitfield Id to the command for getting the data
      * @param id of the BitField to get the info
      */
-    public void addReadBitField(BitFieldId id) throws Exception
+    public void addReadBitField(BitFieldId id) throws InvalidBitFieldException, InvalidCommandException
     {
         int tempLength;
         DataBaseCmd readData = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
@@ -141,7 +144,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * Adds a Bitfield Id to the command for getting the data
      * @param bitFieldList of the BitField to get the info
      */
-    public void addReadBitField(Collection<BitFieldId> bitFieldList) throws Exception
+    public void addReadBitField(Collection<BitFieldId> bitFieldList) throws InvalidBitFieldException, InvalidCommandException
     {
         for(BitFieldId tempId : bitFieldList)
         {
@@ -153,7 +156,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * Removes a bitfield from the write
      * @param id of the BitField
      */
-    public void removeWriteDataField(BitFieldId id) throws Exception
+    public void removeWriteDataField(BitFieldId id) throws InvalidCommandException
     {
         int tempLength;
         DataBaseCmd readData = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
@@ -173,7 +176,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * Removes a bitfield and data from the write
      * @param bitFieldList of the BitField ids
      */
-    public void removeWriteDataField(Collection<BitFieldId> bitFieldList) throws Exception
+    public void removeWriteDataField(Collection<BitFieldId> bitFieldList) throws InvalidCommandException
     {
         for(BitFieldId tempId : bitFieldList)
         {
@@ -185,7 +188,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * Removes a bitfield from the desired read
      * @param id of the BitField
      */
-    public void removeReadDataField(BitFieldId id) throws Exception
+    public void removeReadDataField(BitFieldId id) throws InvalidCommandException
     {
         int tempLength;
         DataBaseCmd readData = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
@@ -206,7 +209,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * Removes a bitfield from the desired read
      * @param bitFieldList of the BitField to get the info
      */
-    public void removeReadDataField(Collection<BitFieldId> bitFieldList) throws Exception
+    public void removeReadDataField(Collection<BitFieldId> bitFieldList) throws InvalidCommandException
     {
         for(BitFieldId tempId : bitFieldList)
         {
@@ -250,7 +253,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * @return the Command structured to be ready to sent.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException{
 
         ByteBuffer buff;
         DataBaseCmd data = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
@@ -272,7 +275,7 @@ public class WriteReadDataCmd extends Command implements CommandInterface{
      * @throws Exception
      */
     @Override
-    public Command getCommandCopy() throws Exception {
+    public Command getCommandCopy() throws InvalidCommandException, InvalidBitFieldException, InvalidStatusException {
         WriteReadDataCmd cmdCopy = new WriteReadDataCmd(this.getDevId());
         cmdCopy.mData = new DataBaseCmd(this.mData);//adds a copy of all the data
 

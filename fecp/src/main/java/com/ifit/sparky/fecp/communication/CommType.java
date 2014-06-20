@@ -8,8 +8,10 @@
 package com.ifit.sparky.fecp.communication;
 
 public enum CommType {
-    USB_COMMUNICATION(),
-    TESTING_COMM();
+    USB(),
+    TCP(),
+    TESTING_COMM(),
+    NONE();
 
     /**
      * Default CommType enum
