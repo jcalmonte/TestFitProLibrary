@@ -15,6 +15,8 @@ import java.lang.reflect.Constructor;
 
 public enum CommandId {
     NONE(0, null, "No Command"),
+    RAW(0xFF, RawDataCmd.class, "This is a raw command ment to pass through"),
+    PORTAL_DEV_LISTEN(0x01, PortalDeviceCmd.class, "Gets the System Device and all it's current data"),
     WRITE_READ_DATA(0x02, WriteReadDataCmd.class,"Writes data and reads data in single command."),
     TEST(0x03, null, "Test the device."),
     CONNECT(0x04, null, "Connects to the device."),
@@ -73,9 +75,13 @@ public enum CommandId {
      */
     public Command getCommand(DeviceId devId) throws Exception
     {
+        if(CommandId.NONE == this)
+        {
+            return null;
+        }
         if(this.mCommandClass == null)
         {
-            throw new Exception("Command not supported yet");
+            throw new InvalidCommandException("Command not supported yet");
         }
         //create an instance of the specific feature
         Class<?>  className = this.mCommandClass;

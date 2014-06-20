@@ -8,11 +8,13 @@
 package com.ifit.sparky.fecp.interpreter.device;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-public class DeviceInfo {
+public class DeviceInfo implements Serializable {
 
     private DeviceId mId;
     private int mSWVersion;
@@ -235,8 +237,7 @@ public class DeviceInfo {
      * Gets the info from the buffer from the current position
      * @param buff  the buffer that has the DeviceInfo
      */
-    public void interpretInfo(ByteBuffer buff) throws Exception
-    {
+    public void interpretInfo(ByteBuffer buff) throws InvalidBitFieldException {
         byte bits;
         //read Sw Version
         this.setSWVersion(buff.get());// read 1 byte

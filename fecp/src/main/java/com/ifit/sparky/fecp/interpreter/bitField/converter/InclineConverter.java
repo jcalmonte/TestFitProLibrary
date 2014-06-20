@@ -9,9 +9,11 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class InclineConverter extends BitfieldDataConverter {
+public class InclineConverter extends BitfieldDataConverter implements Serializable {
 
     private double mIncline;
 
@@ -26,7 +28,7 @@ public class InclineConverter extends BitfieldDataConverter {
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
         //need to cast as a signed value of a short.
         this.mIncline = (short)this.getRawToInt();
@@ -54,6 +56,18 @@ public class InclineConverter extends BitfieldDataConverter {
 
         temp *= 100;
         return this.getRawFromData((int)temp);
+    }
+
+    @Override
+    public void writeObject(ByteBuffer stream) throws IOException {
+
+        stream.putDouble(this.mIncline);
+    }
+
+    @Override
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
+
+        this.mIncline = stream.getDouble();
     }
 
     /**

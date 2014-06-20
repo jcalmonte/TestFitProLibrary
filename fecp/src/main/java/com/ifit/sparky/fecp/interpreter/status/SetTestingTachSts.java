@@ -10,9 +10,10 @@ package com.ifit.sparky.fecp.interpreter.status;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class SetTestingTachSts extends Status implements StatusInterface {
+public class SetTestingTachSts extends Status implements StatusInterface, Serializable {
 
     private static final int MIN_STS_LENGTH = 5;
 
@@ -21,7 +22,7 @@ public class SetTestingTachSts extends Status implements StatusInterface {
      * @param devId the device Id of the expected Status
      * @throws Exception if things don't match up.
      */
-    public SetTestingTachSts(DeviceId devId) throws Exception
+    public SetTestingTachSts(DeviceId devId) throws InvalidStatusException
     {
         super(StatusId.DEV_NOT_SUPPORTED, MIN_STS_LENGTH, CommandId.SET_TESTING_TACH, devId);
     }
@@ -32,8 +33,7 @@ public class SetTestingTachSts extends Status implements StatusInterface {
      * @param buff the msg that came from the usb. only str
      */
     @Override
-    public void handleStsMsg(ByteBuffer buff) throws Exception
-    {
+    public void handleStsMsg(ByteBuffer buff) throws Exception {
         super.handleStsMsg(buff);
 
         //now parse the data no data

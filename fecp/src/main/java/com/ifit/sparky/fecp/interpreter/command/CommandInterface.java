@@ -7,6 +7,8 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+
 import java.nio.ByteBuffer;
 
 public interface CommandInterface {
@@ -15,5 +17,5 @@ public interface CommandInterface {
      * When they want to get the command they have to get the command.
      * @return the Command structured to be ready to send over the usb.
      */
-     ByteBuffer getCmdMsg() throws Exception;
+     ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException;
 }

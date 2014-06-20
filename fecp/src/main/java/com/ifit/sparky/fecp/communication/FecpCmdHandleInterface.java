@@ -5,9 +5,9 @@
  * @version 1
  * This will have the requirements for what to send and receive for each command.
  */
-package com.ifit.sparky.fecp;
+package com.ifit.sparky.fecp.communication;
 
-import com.ifit.sparky.fecp.communication.CommInterface;
+import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
@@ -32,6 +32,7 @@ public interface FecpCmdHandleInterface {
      */
     void processFecpCommand(FecpCommand cmd);
 
+
     /**
      * Removes the command if it matches the Command id and the Device ID.
      * If there are multiples in the command list it will remove both of them.
@@ -46,11 +47,6 @@ public interface FecpCmdHandleInterface {
      */
     boolean removeFecpCommand(FecpCommand cmd);
 
-    /**
-     * Sends the command to the Fecp Communication Controller
-     * @param cmd the command to the Device
-     */
-    void sendCommand(FecpCommand cmd)throws Exception;
 
     /**
      * This will add the interceptor for testing to validate commands going to the
@@ -58,5 +54,12 @@ public interface FecpCmdHandleInterface {
      * @param interceptor interceptor for the system
      */
     void addInterceptor(CmdInterceptor interceptor);
+
+    /**
+     * This is to return the status on the commands
+     * average, total time sent, total time
+     * @return String of all the details
+     */
+    String getCmdHandlingStats();
 
 }

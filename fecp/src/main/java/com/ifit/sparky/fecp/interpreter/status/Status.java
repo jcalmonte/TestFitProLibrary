@@ -16,10 +16,11 @@ import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.InvalidDeviceException;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 
-public class Status implements StatusInterface{
+public class Status implements StatusInterface, Serializable{
 
     public final int MAX_MSG_LENGTH = 64;// this may change in the future, but for now this is it.
 
@@ -27,6 +28,7 @@ public class Status implements StatusInterface{
     private int mLength;
     private CommandId mCmdId;
     private DeviceId mDevId;
+    private ByteBuffer mReplyBuffer;
 
     /**
      * Default Constructor for the Status object.
@@ -46,7 +48,7 @@ public class Status implements StatusInterface{
      * @param cmdId the command Id
      * @param devId the Device Id
      */
-    public Status(StatusId stsId, int length, CommandId cmdId, DeviceId devId) throws Exception
+    public Status(StatusId stsId, int length, CommandId cmdId, DeviceId devId) throws InvalidStatusException
     {
         this.mStsId = stsId;
 
@@ -56,7 +58,7 @@ public class Status implements StatusInterface{
         }
         else
         {
-            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+            throw new InvalidStatusException("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
         }
 
         this.mCmdId = cmdId;
@@ -121,7 +123,7 @@ public class Status implements StatusInterface{
      * @param length the Length of the message
      * @throws Exception if the length is outside of the bounds
      */
-    public void setLength(int length) throws Exception
+    public void setLength(int length) throws InvalidStatusException
     {
         if(length <= MAX_MSG_LENGTH && length >= 0)
         {
@@ -129,7 +131,7 @@ public class Status implements StatusInterface{
         }
         else
         {
-            throw new Exception("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
+            throw new InvalidStatusException("Invalid Length, Max =" + MAX_MSG_LENGTH + " Input Length="+length);
         }
     }
 
@@ -151,7 +153,14 @@ public class Status implements StatusInterface{
         this.mDevId = id;
     }
 
-
+    /**
+     * This will return the raw data received from the command send to the machine.
+     * @return Byte buffer of the original data from the Machine
+     */
+    public ByteBuffer getReplyBuffer()
+    {
+        return this.mReplyBuffer;
+    }
     /**
      * Handles the message that is coming across the usb. It handles raw data, and it
      * must be handled by the correct status.
@@ -161,6 +170,8 @@ public class Status implements StatusInterface{
     @Override
     public void handleStsMsg(ByteBuffer buff) throws Exception {
         //goes through all the major items, but doesn't handle the specifics
+
+        this.mReplyBuffer = buff.duplicate();
         if(buff == null)
         {
             this.setStsId(StatusId.FAILED);
@@ -183,7 +194,8 @@ public class Status implements StatusInterface{
         if(checkSum == 0 && actualByte == 0)
         {
             //msg failed
-            throw new InvalidStatusException(this, checkSum, actualByte);
+            this.setStsId(StatusId.FAILED);
+            return;
         }
         //todo check if message was sent to main.
         if(this.getDevId() == DeviceId.MAIN)
@@ -191,7 +203,7 @@ public class Status implements StatusInterface{
             //set actual byte to be the device id
             this.setDevId(DeviceId.getDeviceId(actualByte));
         }
-        if(actualByte != (byte)this.mDevId.getVal())
+        if(this.getCmdId() != CommandId.RAW && actualByte != (byte)this.mDevId.getVal())
         {
             throw new InvalidDeviceException(actualByte, this.mDevId);
         }
@@ -200,7 +212,7 @@ public class Status implements StatusInterface{
 
         //check if the command id matches
         actualByte = buff.get();
-        if(actualByte != (byte)this.mCmdId.getVal())
+        if(this.getCmdId() != CommandId.RAW && actualByte != (byte)this.mCmdId.getVal())
         {
             throw new InvalidCommandException(this.mCmdId, actualByte);
         }

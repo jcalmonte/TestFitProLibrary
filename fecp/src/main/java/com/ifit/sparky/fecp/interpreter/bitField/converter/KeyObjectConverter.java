@@ -10,11 +10,15 @@
 package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+import com.ifit.sparky.fecp.interpreter.key.InvalidKeyCodeException;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
-public class KeyObjectConverter extends BitfieldDataConverter {
+public class KeyObjectConverter extends BitfieldDataConverter implements Serializable {
 
     private KeyObject mKey;
 
@@ -29,21 +33,29 @@ public class KeyObjectConverter extends BitfieldDataConverter {
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
-        this.mRawData.position(0);
+        ByteBuffer buff;
+        buff = ByteBuffer.allocate(this.mRawData.length);
+        buff.order(ByteOrder.LITTLE_ENDIAN);
+        buff.put(this.mRawData);
+        buff.position(0);
 
         //convert the Next 2 bytes into the CookedKeycode
-        this.mKey.setCode(this.mRawData.getShort());
+        try {
+            this.mKey.setCode(buff.getShort());
+        } catch (InvalidKeyCodeException e) {
+            throw new InvalidBitFieldException(e.getMessage());
+        }
 
         //convert the first 4 bytes into the rawKeycode value
-        this.mKey.setRawKeyCode(this.mRawData.getLong());
+        this.mKey.setRawKeyCode(buff.getLong());
 
         //convert the Next 2 bytes into the Time it was pressed in seconds
-        this.mKey.setTimePressed(this.mRawData.getShort());
+        this.mKey.setTimePressed(buff.getShort());
 
         //converts the Next 2 Bytes into how long it was held
-        this.mKey.setTimeHeld(this.mRawData.getShort());
+        this.mKey.setTimeHeld(buff.getShort());
 
         return this;
     }
@@ -53,6 +65,19 @@ public class KeyObjectConverter extends BitfieldDataConverter {
 
         throw new InvalidBitFieldException("KeyCodes bitfield doesn't support converting " +
                 "into Raw Data");
+    }
+
+
+    @Override
+    public void writeObject(ByteBuffer stream) throws IOException {
+
+        this.mKey.writeObject(stream);
+    }
+
+    @Override
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
+
+        this.mKey.readObject(stream);
     }
 
     /**

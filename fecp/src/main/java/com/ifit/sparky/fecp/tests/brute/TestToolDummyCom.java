@@ -9,10 +9,15 @@ package com.ifit.sparky.fecp.tests.brute;
 
 import android.util.Log;
 
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommInterface;
+import com.ifit.sparky.fecp.communication.ConnectionDevice;
+import com.ifit.sparky.fecp.communication.SystemStatusListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class TestToolDummyCom implements CommInterface {
@@ -65,11 +70,23 @@ public class TestToolDummyCom implements CommInterface {
     }
 
     /**
+     * This allows the user to scan for all of the different devices, when finished scanning it will
+     * Call the listener to allow them to select with
+     *
+     * @param listener listener to be called after scanning is complete.
+     */
+    @Override
+    public void scanForSystems(ScanSystemListener listener) {
+        listener.onScanFinish(new ArrayList<ConnectionDevice>());
+    }
+
+    /**
      * Initializes the connection to the communication items.
      */
     @Override
-    public void initializeCommConnection() {
+    public SystemDevice initializeCommConnection() {
 
+        return null;
     }
 
     /**
@@ -78,9 +95,10 @@ public class TestToolDummyCom implements CommInterface {
      * @param listener the listener for the callbacks
      */
     @Override
-    public void addConnectionListener(DeviceConnectionListener listener) {
+    public void addConnectionListener(SystemStatusListener listener) {
 
     }
+
 
     /**
      * Removes all the Connection listeners,
@@ -88,6 +106,16 @@ public class TestToolDummyCom implements CommInterface {
     @Override
     public void clearConnectionListener() {
 
+    }
+
+    /**
+     * gets the list of System Status Listeners
+     *
+     * @return list of all the System Status Listeners
+     */
+    @Override
+    public List<SystemStatusListener> getSystemStatusListeners() {
+        return null;
     }
 
     /**

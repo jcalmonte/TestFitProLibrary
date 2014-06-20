@@ -7,13 +7,13 @@
  */
 package com.ifit.sparky.fecp.tests.brute;
 
-import com.ifit.sparky.fecp.CommandCallback;
+import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.SystemDevice;
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
+import com.ifit.sparky.fecp.communication.SystemStatusListener;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 
-public class TempFecpCallbacker implements CommandCallback, SystemStatusCallback {
+public class TempFecpCallbacker implements OnCommandReceivedListener, SystemStatusListener {
 
     private boolean itWorks;
     private CommandId id;//temp id to make sure the command was sent
@@ -33,7 +33,7 @@ public class TempFecpCallbacker implements CommandCallback, SystemStatusCallback
      * @param cmd the command that was sent.
      */
     @Override
-    public void msgHandler(Command cmd)
+    public void onCommandReceived(Command cmd)
     {
         this.itWorks = (cmd.getCmdId() == this.id);
     }
@@ -82,5 +82,13 @@ public class TempFecpCallbacker implements CommandCallback, SystemStatusCallback
     public void systemDeviceConnected(SystemDevice dev) {
 
         this.isConnected = true;
+    }
+
+    /**
+     * This will be called when the communication layer is connected. this is a lower level of
+     * communication notification.
+     */
+    @Override
+    public void systemCommunicationConnected() {
     }
 }

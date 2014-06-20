@@ -12,10 +12,12 @@ package com.ifit.sparky.fecp.interpreter.device;
 
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.*;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Device {
+public class Device implements Serializable {
 
     private Map<CommandId, Command> mCommandMap;//list of all the available commands.
     private ArrayList<Device> mSubDevArrayList;//list of all the subDevices.
@@ -24,7 +26,7 @@ public class Device {
     /**
      * Default constructor for devices.
      */
-    public Device() throws Exception
+    public Device() throws InvalidStatusException, InvalidCommandException
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
@@ -36,7 +38,7 @@ public class Device {
      * constructor for single device.
      * @param id the deviceId
      */
-    public Device(DeviceId id) throws Exception
+    public Device(DeviceId id) throws InvalidStatusException, InvalidCommandException
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
@@ -54,7 +56,7 @@ public class Device {
     public Device(
             Collection<Command> commands,
             Collection<Device> devices,
-            DeviceInfo info) throws Exception
+            DeviceInfo info) throws InvalidStatusException, InvalidCommandException
     {
         this.mCommandMap = new LinkedHashMap<CommandId, Command>();
         this.mSubDevArrayList = new ArrayList<Device>();
@@ -125,7 +127,7 @@ public class Device {
      * gets the Command from the list of commands, based on the id value.
      * @return the Command that matches
      */
-    public Command getCommand(int idVal) throws Exception
+    public Command getCommand(int idVal) throws InvalidCommandException
     {
         if(this.mCommandMap.containsKey(CommandId.getCommandId(idVal)))
         {
@@ -184,7 +186,7 @@ public class Device {
      * @param cmds set of commands to add to the device.
      * @throws Exception if there already is a command Error.
      */
-    public void addCommands (Collection<Command> cmds) throws Exception
+    public void addCommands (Collection<Command> cmds) throws InvalidCommandException
     {
         for(Command tempCmd : cmds)
         {
@@ -233,14 +235,12 @@ public class Device {
     /**
      * This populates the command map with all the default commands that all devices will support.
      */
-    private void populateDefaultCommands() throws Exception
+    private void populateDefaultCommands() throws InvalidStatusException, InvalidCommandException
     {
         //default commands
         this.addCommand(new InfoCmd(this.mInfo.getDevId()));
         this.addCommand(new GetCmdsCmd(this.mInfo.getDevId()));
         this.addCommand(new GetSubDevicesCmd(this.mInfo.getDevId()));
-        this.addCommand(new WriteDataCmd(this.mInfo.getDevId()));
-        this.addCommand(new ReadDataCmd(this.mInfo.getDevId()));
         this.addCommand(new WriteReadDataCmd(this.mInfo.getDevId()));
     }
 

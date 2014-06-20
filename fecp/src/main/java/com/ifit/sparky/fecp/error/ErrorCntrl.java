@@ -7,7 +7,7 @@
  */
 package com.ifit.sparky.fecp.error;
 
-import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.communication.FecpController;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;

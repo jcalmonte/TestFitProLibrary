@@ -25,6 +25,7 @@ import android.hardware.usb.UsbRequest;
 import android.os.Handler;
 import android.util.Log;
 
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.error.ErrorReporting;
 
 import java.nio.ByteBuffer;
@@ -32,7 +33,8 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class UsbComm extends Activity implements CommInterface {
@@ -90,7 +92,7 @@ public class UsbComm extends Activity implements CommInterface {
     private int mSendTimeout;
 
 
-    private LinkedList<DeviceConnectionListener> mUsbConnectionListener;
+    private CopyOnWriteArrayList<SystemStatusListener> mUsbConnectionListener;
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -110,7 +112,7 @@ public class UsbComm extends Activity implements CommInterface {
         mIntent = i;
         this.mSendTimeout = defaultTimeout;
         if(this.mUsbConnectionListener == null) {
-            this.mUsbConnectionListener = new LinkedList<DeviceConnectionListener>();
+            this.mUsbConnectionListener = new CopyOnWriteArrayList<SystemStatusListener>();
         }
     }
 
@@ -121,11 +123,10 @@ public class UsbComm extends Activity implements CommInterface {
     private void onCreateUSB(){
         isInitialized = false;
         if(this.mUsbConnectionListener == null) {
-            this.mUsbConnectionListener = new LinkedList<DeviceConnectionListener>();
+            this.mUsbConnectionListener = new CopyOnWriteArrayList<SystemStatusListener>();
         }
         mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
 
-        //thread_LocalRun.start();
         try{
             reestablishConnection();
         }catch (Exception e){
@@ -180,8 +181,9 @@ public class UsbComm extends Activity implements CommInterface {
                 Log.d(TAG, "Device Detached");
                 if (mDevice != null && mDevice.equals(device)) {
                     if(mUsbConnectionListener != null){
-                        for (DeviceConnectionListener listener : this.mUsbConnectionListener) {
-                            listener.onDeviceDisconnected();
+                        for (SystemStatusListener listener : this.mUsbConnectionListener) {
+                            listener.systemDisconnected();
+//                            listener.onDeviceDisconnected();
                         }
                     }
                     mDevice = null; //setDevice(null);
@@ -198,9 +200,21 @@ public class UsbComm extends Activity implements CommInterface {
      * Initializes the connection to the communication items.
      */
     @Override
-    public void initializeCommConnection() {
+    public SystemDevice initializeCommConnection() {
         onCreateUSB();
         onResumeUSB(mIntent);
+        //check if there is a device attached
+        if(connectionState != ConnectionState.CONNECTED)
+        {
+            return null;
+        }
+
+        try {
+            return SystemDevice.initializeSystemDevice(this);//get the System Device
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -209,7 +223,7 @@ public class UsbComm extends Activity implements CommInterface {
      * @param listener the listener for the callbacks
      */
     @Override
-    public void addConnectionListener(DeviceConnectionListener listener) {
+    public void addConnectionListener(SystemStatusListener listener) {
         mUsbConnectionListener.add(listener);
     }
 
@@ -219,6 +233,16 @@ public class UsbComm extends Activity implements CommInterface {
     @Override
     public void clearConnectionListener() {
         mUsbConnectionListener.clear();
+    }
+
+    /**
+     * gets the list of System Status Listeners
+     *
+     * @return list of all the System Status Listeners
+     */
+    @Override
+    public List<SystemStatusListener> getSystemStatusListeners() {
+        return mUsbConnectionListener;
     }
 
     /**
@@ -259,6 +283,23 @@ public class UsbComm extends Activity implements CommInterface {
     @Override
     public void setCommActive(boolean active) {
         this.isCommActive = active;
+    }
+
+    /**
+     * This allows the user to scan for all of the different devices, when finished scanning it will
+     * Call the listener to allow them to select with
+     *
+     * @param listener listener to be called after scanning is complete.
+     */
+    @Override
+    public void scanForSystems(ScanSystemListener listener) {
+        ArrayList<ConnectionDevice> devices;
+        //scan
+        for (UsbDevice device : getUsbDevices()) {
+//            devices.add(new ConnectionDevice());//todo get the info from the device
+        }
+        listener.onScanFinish(new ArrayList<ConnectionDevice>());//empty with usb, one 1 device connected
+        // at a time.
     }
 
     /**
@@ -518,7 +559,7 @@ public class UsbComm extends Activity implements CommInterface {
             if(deviceList != null)
                 deviceIterator = deviceList.values().iterator();
             UsbDevice device = null;
-            while(deviceIterator != null){
+            while(deviceIterator != null && deviceList.size() != 0){
                 if(!deviceIterator.hasNext()){
                     deviceList = mUsbManager.getDeviceList();
                     deviceIterator = deviceList.values().iterator();
@@ -640,8 +681,9 @@ public class UsbComm extends Activity implements CommInterface {
                 mConnection = null;
             }
             if(mUsbConnectionListener != null){
-                for (DeviceConnectionListener listener : this.mUsbConnectionListener) {
-                    listener.onDeviceConnected();
+                for (SystemStatusListener listener : this.mUsbConnectionListener) {
+                    listener.systemCommunicationConnected();
+//                    listener.onDeviceConnected();
                 }
             }
         }
@@ -674,8 +716,9 @@ public class UsbComm extends Activity implements CommInterface {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-                for (DeviceConnectionListener listener : mUsbConnectionListener) {
-                    listener.onDeviceDisconnected();
+                for (SystemStatusListener listener : mUsbConnectionListener) {
+                    listener.systemDisconnected();
+//                    listener.onDeviceDisconnected();
                 }
                 detach();
                 System.exit(0);
@@ -735,6 +778,36 @@ public class UsbComm extends Activity implements CommInterface {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+    private List<UsbDevice> getUsbDevices()
+    {
+        HashMap<String, UsbDevice> deviceList;
+        ArrayList<UsbDevice> validDevices = new ArrayList<UsbDevice>();
+
+        Log.d(TAG, "check_for_device");
+        mUsbManager = (UsbManager)mContext.getSystemService(Context.USB_SERVICE);
+        deviceList = mUsbManager.getDeviceList();
+        try{
+
+
+            Iterator<UsbDevice> deviceIterator = null;
+            if(deviceList != null)
+                deviceIterator = deviceList.values().iterator();
+
+            while(deviceIterator != null && deviceIterator.hasNext() && (mConnection == null || mDevice == null)){
+
+                UsbDevice device = deviceIterator.next();
+                if(device != null && device.getVendorId() == VENDOR_ID && device.getProductId() == PRODUCT_ID && mUsbManager.hasPermission(device)){
+                    validDevices.add(device);//gets all of the supported devices on the system. in case of a port to multiples
+//                    isInitialized = false;
+//                    setDevice(device);
+                }
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return validDevices;
     }
 
     /**

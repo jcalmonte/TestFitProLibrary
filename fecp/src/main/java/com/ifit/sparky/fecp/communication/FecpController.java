@@ -5,61 +5,46 @@
  * @version 1
  * This controller will handle all the different aspects of the communication to the system.
  */
-package com.ifit.sparky.fecp;
+package com.ifit.sparky.fecp.communication;
 
-import android.util.Log;
+import android.os.Looper;
 
-import com.ifit.sparky.fecp.communication.CommInterface;
-import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.SystemConfiguration;
+import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
-public class FecpController implements ErrorReporting, CommInterface.DeviceConnectionListener {
+public class FecpController implements ErrorReporting {
     //Fecp System Version number
     private final int VERSION = 1;
     private CommType mCommType;
-    protected SystemStatusCallback statusCallback;
     protected SystemDevice mSysDev;
     protected boolean mIsConnected;
     protected CommInterface mCommController;
     protected FecpCmdHandleInterface mCmdHandleInterface;
     protected ErrorCntrl mSysErrorControl;
+    private TcpServer mTcpServer;
 
     /**
      * This is for Fecp connections that don't req
      * @param type Communication type
-     * @param callback callback for the system
+     *  callback callback for the system
      * @throws Exception
      */
-    public FecpController(CommType type, SystemStatusCallback callback) throws Exception {
+    public FecpController(CommType type) throws Exception {
 
-        if(callback == null)
-        {
-            throw new Exception("SystemStatusCallback callback is null, Can't be null");
-        }
         this.mCommType = type;
-        this.statusCallback = callback;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
         this.mIsConnected = false;
-
         this.mSysErrorControl = new ErrorCntrl(this);
-    }
-
-    /**
-     *
-     * @throws Exception
-     */
-    public void initializeConnection() throws Exception{
-
-        this.mCommController.addConnectionListener(this);
-        this.mCommController.initializeCommConnection();
     }
 
     /**
@@ -67,15 +52,57 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
      *
      * @param listener this listens for changes in the connection
      */
-    public void initializeConnection(CommInterface.DeviceConnectionListener listener) throws Exception {
+    public void initializeConnection(SystemStatusListener listener) throws Exception {
+        this.initializeConnection(listener, null);//just doesn't use it.
+    }
 
-        this.mCommController.addConnectionListener(this);
+    /**
+     * Initializes the connection and sets up the communication
+     *
+     * @param listener this listens for changes in the connection
+     * @param dataCallback a callback to get data about the server
+     */
+    public void initializeConnection(SystemStatusListener listener, final ServerDataCallback dataCallback) throws Exception {
 
-        if(listener != null) {
-
-            this.mCommController.addConnectionListener(listener);
+         if(listener == null)
+        {
+            throw new Exception("SystemStatusListener callback is null, Can't be null");
         }
-        this.mCommController.initializeCommConnection();
+
+        this.mCommController.addConnectionListener(listener);
+        //start a thread to initialize the connection
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                mSysDev = mCommController.initializeCommConnection();//start initializing communications
+
+                if(mSysDev == null ||mSysDev.getInfo().getDevId() == DeviceId.NONE)
+                {
+                    mIsConnected = false;
+                    for (SystemStatusListener statusListener : mCommController.getSystemStatusListeners()) {
+                        statusListener.systemDeviceConnected(mSysDev);
+                    }
+                    return;
+                }
+                mIsConnected = true;
+                mCmdHandleInterface = new FecpCmdHandler(mCommController, mSysDev);
+
+                if(mSysDev.getSysDevInfo().getConfig() == SystemConfiguration.MASTER || mSysDev.getSysDevInfo().getConfig() == SystemConfiguration.MULTI_MASTER ) {
+                    //on port 8090.
+                    mTcpServer = new TcpServer(mCmdHandleInterface, mSysDev, dataCallback);//currently accepting connections
+                    mTcpServer.startServer();//start the server
+                }
+
+                mCommController.setupErrorReporting(mSysErrorControl);
+                mCommController.setCommActive(false);
+                for (SystemStatusListener statusListener : mCommController.getSystemStatusListeners()) {
+                    statusListener.systemDeviceConnected(mSysDev);
+                }
+
+                Looper.myLooper().quit();
+            }
+        }).start();
     }
 
     /**
@@ -102,6 +129,7 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
      * @return the System Device
      */
     public SystemDevice getSysDev() {
+
         return this.mSysDev;
     }
 
@@ -114,30 +142,17 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
         return this.mIsConnected;
     }
 
-    private void getSystem() throws Exception
-    {
-        if(this.mCommType == CommType.TESTING_COMM) {
-
-        }
-        else
-        {
-            this.mSysDev = new SystemDevice(this.mCommController);
-        }
-
-        if(this.mSysDev.getInfo().getDevId() == DeviceId.NONE)
-        {
-            return;
-        }
-        this.mCmdHandleInterface = new FecpCmdHandler(this.mCommController);
-        this.mCommController.setupErrorReporting(this.mSysErrorControl);
-    }
-
     /**
      * Adds a command to send to the device
      *
      * @param cmd the command to send to the device
      */
     public void addCmd(FecpCommand cmd) throws Exception {
+
+        //smarter Command validity detection
+        //this will compare it with the System device
+
+
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
 
@@ -198,6 +213,22 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
         this.mSysErrorControl.clearOnErrorEventListener();
 
     }
+    /**
+     * Gets the List of System Status connection listeners
+     * @return list of System Status Connection listeners
+     */
+    public List<SystemStatusListener> clearConnectionListener() {
+        return mCommController.getSystemStatusListeners();
+    }
+
+    public String getCommunicationStats()
+    {
+        if(this.mCmdHandleInterface != null)
+        {
+            return this.mCmdHandleInterface.getCmdHandlingStats();
+        }
+        return "";
+    }
 
     /**
      * Adds an interceptor to the Fecp Controller, redirecting all commands to the CmdInterceptor.
@@ -219,34 +250,4 @@ public class FecpController implements ErrorReporting, CommInterface.DeviceConne
         this.mSysDev = device;
     }
 
-    public void clearConnectionListener() {
-        mCommController.clearConnectionListener();
-    }
-
-    @Override
-    public void onDeviceConnected() {
-        //search for the device
-        try {
-
-            if(this.mSysDev.getInfo().getDevId() == DeviceId.MAIN) {
-                this.getSystem();
-                this.mCommController.setCommActive(false);
-            }
-
-            if(this.mSysDev.getInfo().getDevId() != DeviceId.NONE)
-            {
-                this.statusCallback.systemDeviceConnected(this.mSysDev);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.e("Get System Failed", ex.getMessage());
-            ex.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onDeviceDisconnected() {
-        //nothing to do
-    }
 }

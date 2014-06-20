@@ -55,4 +55,16 @@ public enum WorkoutId {
     {
         return this.mValue;
     }
+
+
+    public static WorkoutId getEnumFromId(int id)
+    {
+        for (WorkoutId enumId : WorkoutId.values()) {
+            if(id == enumId.getValue())
+            {
+                return enumId;
+            }
+        }
+        return WorkoutId.MANUAL;//default to none
+    }
 }

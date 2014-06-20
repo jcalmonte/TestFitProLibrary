@@ -9,80 +9,76 @@ package com.ifit.sparky.fecp;
 
 import com.ifit.sparky.fecp.communication.CommInterface;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.communication.TcpComm;
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
+import com.ifit.sparky.fecp.communication.TcpConnectionDevice;
+
+import java.net.InetSocketAddress;
 
 public class FitProTcp extends FecpController {
 
-    private int mPort;
-    private String mIpAddress;
+    private InetSocketAddress mIpAddress;
+    public final int DEFAULT_PORT = 8090;
+    public final int DEFAULT_TIME_OUT = 2000;
 
-    /**
-     * This is for Fecp connections that don't req
-     *
-     * @param callback callback for the system
-     * @throws Exception
-     */
     /**
      * This sets up the FitPro for the wifi connection over TCP
      * @param ipAddress the ip address
      * @param port port to communicate over
-     * @param callback the connection status callback
      * @throws Exception
      */
-    public FitProTcp(String ipAddress, int port, SystemStatusCallback callback) throws Exception {
-        super(CommType.TCP_COMMUNICATION, callback);
-        this.mPort = port;
+    public FitProTcp(String ipAddress, int port) throws Exception {
+        super(CommType.TCP);
+        this.mIpAddress = new InetSocketAddress(ipAddress, port);
+        this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
+    }
+
+    /**
+     * This sets up the FitPro for the wifi connection over TCP Uses default Port of 8090
+     * @param ipAddress the ip address
+     * @throws Exception
+     */
+    public FitProTcp(String ipAddress) throws Exception {
+        super(CommType.TCP);
+        this.mIpAddress = new InetSocketAddress(ipAddress, DEFAULT_PORT);
+        this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
+    }
+
+    /**
+     * This sets up the FitPro for the wifi connection over TCP
+     * @param ipAddress the ip address
+     * @throws Exception
+     */
+    public FitProTcp(InetSocketAddress ipAddress) throws Exception {
+        super(CommType.TCP);
         this.mIpAddress = ipAddress;
+        this.mCommController = new TcpComm(this.mIpAddress, DEFAULT_TIME_OUT);
     }
 
     /**
+     * This sets up the FitPro for the wifi connection over TCP
+     * @param connectionDev the Socket and the Device to connect to
      * @throws Exception
      */
-    @Override
-    public void initializeConnection() throws Exception {
-        this.mCommController = new TcpComm(this.mIpAddress, this.mPort, 100);
-        super.initializeConnection();
+    public FitProTcp(TcpConnectionDevice connectionDev) throws Exception {
+        super(CommType.TCP);
+        this.mIpAddress = connectionDev.getIpAddress();
+        this.mCommController = new TcpComm(connectionDev, DEFAULT_TIME_OUT);
     }
-
-    /**
-     * Initializes the connection and sets up the communication
-     *
-     * @param listener this listens for changes in the connection
-     */
-    @Override
-    public void initializeConnection(CommInterface.DeviceConnectionListener listener) throws Exception {
-
-        this.mCommController = new TcpComm(this.mIpAddress, this.mPort, 100);
-        super.initializeConnection(listener);
-    }
-
-    /**
-     * initializes the connection of the Fitpro
-     * @param listener connection disconnect listener
-     * @param timeout default timeout for a waiting for the response.
-     * @throws Exception
-     */
-    public void initializeConnection(CommInterface.DeviceConnectionListener listener, int timeout) throws Exception {
-
-        this.mCommController = new TcpComm(this.mIpAddress, this.mPort, timeout);
-        super.initializeConnection(listener);
-    }
-
 
     /**
      * Gets the Port for the socket communication
      * @return which port is used
      */
     public int getPort() {
-        return mPort;
+        return this.mIpAddress.getPort();
     }
 
     /**
      * Gets the ip address of the connection
      * @return ip address
      */
-    public String getIpAddress() {
+    public InetSocketAddress getIpAddress() {
         return mIpAddress;
     }
 
@@ -91,7 +87,7 @@ public class FitProTcp extends FecpController {
      * @param port port for the connection
      */
     public void setPort(int port) {
-        this.mPort = port;
+        this.mIpAddress = new InetSocketAddress(this.mIpAddress.getAddress(), port);
     }
 
     /**
@@ -99,6 +95,22 @@ public class FitProTcp extends FecpController {
      * @param ipAddress ip address of the FitPro
      */
     public void setIpAddress(String ipAddress) {
+        this.mIpAddress = new InetSocketAddress(ipAddress, this.mIpAddress.getPort());
+    }
+    /**
+     * the ip address for the connection, doesn't do anything after initializing the connection.
+     * @param ipAddress ip address of the FitPro
+     */
+    public void setIpAddress(InetSocketAddress ipAddress) {
         this.mIpAddress = ipAddress;
+    }
+
+    /**
+     * Scans for all of the available Devices
+     * @param listener callback for when it finishes scanning, may contain no Devices
+     */
+    public static void scanForSystems(CommInterface.ScanSystemListener listener) {
+        new TcpComm().scanForSystems(listener);
+
     }
 }

@@ -9,9 +9,11 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class ModeConverter extends BitfieldDataConverter {
+public class ModeConverter extends BitfieldDataConverter implements Serializable {
     private ModeId mMode;
 
     /**
@@ -22,11 +24,10 @@ public class ModeConverter extends BitfieldDataConverter {
         super();
         this.mMode = ModeId.UNKNOWN;
         this.mDataSize = 1;
-        this.mRawData = ByteBuffer.allocate(this.mDataSize);
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception {
+    public BitfieldDataConverter getData() throws InvalidBitFieldException {
         int temp = (int)this.getRawToInt();
         this.mMode = ModeId.values()[temp];
         return this;
@@ -55,6 +56,18 @@ public class ModeConverter extends BitfieldDataConverter {
         }
 
         return this.getRawFromData(this.mMode.getValue());
+    }
+
+    @Override
+    public void writeObject(ByteBuffer stream) throws IOException {
+
+        stream.put((byte)this.mMode.getValue());
+    }
+
+    @Override
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
+
+        this.mMode = ModeId.getEnumFromId(stream.get());
     }
 
     /**

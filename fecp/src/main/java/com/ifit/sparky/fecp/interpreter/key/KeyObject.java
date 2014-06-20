@@ -8,7 +8,13 @@
  */
 package com.ifit.sparky.fecp.interpreter.key;
 
-public class KeyObject {
+import android.util.Log;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+
+public class KeyObject implements Serializable {
 
     private KeyCodes    mCode;
     private long        mRawKeyCode;//this is the 0xFFFFFFC thing
@@ -99,9 +105,18 @@ public class KeyObject {
      * @param rawCode the keyCode value
      * @throws InvalidKeyCodeException if the keycode doesn't exist
      */
-    public void setCode(long rawCode) throws InvalidKeyCodeException
+    public void setCode(int rawCode) throws InvalidKeyCodeException
     {
         this.mCode = KeyCodes.getKeyCode(rawCode);
+    }
+    /**
+     * Sets the Cooked KeyCode with the keycode Value.
+     * @param rawCode the keyCode value
+     * @throws InvalidKeyCodeException if the keycode doesn't exist
+     */
+    public void setCode(long rawCode) throws InvalidKeyCodeException
+    {
+        this.mCode = KeyCodes.getKeyCode((int)rawCode);
     }
 
     /**
@@ -129,6 +144,29 @@ public class KeyObject {
     public void setTimeHeld(int time)
     {
         this.mTimeHeld = time;
+    }
+
+    public void writeObject(ByteBuffer stream) throws IOException {
+
+        stream.putInt(this.mCode.getVal());
+        stream.putLong(this.mRawKeyCode);
+        stream.putInt(this.mTimePressed);
+        stream.putInt(this.mTimeHeld);
+    }
+
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
+        int keyVal = stream.getInt();
+        try {
+            this.mCode = KeyCodes.getKeyCode(keyVal);
+
+        } catch (InvalidKeyCodeException e) {
+            Log.d("InvalidKeyCode", "Invalid key actualVal["+ keyVal +"]. " + e.getMessage());
+            this.mCode = KeyCodes.NO_KEY;//default
+        }
+
+        this.mRawKeyCode = stream.getLong();
+        this.mTimePressed = stream.getInt();
+        this.mTimeHeld = stream.getInt();
     }
 
     public String toString()

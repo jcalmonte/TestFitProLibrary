@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.ifit.sparky.fecp.CommandCallback;
+import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 
-public class UserDataFragment extends BaseInfoFragment implements CommandCallback, Runnable{
+public class UserDataFragment extends BaseInfoFragment implements OnCommandReceivedListener, Runnable{
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -210,8 +210,8 @@ public class UserDataFragment extends BaseInfoFragment implements CommandCallbac
      * @param cmd the command that was sent.
      */
     @Override
-    public void msgHandler(Command cmd) {
-        super.msgHandler(cmd);
+    public void onCommandReceived(Command cmd) {
+        super.onCommandReceived(cmd);
         this.getActivity().runOnUiThread(new Thread(this));
     }
 

@@ -9,9 +9,11 @@ package com.ifit.sparky.fecp.interpreter.bitField.converter;
 
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class ResistanceConverter extends BitfieldDataConverter {
+public class ResistanceConverter extends BitfieldDataConverter implements Serializable {
 
     private double mResistance;
 
@@ -26,7 +28,7 @@ public class ResistanceConverter extends BitfieldDataConverter {
     }
 
     @Override
-    public BitfieldDataConverter getData() throws Exception
+    public BitfieldDataConverter getData() throws InvalidBitFieldException
     {
         this.mResistance = this.getRawToInt();
         this.mResistance /= 100.0;
@@ -55,6 +57,20 @@ public class ResistanceConverter extends BitfieldDataConverter {
         temp *= 100;
 
         return this.getRawFromData((int)temp);
+    }
+
+
+    @Override
+    public void writeObject(ByteBuffer stream) throws IOException {
+
+        stream.putDouble(this.mResistance);
+
+    }
+
+    @Override
+    public void readObject(ByteBuffer stream) throws IOException, ClassNotFoundException {
+
+        this.mResistance = stream.getDouble();
     }
 
     /**

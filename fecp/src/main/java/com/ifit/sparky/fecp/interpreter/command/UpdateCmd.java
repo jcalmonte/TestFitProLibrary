@@ -7,12 +7,15 @@
  */
 package com.ifit.sparky.fecp.interpreter.command;
 
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.status.InvalidStatusException;
 import com.ifit.sparky.fecp.interpreter.status.UpdateSts;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class UpdateCmd extends Command implements CommandInterface{
+public class UpdateCmd extends Command implements CommandInterface, Serializable {
 
     private static final int CMD_LENGTH = 13;
     private static final int MAX_UPDATE_DATA_SIZE = 50;//raw update data
@@ -26,7 +29,7 @@ public class UpdateCmd extends Command implements CommandInterface{
     /**
      * default constructor
      */
-    public UpdateCmd() throws Exception
+    public UpdateCmd() throws InvalidCommandException, InvalidStatusException
     {
         super();
         this.setCmdId(CommandId.UPDATE);
@@ -42,7 +45,7 @@ public class UpdateCmd extends Command implements CommandInterface{
     /**
      * default constructor
      */
-    public UpdateCmd(DeviceId devId) throws Exception
+    public UpdateCmd(DeviceId devId) throws InvalidCommandException, InvalidStatusException
     {
         super(new UpdateSts(devId),CMD_LENGTH,CommandId.UPDATE,devId);
 
@@ -79,13 +82,13 @@ public class UpdateCmd extends Command implements CommandInterface{
         this.mPacketNumber = mPacketNumber;
     }
 
-    public void setUpdateData(ByteBuffer updateData) throws Exception {
+    public void setUpdateData(ByteBuffer updateData) throws InvalidCommandException {
 
         //throw exception if size is to big
 
         if(updateData.capacity() > this.MAX_UPDATE_DATA_SIZE)
         {
-            throw new Exception("Update data is too large ("+updateData.capacity() + ") Max is ("+ MAX_UPDATE_DATA_SIZE);
+            throw new InvalidCommandException("Update data is too large ("+updateData.capacity() + ") Max is ("+ MAX_UPDATE_DATA_SIZE);
         }
         this.mUpdateData = updateData;
         this.mDataSize = updateData.capacity();
@@ -99,7 +102,7 @@ public class UpdateCmd extends Command implements CommandInterface{
      * @return the Command structured to be ready to send over the usb.
      */
     @Override
-    public ByteBuffer getCmdMsg() throws Exception{
+    public ByteBuffer getCmdMsg() throws InvalidCommandException, InvalidBitFieldException {
 
         ByteBuffer buff;
         buff = super.getCmdMsg();
@@ -131,7 +134,7 @@ public class UpdateCmd extends Command implements CommandInterface{
      * @throws Exception if
      */
     @Override
-    public Command getCommandCopy() throws Exception {
+    public Command getCommandCopy() throws InvalidCommandException, InvalidStatusException {
         Command tempCmd = new UpdateCmd(this.getDevId());
 
         ((UpdateCmd)tempCmd).setPacketNumber(this.mPacketNumber);

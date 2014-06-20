@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
-import com.ifit.sparky.fecp.CommandCallback;
+import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.FitProTcp;
@@ -32,7 +32,7 @@ import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentCont
 import java.util.ArrayList;
 
 public class ItemListActivity extends FragmentActivity
-        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, CommandCallback, Runnable {
+        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, OnCommandReceivedListener, Runnable {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -229,7 +229,7 @@ public class ItemListActivity extends FragmentActivity
      * @param cmd the command that was sent.
      */
     @Override
-    public void msgHandler(Command cmd) {
+    public void onCommandReceived(Command cmd) {
         //currently do nothing
     }
 }
