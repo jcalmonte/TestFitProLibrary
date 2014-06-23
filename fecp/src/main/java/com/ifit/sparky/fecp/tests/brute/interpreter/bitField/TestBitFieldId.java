@@ -511,20 +511,6 @@ public class TestBitFieldId extends TestCase {
         resultBuff1.put((byte) 5);
         assertEquals(resultBuff1, bit.getRawFromData(5));//int test
 
-        //test AndroidKeys
-        bit = BitFieldId.ANDROID_KEYS;
-        assertEquals(BitFieldId.ANDROID_KEYS, bit);
-        assertEquals(15, bit.getVal());
-        assertEquals(1, bit.getSection());
-        assertEquals(7, bit.getBit());
-        assertEquals(1, bit.getSize());
-        assertEquals(true, bit.getReadOnly());
-        assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
-        resultBuff1.clear();
-        resultBuff1.put((byte) 5);
-        assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
-        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
-
         //test Actual KPH
         bit = BitFieldId.ACTUAL_KPH;
         assertEquals(BitFieldId.ACTUAL_KPH, bit);
