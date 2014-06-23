@@ -19,31 +19,9 @@ android {
     buildToolsVersion '19.1.0'
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 17
-        packageName 'com.ifit.sparky.fecp'
+        targetSdkVersion 19
         testPackageName "com.ifit.sparky.fecp.tests"
     }
-//    buildTypes {
-//        release {
-//            runProguard false
-//            proguardFile 'proguard-rules.txt'
-//            proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
-//        }
-//    }
-//    release {
-//        runProguard false
-//        proguardFile 'proguard-rules.txt'
-//        proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
-//    }
-//    productFlavors {
-////        main{
-////            testPackageName "com.ifit.sparky.fecp"
-////        }
-//        instrumentTest {
-//            testPackageName 'com.ifit.sparky.fecp.tests'
-//            packageName 'com.ifit.sparky.fecp'
-//        }
-//    }
 }
 
 dependencies {

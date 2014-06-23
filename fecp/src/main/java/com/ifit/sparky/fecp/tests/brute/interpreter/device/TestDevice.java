@@ -57,7 +57,7 @@ public class TestDevice extends TestCase {
         info = new DeviceInfo();
 
         assertEquals(DeviceId.NONE,deviceObjOne.getInfo().getDevId());
-        assertEquals(6, deviceObjOne.getCommandSet().size());
+        assertEquals(4, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
         assertEquals(0, deviceObjOne.getInfo().getSupportedBitfields().size());
         assertNotNull(deviceObjOne.getInfo());//should match up
@@ -67,7 +67,7 @@ public class TestDevice extends TestCase {
         info.setDevId(DeviceId.INCLINE_TRAINER);
 
         assertEquals(DeviceId.INCLINE_TRAINER,deviceObjOne.getInfo().getDevId());
-        assertEquals(6, deviceObjOne.getCommandSet().size());
+        assertEquals(4, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
         assertEquals(0, deviceObjOne.getInfo().getSupportedBitfields().size());
         assertNotNull(deviceObjOne.getInfo());//should match up
@@ -82,7 +82,7 @@ public class TestDevice extends TestCase {
         deviceObjOne = new Device(cmdSet, deviceList, info);
 
         assertEquals(DeviceId.INCLINE_TRAINER,deviceObjOne.getInfo().getDevId());
-        assertEquals(6, deviceObjOne.getCommandSet().size());
+        assertEquals(4, deviceObjOne.getCommandSet().size());
         assertEquals(2, deviceObjOne.getSubDeviceList().size());
         assertNotNull(deviceObjOne.getInfo());//should match up
     }
@@ -103,7 +103,7 @@ public class TestDevice extends TestCase {
         info = new DeviceInfo();
 
         assertEquals(DeviceId.NONE,deviceObjOne.getInfo().getDevId());
-        assertEquals(6, deviceObjOne.getCommandSet().size());
+        assertEquals(4, deviceObjOne.getCommandSet().size());
         assertEquals(0, deviceObjOne.getSubDeviceList().size());
         assertEquals(0, deviceObjOne.getInfo().getSupportedBitfields().size());
         assertNotNull(deviceObjOne.getInfo());//should match up
@@ -115,17 +115,17 @@ public class TestDevice extends TestCase {
         deviceObjOne.addSubDevice(new Device(DeviceId.INCLINE_TRAINER));
 
         assertEquals(DeviceId.NONE, deviceObjOne.getInfo().getDevId());
-        assertEquals(6, deviceObjOne.getCommandSet().size());
+        assertEquals(4, deviceObjOne.getCommandSet().size());
         assertNotNull(deviceObjOne.getSubDevice(DeviceId.TREADMILL));
         assertNotNull(deviceObjOne.getSubDevice(0x05));//incline trainer
         assertEquals(3, deviceObjOne.getSubDeviceList().size());
         assertTrue(deviceObjOne.containsDevice(DeviceId.TREADMILL));
 
         //Test set command
-        assertEquals(6,deviceObjOne.getCommandSet().size());
+        assertEquals(4,deviceObjOne.getCommandSet().size());
         //Test set Commands and get command and command by idVal
         cmdSet.add(new InfoCmd(DeviceId.INCLINE_TRAINER));
-        assertEquals(6, deviceObjOne.getCommandSet().size());
+        assertEquals(4, deviceObjOne.getCommandSet().size());
         assertEquals(CommandId.GET_INFO,deviceObjOne.getCommand(CommandId.GET_INFO).getCmdId());
         assertEquals(CommandId.GET_INFO,deviceObjOne.getCommand(CommandId.GET_INFO.getVal()).getCmdId());
 

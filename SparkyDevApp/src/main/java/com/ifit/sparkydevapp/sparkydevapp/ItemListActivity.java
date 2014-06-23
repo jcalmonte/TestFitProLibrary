@@ -8,14 +8,14 @@ import android.widget.Toast;
 
 import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.FecpController;
 import com.ifit.sparky.fecp.FitProTcp;
 import com.ifit.sparky.fecp.FitProUsb;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.CommType;
+import com.ifit.sparky.fecp.communication.FecpController;
+import com.ifit.sparky.fecp.communication.SystemStatusListener;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.SystemError;
-import com.ifit.sparky.fecp.interpreter.SystemStatusCallback;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparkydevapp.sparkydevapp.connecting.ConnectionActivity;
@@ -32,7 +32,7 @@ import com.ifit.sparkydevapp.sparkydevapp.listFragments.MainInfoListFragmentCont
 import java.util.ArrayList;
 
 public class ItemListActivity extends FragmentActivity
-        implements MainInfoListFragmentControl.Callbacks, SystemStatusCallback, ErrorEventListener, OnCommandReceivedListener, Runnable {
+        implements MainInfoListFragmentControl.Callbacks, SystemStatusListener, ErrorEventListener, OnCommandReceivedListener, Runnable {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -70,15 +70,15 @@ public class ItemListActivity extends FragmentActivity
             Bundle bundleParameters = getIntent().getExtras();
             CommType comm = CommType.values()[bundleParameters.getInt("commInterface")];
 
-            if(comm == CommType.USB_COMMUNICATION)
+            if(comm == CommType.USB)
             {
-                this.mFitProCntrl = new FitProUsb(ItemListActivity.this, getIntent(), this);
+                this.mFitProCntrl = new FitProUsb(ItemListActivity.this, getIntent());
             }
-            else if(comm == CommType.TCP_COMMUNICATION)
+            else if(comm == CommType.TCP)
             {
                 String ipAddress = bundleParameters.getString("ipAddress");
                 int port = bundleParameters.getInt("port");
-                this.mFitProCntrl = new FitProTcp(ipAddress, port, this);
+                this.mFitProCntrl = new FitProTcp(ipAddress, port);
             }
             this.mServerThread = new Thread(this);
             this.mServerThread.start();
@@ -107,7 +107,7 @@ public class ItemListActivity extends FragmentActivity
     @Override
     public void run() {
         try {
-            mFitProCntrl.initializeConnection();
+            mFitProCntrl.initializeConnection(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -140,6 +140,8 @@ public class ItemListActivity extends FragmentActivity
 
         arguments.putString(currentFrag.toString(), id);
         currentFrag.setArguments(arguments);
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.item_detail_container, currentFrag);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.item_detail_container, currentFrag)
@@ -186,7 +188,7 @@ public class ItemListActivity extends FragmentActivity
         baseInfoFragments.add(new ErrorFragment(this.mFitProCntrl));
         baseInfoFragments.add(new UserDataFragment(this.mFitProCntrl));//variety of items
 
-        if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
+        if(this.mMainDevice.containsDevice(DeviceId.GRADE))
         {
             baseInfoFragments.add(new InclineDeviceFragment(this.mFitProCntrl));
         }
@@ -210,6 +212,15 @@ public class ItemListActivity extends FragmentActivity
                     .setActivateOnItemClick(true);
         }
 
+
+    }
+
+    /**
+     * This will be called when the communication layer is connected. this is a lower level of
+     * communication notification.
+     */
+    @Override
+    public void systemCommunicationConnected() {
 
     }
 

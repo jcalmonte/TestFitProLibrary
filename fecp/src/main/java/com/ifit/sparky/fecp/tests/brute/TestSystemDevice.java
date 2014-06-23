@@ -50,11 +50,6 @@ public class TestSystemDevice  extends TestCase {
         device = new SystemDevice(DeviceId.INCLINE_TRAINER);
         assertEquals(DeviceId.INCLINE_TRAINER, device.getInfo().getDevId());//just to test the super constructor
         assertEquals(SystemConfiguration.SLAVE, device.getSysDevInfo().getConfig());
-
-        //test 3rd constructor
-        device = new SystemDevice(DeviceId.TREADMILL, SystemConfiguration.MASTER);
-        assertEquals(DeviceId.TREADMILL, device.getInfo().getDevId());//just to test the super constructor
-        assertEquals(SystemConfiguration.MASTER, device.getSysDevInfo().getConfig());
     }
 
     /** Tests the Getters and Setters.

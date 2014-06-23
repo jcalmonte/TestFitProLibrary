@@ -63,7 +63,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
             //start the other intent, if the connection failed come back to here
             Intent itemListIntent = new Intent(getApplicationContext(), ItemListActivity.class);
 
-            itemListIntent.putExtra("commInterface", CommType.USB_COMMUNICATION.ordinal());
+            itemListIntent.putExtra("commInterface", CommType.USB.ordinal());
 
             startActivity(itemListIntent);
             finish();

@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.SystemError;
 import com.ifit.sparkydevapp.sparkydevapp.R;
