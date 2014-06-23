@@ -96,20 +96,20 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
 
             //check which bitfields are supported
             supportedBitfields = this.mInclineDev.getInfo().getSupportedBitfields();
-            if(supportedBitfields.contains(BitFieldId.INCLINE))
+            if(supportedBitfields.contains(BitFieldId.GRADE))
             {
-                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addReadBitField(BitFieldId.INCLINE);
-                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
+                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addReadBitField(BitFieldId.GRADE);
+                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.GRADE, this.mTargetIncline);
             }
 
-            if(supportedBitfields.contains(BitFieldId.MAX_INCLINE))
+            if(supportedBitfields.contains(BitFieldId.MAX_GRADE))
             {
-                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addReadBitField(BitFieldId.MAX_INCLINE);
+                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addReadBitField(BitFieldId.MAX_GRADE);
             }
 
-            if(supportedBitfields.contains(BitFieldId.MIN_INCLINE))
+            if(supportedBitfields.contains(BitFieldId.MIN_GRADE))
             {
-                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addReadBitField(BitFieldId.MIN_INCLINE);
+                ((WriteReadDataCmd)this.mInclineInfoCmd.getCommand()).addReadBitField(BitFieldId.MIN_GRADE);
             }
 
             if(supportedBitfields.contains(BitFieldId.TRANS_MAX))
@@ -194,12 +194,12 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
 
         commandData = ((WriteReadDataSts)this.mInclineInfoCmd.getCommand().getStatus()).getResultData();
 
-        if(commandData.containsKey(BitFieldId.INCLINE))
+        if(commandData.containsKey(BitFieldId.GRADE))
         {
 
             try
             {
-                valueString += ((InclineConverter) commandData.get(BitFieldId.INCLINE).getData()).getIncline() + "\n";
+                valueString += ((InclineConverter) commandData.get(BitFieldId.GRADE).getData()).getIncline() + "\n";
             }
             catch (Exception ex)
             {
@@ -236,12 +236,12 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
             valueString += "Trans Max= " + "\n";
         }
 
-        if(commandData.containsKey(BitFieldId.MAX_INCLINE))
+        if(commandData.containsKey(BitFieldId.MAX_GRADE))
         {
 
             try
             {
-                detailString += "Max= %" +((InclineConverter) commandData.get(BitFieldId.MAX_INCLINE).getData()).getIncline() + " ";
+                detailString += "Max= %" +((InclineConverter) commandData.get(BitFieldId.MAX_GRADE).getData()).getIncline() + " ";
             }
             catch (Exception ex)
             {
@@ -249,12 +249,12 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
             }
         }
 
-        if(commandData.containsKey(BitFieldId.MIN_INCLINE))
+        if(commandData.containsKey(BitFieldId.MIN_GRADE))
         {
 
             try
             {
-                detailString += "Min= %" +((InclineConverter) commandData.get(BitFieldId.MIN_INCLINE).getData()).getIncline();
+                detailString += "Min= %" +((InclineConverter) commandData.get(BitFieldId.MIN_GRADE).getData()).getIncline();
             }
             catch (Exception ex)
             {
@@ -314,7 +314,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
                 }
                 this.mTargetIncline = Double.parseDouble(inputStr);
 
-                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
+                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.GRADE, this.mTargetIncline);
                 this.mFecpCntrl.addCmd(this.mSetInclineCmd);//send the new speed down
             }
             catch (Exception numEx) {
@@ -337,7 +337,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
         {
             try{
 
-                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.INCLINE, this.mTargetIncline);
+                ((WriteReadDataCmd)this.mSetInclineCmd.getCommand()).addWriteData(BitFieldId.GRADE, this.mTargetIncline);
                 this.mFecpCntrl.addCmd(this.mSetInclineCmd);
             }
             catch (Exception ex)

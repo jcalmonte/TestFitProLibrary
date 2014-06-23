@@ -83,6 +83,31 @@ public abstract class BitfieldDataConverter implements Serializable {
         return rawLong;
     }
 
+
+    /**
+     * Converts the data into the byte array
+     * @param data the byte, short, or int to be converted
+     * @return array of bytes
+     */
+    protected ByteBuffer getRawFromData(boolean data) throws InvalidBitFieldException
+    {
+        ByteBuffer tempBuff = ByteBuffer.allocate(this.mDataSize);//don't overwrite
+        tempBuff.order(ByteOrder.LITTLE_ENDIAN);
+        tempBuff.position(0);
+        if(this.mDataSize == 1)
+        {
+            if(data)
+            {
+                tempBuff.put((byte)0x01);
+            }
+            else
+            {
+                tempBuff.put((byte)0x00);
+            }
+        }
+        return tempBuff;
+    }
+
     /**
      * Converts the data into the byte array
      * @param data the byte, short, or int to be converted

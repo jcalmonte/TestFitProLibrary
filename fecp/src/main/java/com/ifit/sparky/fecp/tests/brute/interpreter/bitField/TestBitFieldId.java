@@ -53,7 +53,7 @@ public class TestBitFieldId extends TestCase {
         Byte b2;
 
         idOne = BitFieldId.KPH;
-        idTwo = BitFieldId.INCLINE;
+        idTwo = BitFieldId.GRADE;
         b1 = 0x0B;
         b2 = 0x01;
         rawData.put(b1);
@@ -67,7 +67,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(false, idOne.getReadOnly());
         assertNotNull(idOne.getDescription());
 
-        assertEquals(BitFieldId.INCLINE, idTwo);
+        assertEquals(BitFieldId.GRADE, idTwo);
         assertEquals(1, idTwo.getVal());
         assertEquals(0, idTwo.getSection());
         assertEquals(1, idTwo.getBit());
@@ -110,7 +110,7 @@ public class TestBitFieldId extends TestCase {
         }
 
         //test Incline Converter
-        idOne = BitFieldId.INCLINE;
+        idOne = BitFieldId.GRADE;
         buff = ByteBuffer.allocate(2);
         buff.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -311,8 +311,8 @@ public class TestBitFieldId extends TestCase {
         assertEquals(resultBuff2, bit.getRawFromData(5));//int test
 
         //test Incline
-        bit = BitFieldId.INCLINE;
-        assertEquals(BitFieldId.INCLINE, bit);
+        bit = BitFieldId.GRADE;
+        assertEquals(BitFieldId.GRADE, bit);
         assertEquals(1, bit.getVal());
         assertEquals(0, bit.getSection());
         assertEquals(1, bit.getBit());
@@ -639,8 +639,8 @@ public class TestBitFieldId extends TestCase {
         assertEquals(resultBuff1, bit.getRawFromData(5));//int test
 
         //test Max Incline
-        bit = BitFieldId.MAX_INCLINE;
-        assertEquals(BitFieldId.MAX_INCLINE, bit);
+        bit = BitFieldId.MAX_GRADE;
+        assertEquals(BitFieldId.MAX_GRADE, bit);
         assertEquals(27, bit.getVal());
         assertEquals(3, bit.getSection());
         assertEquals(3, bit.getBit());
@@ -653,8 +653,8 @@ public class TestBitFieldId extends TestCase {
         assertEquals(resultBuff2, bit.getRawFromData(5));//int test
 
         //test Min Incline
-        bit = BitFieldId.MIN_INCLINE;
-        assertEquals(BitFieldId.MIN_INCLINE, bit);
+        bit = BitFieldId.MIN_GRADE;
+        assertEquals(BitFieldId.MIN_GRADE, bit);
         assertEquals(28, bit.getVal());
         assertEquals(3, bit.getSection());
         assertEquals(4, bit.getBit());
@@ -797,7 +797,7 @@ public class TestBitFieldId extends TestCase {
         try
         {
             BitFieldId idOne = BitFieldId.getBitFieldId(0,1);
-            assertEquals(BitFieldId.INCLINE, idOne);
+            assertEquals(BitFieldId.GRADE, idOne);
         }
         catch (Exception ex)
         {
