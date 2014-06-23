@@ -10,7 +10,7 @@ package com.ifit.sparky.fecp.tests.brute.interpreter.command;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.InclineConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.GradeConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
 import com.ifit.sparky.fecp.interpreter.command.DataBaseCmd;
 
@@ -359,7 +359,7 @@ public class TestDataCmdStsBase extends TestCase {
         map = dataBase.handleReadData(buffer);
 
         assertEquals(1.0, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
-        assertEquals(12.34, ((InclineConverter)map.get(BitFieldId.GRADE)).getIncline());
+        assertEquals(12.34, ((GradeConverter)map.get(BitFieldId.GRADE)).getIncline());
 
         // Test skipping a section, and the order of the items
         buffer = ByteBuffer.allocate(3);
@@ -373,7 +373,7 @@ public class TestDataCmdStsBase extends TestCase {
         dataBase.addBitfieldData(BitFieldId.PULSE, 0);
         map = dataBase.handleReadData(buffer);
 
-        assertEquals(12.34, ((InclineConverter)map.get(BitFieldId.GRADE)).getIncline());
+        assertEquals(12.34, ((GradeConverter)map.get(BitFieldId.GRADE)).getIncline());
         assertEquals(231, ((ByteConverter)map.get(BitFieldId.PULSE)).getValue());
 
         //re add the speed, and check order
@@ -390,7 +390,7 @@ public class TestDataCmdStsBase extends TestCase {
         map = dataBase.handleReadData(buffer);
 
         assertEquals(1.0, ((SpeedConverter)map.get(BitFieldId.KPH)).getSpeed());
-        assertEquals(12.34, ((InclineConverter)map.get(BitFieldId.GRADE)).getIncline());
+        assertEquals(12.34, ((GradeConverter)map.get(BitFieldId.GRADE)).getIncline());
         assertEquals(231, ((ByteConverter)map.get(BitFieldId.PULSE)).getValue());
 
     }

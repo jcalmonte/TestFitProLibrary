@@ -13,14 +13,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-public class InclineConverter extends BitfieldDataConverter implements Serializable {
+public class GradeConverter extends BitfieldDataConverter implements Serializable {
 
     private double mIncline;
 
     /**
      * constructor for the Incline converter
      */
-    public InclineConverter()
+    public GradeConverter()
     {
         super();
         this.mDataSize = 2;

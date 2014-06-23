@@ -15,7 +15,7 @@ import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.InclineConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.GradeConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ShortConverter;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -87,7 +87,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
         this.mEditInclineText.setOnFocusChangeListener(this);
         this.mCalibrateButton.setOnClickListener(this);
 
-        this.mInclineDev = this.mFecpCntrl.getSysDev().getSubDevice(DeviceId.INCLINE);
+        this.mInclineDev = this.mFecpCntrl.getSysDev().getSubDevice(DeviceId.GRADE);
         Set<BitFieldId> supportedBitfields;
         try {
 
@@ -199,7 +199,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
 
             try
             {
-                valueString += ((InclineConverter) commandData.get(BitFieldId.GRADE).getData()).getIncline() + "\n";
+                valueString += ((GradeConverter) commandData.get(BitFieldId.GRADE).getData()).getIncline() + "\n";
             }
             catch (Exception ex)
             {
@@ -212,7 +212,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
 
             try
             {
-                valueString += "Actual Incline= %" +((InclineConverter) commandData.get(BitFieldId.ACTUAL_INCLINE).getData()).getIncline() + "\n";
+                valueString += "Actual Incline= %" +((GradeConverter) commandData.get(BitFieldId.ACTUAL_INCLINE).getData()).getIncline() + "\n";
             }
             catch (Exception ex)
             {
@@ -241,7 +241,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
 
             try
             {
-                detailString += "Max= %" +((InclineConverter) commandData.get(BitFieldId.MAX_GRADE).getData()).getIncline() + " ";
+                detailString += "Max= %" +((GradeConverter) commandData.get(BitFieldId.MAX_GRADE).getData()).getIncline() + " ";
             }
             catch (Exception ex)
             {
@@ -254,7 +254,7 @@ public class InclineDeviceFragment extends BaseInfoFragment implements OnCommand
 
             try
             {
-                detailString += "Min= %" +((InclineConverter) commandData.get(BitFieldId.MIN_GRADE).getData()).getIncline();
+                detailString += "Min= %" +((GradeConverter) commandData.get(BitFieldId.MIN_GRADE).getData()).getIncline();
             }
             catch (Exception ex)
             {

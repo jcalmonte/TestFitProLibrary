@@ -122,8 +122,8 @@ public class TestBitFieldId extends TestCase {
             buff.putShort((short) i);
             expectResult = (i + 0.0) / 100;
             converter = idOne.getData(buff);
-            assertEquals(InclineConverter.class, converter.getClass());//should be the same class
-            assertEquals(expectResult, ((InclineConverter)converter).getIncline());
+            assertEquals(GradeConverter.class, converter.getClass());//should be the same class
+            assertEquals(expectResult, ((GradeConverter)converter).getIncline());
         }
 
         //test Key object converter
@@ -318,7 +318,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(1, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(false, bit.getReadOnly());
-        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        assertEquals(0.05, ((GradeConverter)bit.getData(buff2)).getIncline());
         resultBuff2.clear();
         resultBuff2.putShort((short) 500);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -547,7 +547,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(1, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        assertEquals(0.05, ((GradeConverter)bit.getData(buff2)).getIncline());
         resultBuff2.clear();
         resultBuff2.putShort((short) 500);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -646,7 +646,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(3, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        assertEquals(0.05, ((GradeConverter)bit.getData(buff2)).getIncline());
         resultBuff2.clear();
         resultBuff2.putShort((short) 500);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -660,7 +660,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(4, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        assertEquals(0.05, ((GradeConverter)bit.getData(buff2)).getIncline());
         resultBuff2.clear();
         resultBuff2.putShort((short) 500);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test

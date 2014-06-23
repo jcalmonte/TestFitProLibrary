@@ -188,7 +188,7 @@ public class ItemListActivity extends FragmentActivity
         baseInfoFragments.add(new ErrorFragment(this.mFitProCntrl));
         baseInfoFragments.add(new UserDataFragment(this.mFitProCntrl));//variety of items
 
-        if(this.mMainDevice.containsDevice(DeviceId.INCLINE))
+        if(this.mMainDevice.containsDevice(DeviceId.GRADE))
         {
             baseInfoFragments.add(new InclineDeviceFragment(this.mFitProCntrl));
         }
