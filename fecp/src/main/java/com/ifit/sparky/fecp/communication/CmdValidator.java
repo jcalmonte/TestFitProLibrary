@@ -91,6 +91,7 @@ public class CmdValidator {
         for (Device device : dev.getSubDeviceList()) {
             subDevList.addAll(getAllSubDevices(device));
         }
+        subDevList.add(dev);
 
         return subDevList;
     }
