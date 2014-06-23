@@ -64,7 +64,7 @@ public class TestCommandId extends TestCase {
         }
         try
         {
-            CommandId.getCommandId(257);
+            CommandId.getCommandId(253);
             fail();//should throw an exception before here
         }
         catch (InvalidCommandException ex)

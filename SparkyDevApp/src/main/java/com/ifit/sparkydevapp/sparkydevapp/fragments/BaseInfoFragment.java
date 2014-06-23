@@ -1,7 +1,7 @@
 package com.ifit.sparkydevapp.sparkydevapp.fragments;
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.FitProUsb;
 import com.ifit.sparky.fecp.OnCommandReceivedListener;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class BaseInfoFragment extends Fragment implements OnCommandReceivedListener, Runnable {
 
-    protected FitProUsb mFecpCntrl;
+    protected FecpController mFecpCntrl;
     private String mIdString;
     private String mDisplayString;
     private TextView mTextViewSystemInfo;
@@ -41,7 +41,7 @@ public abstract class BaseInfoFragment extends Fragment implements OnCommandRece
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public BaseInfoFragment(FitProUsb fecpCntrl, String displayString, String itemId) {
+    public BaseInfoFragment(FecpController fecpCntrl, String displayString, String itemId) {
         this.mFecpCntrl = fecpCntrl;
         this.mIdString = itemId;
         this.mDisplayString = displayString;

@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparkydevapp.sparkydevapp.R;
 
 
@@ -40,7 +40,7 @@ public class TaskInfoFragment extends BaseInfoFragment {
         View rootView = inflater.inflate(R.layout.system_task_info, container, false);
 
         // Show the dummy content as text in a TextView.
-        ((TextView) rootView.findViewById(R.id.textViewSystemTask)).setText("Tasks: " + this.mFecpCntrl.getSysDev().getNumberOfTasks());
+        ((TextView) rootView.findViewById(R.id.textViewSystemTask)).setText("Tasks: " + this.mFecpCntrl.getSysDev().getSysDevInfo().getNumberOfTasks());
 
         return rootView;
     }

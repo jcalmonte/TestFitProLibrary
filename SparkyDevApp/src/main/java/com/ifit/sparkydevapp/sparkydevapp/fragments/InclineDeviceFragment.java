@@ -10,9 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.OnCommandReceivedListener;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.InclineConverter;

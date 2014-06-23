@@ -87,7 +87,7 @@ public class WifiConnectActivity extends Activity implements View.OnClickListene
                 Intent itemListIntent = new Intent(v.getContext(), ItemListActivity.class);
                 Bundle bundleParameters = new Bundle();
                 try {
-                    bundleParameters.putInt("commInterface", CommType.TCP_COMMUNICATION.ordinal());
+                    bundleParameters.putInt("commInterface", CommType.TCP.ordinal());
                     bundleParameters.putInt("port", Integer.parseInt(this.portEditText.getText().toString()));
                     bundleParameters.putString("ipAddress", this.ipAddressEditText.getText().toString());
                 } catch (NumberFormatException e) {
