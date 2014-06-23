@@ -90,15 +90,6 @@ public class SystemDevice extends Device implements Serializable{
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
     }
 
-    /**
-     * the default constructor for the System Device
-     */
-    public SystemDevice(DeviceId id, SystemConfiguration config) throws InvalidStatusException, InvalidCommandException
-    {
-        super(id);
-        this.mSysDevInfo = new SystemDeviceInfo();
-        this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
-    }
 
     public SystemDevice(GetSysInfoSts sts) throws InvalidStatusException, InvalidCommandException
     {

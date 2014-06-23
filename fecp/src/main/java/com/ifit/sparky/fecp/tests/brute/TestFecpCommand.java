@@ -49,7 +49,7 @@ public class TestFecpCommand extends TestCase {
         fecpCmd = new FecpCommand();
 
         assertEquals(null, fecpCmd.getCommand());
-        assertEquals(0, fecpCmd.getOnCommandReceiveListeners());
+        assertEquals(0, fecpCmd.getOnCommandReceiveListeners().size());
         assertEquals(0, fecpCmd.getTimeout());
         assertEquals(0, fecpCmd.getFrequency());
         assertEquals(0, fecpCmd.getCmdSentCounter());
@@ -107,7 +107,7 @@ public class TestFecpCommand extends TestCase {
         fecpCmd = new FecpCommand();
 
         assertEquals(null , fecpCmd.getCommand());
-        assertEquals(0, fecpCmd.getOnCommandReceiveListeners());
+        assertEquals(0, fecpCmd.getOnCommandReceiveListeners().size());
         assertEquals(0, fecpCmd.getTimeout());
         assertEquals(0, fecpCmd.getFrequency());
         assertEquals(0, fecpCmd.getCmdSentCounter());

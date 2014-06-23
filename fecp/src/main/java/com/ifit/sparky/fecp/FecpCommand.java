@@ -95,7 +95,9 @@ public class FecpCommand extends Thread{
             this.mCommand = cmd.getCommandCopy();
         }
         this.mOnCommandReceiveListeners = new CopyOnWriteArrayList<OnCommandReceivedListener>();
-        this.addOnCommandReceived(callback);
+        if(callback != null) {
+            this.addOnCommandReceived(callback);
+        }
         this.mTimeout = timeout;
         this.mFrequency = frequency;
         this.mCmdSentCounter = 0;
