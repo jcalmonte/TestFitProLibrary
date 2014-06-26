@@ -26,7 +26,7 @@ public enum BitFieldId {
     RUNNING_TIME(11, 4, true, new LongConverter(), "Running Time"),
     WORKOUT_MODE(12, 1, false, new ModeConverter(), "Workout Mode"),
     CALORIES(13, 4, true, new CaloriesConverter(), "Calories"),
-    AUDIO_SOURCE(14, 1, false, new AudioSourceConverter(), "Audio Source"),
+    AUDIO_SOURCE(14, 3, false, new AudioSourceConverter(), "Audio Source, available srcs"),
 
     ACTUAL_KPH(16, 2, true, new SpeedConverter(), "Actual KPH"),
     ACTUAL_INCLINE(17, 2, true, new GradeConverter(), "Actual Incline"),
@@ -48,9 +48,9 @@ public enum BitFieldId {
     PAUSE_TIMEOUT(35, 2, false, new ShortConverter(), "Pause Timeout"),
     SYSTEM_UNITS(36, 1, false, new BoolConverter(), "System Units"),
     GENDER(37, 1, false, new BoolConverter(), "Gender(0 female, 1 male)"),
-    FIRST_NAME(38, 1, false, new ByteConverter(), "First Name"),
-    LAST_NAME(39, 1, false, new ByteConverter(), "Last Name"),
-    IFIT_USER_NAME(40, 1, false, new ByteConverter(), "IFIT Username"),
+    FIRST_NAME(38, 50, false, new NameConverter(), "First Name"),
+    LAST_NAME(39, 50, false, new NameConverter(), "Last Name"),
+    IFIT_USER_NAME(40, 50, false, new NameConverter(), "IFIT Username"),
     HEIGHT(41, 2, false, new ShortConverter(), "User Height in cm"),
     MAX_RESISTANCE(42, 1, true, new ByteConverter(), "Max Resistance"),
 

@@ -22,6 +22,8 @@ public class SystemDeviceInfo {
     private int mNumberOfTasks;
     private int mIntervalTime;
     private int mCpuFrequency;
+    private int mPollingFrequency;//the min frequency to request in milliseconds
+    private boolean mIsDefaultUnitMetric;//the min frequency to request in milliseconds
     private String mMcuName;
     private String mConsoleName;
 
@@ -48,6 +50,10 @@ public class SystemDeviceInfo {
         this.mIntervalTime = buff.getShort();
         //cpu clk freq
         this.mCpuFrequency = buff.getInt();
+        //Polling Freq
+        this.mPollingFrequency = buff.getShort();
+        //Get Default System Units
+        this.mIsDefaultUnitMetric = (buff.get() != 0);//0(false) for English,1(true) for Metric
         //mcu name length
         nameLength = buff.get();
         //mcu name
@@ -76,6 +82,8 @@ public class SystemDeviceInfo {
         this.mNumberOfTasks = 0;
         this.mIntervalTime = 0;
         this.mCpuFrequency = 0;
+        this.mPollingFrequency = 0;
+        this.mIsDefaultUnitMetric = false;
         this.mMcuName = "";
         this.mConsoleName = "";
     }
@@ -140,6 +148,18 @@ public class SystemDeviceInfo {
     }
 
     /**
+     * Gets the fastest interval to send commands for the specific system.
+     * @return interval in milliseconds(ms)
+     */
+    public int getPollingFrequency() {
+        return mPollingFrequency;
+    }
+
+    public boolean isDefaultUnitMetric() {
+        return mIsDefaultUnitMetric;
+    }
+
+    /**
      * Gets the name of the Mcu
      * @return the Mcu name
      */
@@ -189,6 +209,16 @@ public class SystemDeviceInfo {
         buff.putInt(this.mNumberOfTasks);
         buff.putInt(this.mIntervalTime);
         buff.putInt(this.mCpuFrequency);
+        buff.putShort((short) this.mPollingFrequency);
+
+        if(this.mIsDefaultUnitMetric)
+        {
+            buff.putInt(1);
+        }
+        else
+        {
+            buff.putInt(0);
+        }
 
         buff.put((byte)this.mMcuName.length());//length of string
         buff.put(this.mMcuName.getBytes());
@@ -207,6 +237,10 @@ public class SystemDeviceInfo {
         this.mNumberOfTasks = stream.getInt();
         this.mIntervalTime = stream.getInt();
         this.mCpuFrequency = stream.getInt();
+        this.mPollingFrequency = stream.getShort();
+
+        //Get Default System Units
+        this.mIsDefaultUnitMetric = (stream.getInt() != 0);//0(false) for English,1(true) for Metric
 
         int strLength = stream.get();
         byte[] strArr = new byte[strLength];

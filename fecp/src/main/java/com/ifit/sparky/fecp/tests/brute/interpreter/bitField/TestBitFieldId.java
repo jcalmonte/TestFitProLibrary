@@ -8,8 +8,24 @@
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.bitField;
 
-import com.ifit.sparky.fecp.interpreter.bitField.*;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.*;
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.AudioSourceConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.AudioSourceId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.CaloriesConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.GradeConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.KeyObjectConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ResistanceConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ShortConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.WeightConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.WorkoutConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.WorkoutId;
 import com.ifit.sparky.fecp.interpreter.key.KeyCodes;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 
@@ -17,6 +33,7 @@ import junit.framework.TestCase;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 
 public class TestBitFieldId extends TestCase {
 
@@ -500,16 +517,26 @@ public class TestBitFieldId extends TestCase {
 
         //test Audio Source
         bit = BitFieldId.AUDIO_SOURCE;
+        ByteBuffer tempAudioBuff = ByteBuffer.allocate(bit.getSize());
+        tempAudioBuff.order(ByteOrder.LITTLE_ENDIAN);
+        tempAudioBuff.put((byte) 5);
+        tempAudioBuff.putShort((short) 0x0027);
         assertEquals(BitFieldId.AUDIO_SOURCE, bit);
         assertEquals(14, bit.getVal());
         assertEquals(1, bit.getSection());
         assertEquals(6, bit.getBit());
-        assertEquals(1, bit.getSize());
+        assertEquals(3, bit.getSize());
         assertEquals(false, bit.getReadOnly());
-        assertEquals(AudioSourceId.TV, ((AudioSourceConverter)bit.getData(buff1)).getAudioSource());
-        resultBuff1.clear();
-        resultBuff1.put((byte) 5);
-        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
+        assertEquals(AudioSourceId.TV, ((AudioSourceConverter)bit.getData(tempAudioBuff)).getAudioSource());
+        ArrayList<AudioSourceId> supportedAudioSrcs = ((AudioSourceConverter)bit.getData(tempAudioBuff)).getSupportedAudioSrcs();
+        assertTrue(supportedAudioSrcs.contains(AudioSourceId.FM));
+        assertTrue(supportedAudioSrcs.contains(AudioSourceId.MP3));
+        assertTrue(supportedAudioSrcs.contains(AudioSourceId.BRAIN_BOARD));
+        assertTrue(supportedAudioSrcs.contains(AudioSourceId.PC));
+        tempAudioBuff.clear();
+        tempAudioBuff.put((byte) 5);
+        tempAudioBuff.putShort((short)0x0000);
+        assertEquals(tempAudioBuff, bit.getRawFromData(AudioSourceId.TV));//int test
 
         //test Actual KPH
         bit = BitFieldId.ACTUAL_KPH;
