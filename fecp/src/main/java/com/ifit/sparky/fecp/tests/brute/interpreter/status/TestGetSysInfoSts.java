@@ -104,7 +104,7 @@ public class TestGetSysInfoSts extends TestCase {
         assertEquals(125, sts.getSysDevInfo().getIntervalTime());
         assertEquals(48000000, sts.getSysDevInfo().getCpuFrequency());
         assertEquals(100, sts.getSysDevInfo().getPollingFrequency());
-        assertEquals(100, sts.getSysDevInfo().getPollingFrequency());
+        assertEquals(true, sts.getSysDevInfo().isDefaultUnitMetric());
         assertEquals("", sts.getSysDevInfo().getMcuName());
         assertEquals("", sts.getSysDevInfo().getConsoleName());
     }
