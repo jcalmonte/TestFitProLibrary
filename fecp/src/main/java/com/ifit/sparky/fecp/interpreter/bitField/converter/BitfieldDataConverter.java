@@ -20,6 +20,7 @@ public abstract class BitfieldDataConverter implements Serializable {
     protected byte[] mRawData;
     protected int mDataSize;
     protected long mTimeRecieved;
+    protected boolean mIsDirty;
 
     /**
      * Default Constructor.
@@ -50,7 +51,7 @@ public abstract class BitfieldDataConverter implements Serializable {
     /**
      * Gets the Int value from the array of bytes
      * @return int value from the byte array
-     * @throws Exception if the number of bytes and the required size don't match up
+     * @throws InvalidBitFieldException if the number of bytes and the required size don't match up
      */
     protected long getRawToInt() throws InvalidBitFieldException
     {
@@ -146,6 +147,23 @@ public abstract class BitfieldDataConverter implements Serializable {
         return tempBuff;
     }
 
+
+    /**
+     * Gets whether the data is dirty or not.
+     * @return true for dirty and changed, false for same value
+     */
+    public boolean isIsDirty() {
+        return mIsDirty;
+    }
+
+    /**
+     * Sets the value to be dirty
+     * @param isDirty true for dirty, false for unchanged
+     */
+    public void setIsDirty(boolean isDirty) {
+        this.mIsDirty = isDirty;
+    }
+
     public abstract BitfieldDataConverter getData()throws InvalidBitFieldException;
 
     public abstract ByteBuffer convertData(Object obj)throws InvalidBitFieldException;
@@ -154,7 +172,7 @@ public abstract class BitfieldDataConverter implements Serializable {
      * This is to keep track of when the data was last received
      * @param time time sample in the form of a long
      */
-    public void setTimeRecieved(long time)
+    public void setTimeReceived(long time)
     {
         this.mTimeRecieved = time;
     }

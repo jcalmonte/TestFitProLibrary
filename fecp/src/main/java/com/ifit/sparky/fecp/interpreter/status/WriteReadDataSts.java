@@ -32,7 +32,7 @@ public class WriteReadDataSts extends Status implements StatusInterface, Seriali
     /**
      * Default constructor for handling the reply and generating the cmd data.
      * @param devId the device id
-     * @throws Exception
+     * @throws InvalidStatusException invalid status
      */
     public WriteReadDataSts(DeviceId devId) throws InvalidStatusException
     {
