@@ -17,6 +17,7 @@ import com.ifit.sparky.fecp.error.ErrorReporting;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.VerifySecurityCmd;
+import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.SystemConfiguration;
 import com.ifit.sparky.fecp.SystemDevice;
@@ -212,10 +213,14 @@ public class FecpController implements ErrorReporting {
         //this will compare it with the System device
         //check if system has been unlocked
 
+
         if(cmd.getCommand().getCmdId() == CommandId.WRITE_READ_DATA && !this.mIsControlUnlocked)
         {
-            //you can't send this command if you haven't unlocked it yet.
-            throw new Exception("Sorry the system hasn't been unlocked yet");
+            //check if they are trying to write to the system.
+            if(((WriteReadDataCmd)cmd.getCommand()).getWriteBitData().getNumOfDataBytes() != 0) {
+                //you can't send this command if you haven't unlocked it yet.
+                throw new Exception("Sorry the system hasn't been unlocked yet");
+            }
         }
 
         this.mCmdHandleInterface.addFecpCommand(cmd);

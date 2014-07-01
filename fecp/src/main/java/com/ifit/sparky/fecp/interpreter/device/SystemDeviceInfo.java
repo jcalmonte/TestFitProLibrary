@@ -8,6 +8,8 @@
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
+import com.ifit.sparky.fecp.interpreter.bitField.converter.LanguageId;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -24,6 +26,7 @@ public class SystemDeviceInfo {
     private int mCpuFrequency;
     private int mPollingFrequency;//the min frequency to request in milliseconds
     private boolean mIsDefaultUnitMetric;//the min frequency to request in milliseconds
+    private LanguageId mLanguage;//the default system Language
     private String mMcuName;
     private String mConsoleName;
 
@@ -54,6 +57,8 @@ public class SystemDeviceInfo {
         this.mPollingFrequency = buff.getShort();
         //Get Default System Units
         this.mIsDefaultUnitMetric = (buff.get() != 0);//0(false) for English,1(true) for Metric
+        //get the system's language
+        this.mLanguage = LanguageId.getLanguageFromId(buff.get());
         //mcu name length
         nameLength = buff.get();
         //mcu name
@@ -84,6 +89,7 @@ public class SystemDeviceInfo {
         this.mCpuFrequency = 0;
         this.mPollingFrequency = 0;
         this.mIsDefaultUnitMetric = false;
+        this.mLanguage = LanguageId.NONE;
         this.mMcuName = "";
         this.mConsoleName = "";
     }
@@ -160,6 +166,14 @@ public class SystemDeviceInfo {
     }
 
     /**
+     * Gets the System's supported Language Id
+     * @return The System's Language.
+     */
+    public LanguageId getLanguage() {
+        return mLanguage;
+    }
+
+    /**
      * Gets the name of the Mcu
      * @return the Mcu name
      */
@@ -220,6 +234,8 @@ public class SystemDeviceInfo {
             buff.putInt(0);
         }
 
+        buff.put((byte) this.mLanguage.getLanguageId());
+
         buff.put((byte)this.mMcuName.length());//length of string
         buff.put(this.mMcuName.getBytes());
 
@@ -242,6 +258,8 @@ public class SystemDeviceInfo {
         //Get Default System Units
         this.mIsDefaultUnitMetric = (stream.getInt() != 0);//0(false) for English,1(true) for Metric
 
+        this.mLanguage = LanguageId.getLanguageFromId(stream.get());
+
         int strLength = stream.get();
         byte[] strArr = new byte[strLength];
         stream.get(strArr, 0, strLength);
@@ -254,6 +272,5 @@ public class SystemDeviceInfo {
         str = new String( strArr, Charset.forName("UTF-8") );
 
         this.mConsoleName = str;
-
     }
 }
