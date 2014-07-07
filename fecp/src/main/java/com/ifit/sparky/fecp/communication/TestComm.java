@@ -7,19 +7,40 @@
  */
 package com.ifit.sparky.fecp.communication;
 
+import android.util.Log;
+
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.error.ErrorReporting;
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.DeviceInfo;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TestComm implements CommInterface {
 
-    private LinkedList<SystemStatusListener> mUsbConnectionListener;
+    private static final List<BitFieldId> SUPPORTED_BITFIELDS;
+
+    static {
+        SUPPORTED_BITFIELDS = new ArrayList<BitFieldId>();
+        SUPPORTED_BITFIELDS.add(BitFieldId.ACTUAL_INCLINE);
+        SUPPORTED_BITFIELDS.add(BitFieldId.ACTUAL_KPH);
+        SUPPORTED_BITFIELDS.add(BitFieldId.ACTUAL_DISTANCE);
+        SUPPORTED_BITFIELDS.add(BitFieldId.PULSE);
+        SUPPORTED_BITFIELDS.add(BitFieldId.FAN_SPEED);
+    }
+
+    private List<SystemStatusListener> mTestConnectionListener;
     public TestComm()
     {
         //nothing to do.
+        if(this.mTestConnectionListener == null) {
+            this.mTestConnectionListener = new CopyOnWriteArrayList<SystemStatusListener>();
+        }
     }
 
 
@@ -28,8 +49,14 @@ public class TestComm implements CommInterface {
      */
     @Override
     public SystemDevice initializeCommConnection() {
-
-        return null;
+        SystemDevice device = null;
+        try {
+            device = new SystemDevice();
+            device.setDeviceInfo(new DeviceInfo(DeviceId.TREADMILL, 1, 1, 1, 1, SUPPORTED_BITFIELDS));
+        }catch (Exception e){
+            Log.e("TestComm", "Error initializing SystemDevice!");
+        }
+        return device;
     }
 
     /**
@@ -111,6 +138,6 @@ public class TestComm implements CommInterface {
      */
     @Override
     public List<SystemStatusListener> getSystemStatusListeners() {
-        return this.mUsbConnectionListener;
+        return this.mTestConnectionListener;
     }
 }
