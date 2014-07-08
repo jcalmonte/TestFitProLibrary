@@ -66,7 +66,7 @@ public class TestComm implements CommInterface {
      */
     @Override
     public void addConnectionListener(SystemStatusListener listener) {
-
+        mTestConnectionListener.add(listener);
     }
 
     /**
@@ -74,7 +74,7 @@ public class TestComm implements CommInterface {
      */
     @Override
     public void clearConnectionListener() {
-
+        mTestConnectionListener.clear();
     }
 
     /**
