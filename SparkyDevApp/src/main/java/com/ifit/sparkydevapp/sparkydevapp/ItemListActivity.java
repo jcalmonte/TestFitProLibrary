@@ -44,6 +44,7 @@ public class ItemListActivity extends FragmentActivity
     private ProgressThread mProgressThread;
     private SystemDevice mMainDevice;
     private ArrayList<BaseInfoFragment> baseInfoFragments;
+    private BaseInfoFragment mCurrentFragment;
     private FecpCommand mKeepAlive;
     private Thread mServerThread = null;
 
@@ -81,7 +82,8 @@ public class ItemListActivity extends FragmentActivity
                 this.mFitProCntrl = new FitProTcp(ipAddress, port);
             }
             this.mServerThread = new Thread(this);
-            this.mServerThread.start();
+            this.runOnUiThread(this.mServerThread);
+//            this.mServerThread.start();
 
         }
         catch (Exception ex)
@@ -126,6 +128,10 @@ public class ItemListActivity extends FragmentActivity
         // fragment transaction.
         Bundle arguments = new Bundle();
         BaseInfoFragment currentFrag = null;
+        if(this.mCurrentFragment != null && this.mCurrentFragment.getIdString() == id)
+        {
+            return;//already on display.
+        }
 
         for (BaseInfoFragment baseInfoFragment : this.baseInfoFragments) {
             if(id == baseInfoFragment.getIdString())
@@ -173,6 +179,15 @@ public class ItemListActivity extends FragmentActivity
     public void systemDeviceConnected(SystemDevice dev) {
         this.mConnected = true;
         mProgressThread.stopProgress();
+        if(dev == null)
+        {
+            //change back to the other activity
+            Toast.makeText(this,"Connection Failed",Toast.LENGTH_LONG).show();
+            Intent ConnectionActivity = new Intent(this.getApplicationContext(), ConnectionActivity.class);
+            startActivity(ConnectionActivity);
+            finish();
+            return;
+        }
         Toast.makeText(this,"Connection Successful",Toast.LENGTH_LONG).show();
         mMainDevice = this.mFitProCntrl.getSysDev();
 
@@ -199,20 +214,24 @@ public class ItemListActivity extends FragmentActivity
         }
 
         //add supported Fragments here.
-
         if (findViewById(R.id.item_detail_container) != null) {
-
-            ((MainInfoListFragmentControl)getSupportFragmentManager()
-                    .findFragmentById(R.id.main_device_fragment))
-                    .addSupportedFragments(baseInfoFragments);
-
 
             ((MainInfoListFragmentControl) getSupportFragmentManager()
                     .findFragmentById(R.id.main_device_fragment))
                     .setActivateOnItemClick(true);
+
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((MainInfoListFragmentControl)getSupportFragmentManager()
+                            .findFragmentById(R.id.main_device_fragment))
+                            .addSupportedFragments(baseInfoFragments);
+                }
+            });
+
+
+
         }
-
-
     }
 
     /**

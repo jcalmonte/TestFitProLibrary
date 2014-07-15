@@ -366,7 +366,7 @@ public class SystemDevice extends Device implements Serializable{
         resultDevice = new SystemDevice((GetSysInfoSts)sysInfoCmd.getStatus());
         SystemConfiguration tempConfig = resultDevice.getSysDevInfo().getConfig();
 
-        if(tempConfig == SystemConfiguration.MASTER || tempConfig == SystemConfiguration.SLAVE )//direct master connection
+        if(tempConfig == SystemConfiguration.MASTER || tempConfig == SystemConfiguration.SLAVE || tempConfig == SystemConfiguration.MULTI_MASTER)//direct master connection
         {
             tempDevice = getInitialDevice(comm, DeviceId.MAIN);
             resultDevice.addCommands(tempDevice.getCommandSet().values());

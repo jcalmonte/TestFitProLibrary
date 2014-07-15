@@ -78,6 +78,7 @@ public class FecpController implements ErrorReporting {
 
         this.mCommController.addConnectionListener(listener);
         //start a thread to initialize the connection
+
         new Thread(new Runnable() {
             @Override
             public void run() {

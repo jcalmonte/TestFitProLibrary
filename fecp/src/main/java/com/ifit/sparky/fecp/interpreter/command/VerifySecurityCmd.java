@@ -37,7 +37,7 @@ public class VerifySecurityCmd extends Command implements CommandInterface, Seri
 
     public VerifySecurityCmd(DeviceId devId) throws Exception
     {
-        super(new CalibrateSts(devId), CMD_LENGTH, CommandId.CALIBRATE, devId);
+        super(new VerifySecuritySts(devId), CMD_LENGTH, CommandId.VERIFY_SECURITY, devId);
 
         this.mUnlockKey = ByteBuffer.allocate(32);//length of Key
         this.mUnlockKey.order(ByteOrder.LITTLE_ENDIAN);
