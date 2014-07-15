@@ -28,4 +28,9 @@ public interface SystemStatusListener {
      */
     void systemCommunicationConnected();
 
+    /**
+     * This will be called when the system has been validated
+     */
+    void systemSecurityValidated();
+
 }

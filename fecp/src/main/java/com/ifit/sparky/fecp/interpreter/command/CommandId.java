@@ -31,7 +31,7 @@ public enum CommandId {
     GET_SYSTEM_INFO(0x82, GetSysInfoCmd.class, "Get System Info."),
     GET_TASK_INFO(0x83, GetTaskInfoCmd.class, "Get Task Info."),
     GET_SUPPORTED_COMMANDS(0x88, GetCmdsCmd.class, "Get Supported Commands."),
-    READ_DATA(0x90, null, "Read Data.");
+    VERIFY_SECURITY(0x90, VerifySecurityCmd.class, "Verify Security");
 
     private int mId;
     private String mDescription;

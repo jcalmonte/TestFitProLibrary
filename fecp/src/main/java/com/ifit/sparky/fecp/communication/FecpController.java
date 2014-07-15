@@ -10,13 +10,18 @@ package com.ifit.sparky.fecp.communication;
 import android.os.Looper;
 
 import com.ifit.sparky.fecp.FecpCommand;
+import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.error.ErrorCntrl;
 import com.ifit.sparky.fecp.error.ErrorEventListener;
 import com.ifit.sparky.fecp.error.ErrorReporting;
+import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.VerifySecurityCmd;
+import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.device.SystemConfiguration;
 import com.ifit.sparky.fecp.SystemDevice;
+import com.ifit.sparky.fecp.interpreter.status.VerifySecuritySts;
 import com.ifit.sparky.fecp.testingUtil.CmdInterceptor;
 
 import java.nio.ByteBuffer;
@@ -28,6 +33,7 @@ public class FecpController implements ErrorReporting {
     private CommType mCommType;
     protected SystemDevice mSysDev;
     protected boolean mIsConnected;
+    protected boolean mIsControlUnlocked;
     protected CommInterface mCommController;
     protected FecpCmdHandleInterface mCmdHandleInterface;
     protected ErrorCntrl mSysErrorControl;
@@ -44,6 +50,7 @@ public class FecpController implements ErrorReporting {
         this.mCommType = type;
         this.mSysDev = new SystemDevice(DeviceId.MAIN);//starts out as main
         this.mIsConnected = false;
+        this.mIsControlUnlocked = false;
         this.mSysErrorControl = new ErrorCntrl(this);
     }
 
@@ -134,12 +141,65 @@ public class FecpController implements ErrorReporting {
     }
 
     /**
+     * Unlocks the system to allow users to send commands with write data.
+     * @param systemKey Key to unlock the system, or send Write Read Data Commands
+     * @throws Exception Invalid Key Structure
+     */
+    public void unlockSystem(ByteBuffer systemKey) throws Exception
+    {
+        //some quick checks with the key to make sure it will work
+        if(systemKey.capacity() != 32)
+        {
+            throw new Exception("Invalid Security Key Length");
+        }
+
+        //check if the system is connected
+        if(!this.mIsConnected)
+        {
+            throw new Exception("System Isn't connected");
+        }
+
+        //add the key to a command to unlock it.
+        VerifySecurityCmd verifyCmd = (VerifySecurityCmd)this.mSysDev.getCommand(CommandId.VERIFY_SECURITY);
+        systemKey.position(0);
+        verifyCmd.setUnlockKey(systemKey);
+
+        FecpCommand cmd = new FecpCommand(verifyCmd, new OnCommandReceivedListener() {
+            @Override
+            public void onCommandReceived(Command cmd) {
+                if(((VerifySecuritySts)cmd.getStatus()).isUnlocked())
+                {
+                    for (SystemStatusListener listener : mCommController.getSystemStatusListeners()) {
+                        listener.systemSecurityValidated();
+                    }
+                    mIsControlUnlocked = true;
+                }
+                else
+                {
+                    mIsControlUnlocked = false;
+                }
+            }
+        });
+
+        this.mCmdHandleInterface.addFecpCommand(cmd);//add the command for validation
+    }
+
+
+    /**
      * Gets the connection status
      *
      * @return the connection status true for connected
      */
     public boolean getIsConnected() {
         return this.mIsConnected;
+    }
+
+    /**
+     * Gets the status whether the system is unlocked.
+     * @return true if unlocked, false if locked
+     */
+    public boolean isControlUnlocked() {
+        return mIsControlUnlocked;
     }
 
     /**
@@ -151,7 +211,17 @@ public class FecpController implements ErrorReporting {
 
         //smarter Command validity detection
         //this will compare it with the System device
+        //check if system has been unlocked
 
+
+        if(cmd.getCommand().getCmdId() == CommandId.WRITE_READ_DATA && !this.mIsControlUnlocked)
+        {
+            //check if they are trying to write to the system.
+            if(((WriteReadDataCmd)cmd.getCommand()).getWriteBitData().getNumOfDataBytes() != 0) {
+                //you can't send this command if you haven't unlocked it yet.
+                throw new Exception("Sorry the system hasn't been unlocked yet");
+            }
+        }
 
         this.mCmdHandleInterface.addFecpCommand(cmd);
     }
