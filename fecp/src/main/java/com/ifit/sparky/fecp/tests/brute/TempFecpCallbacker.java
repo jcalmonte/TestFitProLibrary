@@ -91,4 +91,9 @@ public class TempFecpCallbacker implements OnCommandReceivedListener, SystemStat
     @Override
     public void systemCommunicationConnected() {
     }
+
+    @Override
+    public void systemSecurityValidated() {
+
+    }
 }

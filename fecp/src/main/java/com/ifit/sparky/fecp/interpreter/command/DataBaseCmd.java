@@ -174,6 +174,10 @@ public class DataBaseCmd implements Serializable {
             buffer.put(tempBuff);
         }
     }
+    public void clearData()
+    {
+        this.mMsgData.clear();
+    }
 
     /**
      * gets the number of header data bytes that need to be sent.

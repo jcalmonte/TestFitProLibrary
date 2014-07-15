@@ -224,6 +224,11 @@ public class ItemListActivity extends FragmentActivity
 
     }
 
+    @Override
+    public void systemSecurityValidated() {
+
+    }
+
     /**
      * This will notify anyone that an error has occurred with the system
      *

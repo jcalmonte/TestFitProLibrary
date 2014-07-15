@@ -107,6 +107,7 @@ public class CmdValidator {
         //scan through all the supported bitfields
         Set<BitFieldId> supportedBitIds = dev.getInfo().getSupportedBitfields();
 
+        //todo report list of array
         for (BitFieldId fieldId : cmd.getWriteBitData().getMsgData().keySet()) {
             if(!supportedBitIds.contains(fieldId)) {
                 throw new InvalidBitFieldException("Invalid Write Bitfield("+fieldId.name()+":"+ fieldId.getVal()+") System Device Doesn't support it.");

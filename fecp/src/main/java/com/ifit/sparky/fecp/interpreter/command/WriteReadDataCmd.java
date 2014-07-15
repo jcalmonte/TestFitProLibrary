@@ -238,6 +238,25 @@ public class WriteReadDataCmd extends Command implements CommandInterface, Seria
         return this.mData.cmdContainsBitfield(bitId);
     }
 
+
+    /**
+     * clears all of the read bitfields
+     */
+    public void clearReadBitField()
+    {
+        DataBaseCmd data = ((WriteReadDataSts)this.getStatus()).getBitFieldReadData();
+        data.clearData();
+    }
+
+    /**
+     * clears all of the write Bitfields
+     */
+    public void clearWriteBitField()
+    {
+        this.mData.clearData();
+    }
+
+
     /**
      * Gets the data that is being written to the System.
      * @return list of bits, and data) that are going to be written.
