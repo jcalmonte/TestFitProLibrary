@@ -7,9 +7,11 @@
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.status;
 
+import com.ifit.sparky.fecp.interpreter.bitField.converter.LanguageId;
 import com.ifit.sparky.fecp.interpreter.command.Command;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
+import com.ifit.sparky.fecp.interpreter.device.SystemConfiguration;
 import com.ifit.sparky.fecp.interpreter.status.GetSysInfoSts;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 import com.ifit.sparky.fecp.tests.brute.interpreter.command.TestCommandBuilder;
@@ -58,7 +60,7 @@ public class TestGetSysInfoSts extends TestCase {
         sts = new GetSysInfoSts(DeviceId.INCLINE_TRAINER);
 
         //initialize buffer command
-        buff = builder.buildBuffer(sts.getDevId(), 24,sts.getCmdId(),StatusId.DONE);
+        buff = builder.buildBuffer(sts.getDevId(), 29,sts.getCmdId(),StatusId.DONE);
         //SystemConfig
         buff.put((byte)1);//master
         //Model
@@ -73,6 +75,12 @@ public class TestGetSysInfoSts extends TestCase {
         buff.putShort((short) 125);
         //cpu Freq
         buff.putInt(48000000);
+        //min Polling Freq
+        buff.putShort((short) 100);
+        //Default System Units (1)Metric
+        buff.put((byte) 1);
+        //Default System Language
+        buff.put((byte)2);//English
         //mcu length
         buff.put((byte)0);
         //mcu name
@@ -89,16 +97,19 @@ public class TestGetSysInfoSts extends TestCase {
         assertEquals(DeviceId.INCLINE_TRAINER, sts.getDevId());
         assertEquals(StatusId.DONE, sts.getStsId());
         assertEquals(CommandId.GET_SYSTEM_INFO, sts.getCmdId());
-        assertEquals(24, sts.getLength());
+        assertEquals(29, sts.getLength());
 
-//        assertEquals(SystemConfiguration.MASTER, sts.getConfig());
-//        assertEquals(54321, sts.getModel());
-//        assertEquals(12345, sts.getPartNumber());
-//        assertEquals(0.24, sts.getCpuUse());
-//        assertEquals(10, sts.getNumberOfTasks());
-//        assertEquals(125, sts.getIntervalTime());
-//        assertEquals(48000000, sts.getCpuFrequency());
-//        assertEquals("", sts.getMcuName());
-//        assertEquals("", sts.getConsoleName());
+        assertEquals(SystemConfiguration.MASTER, sts.getSysDevInfo().getConfig());
+        assertEquals(54321, sts.getSysDevInfo().getModel());
+        assertEquals(12345, sts.getSysDevInfo().getPartNumber());
+        assertEquals(0.24, sts.getSysDevInfo().getCpuUse());
+        assertEquals(10, sts.getSysDevInfo().getNumberOfTasks());
+        assertEquals(125, sts.getSysDevInfo().getIntervalTime());
+        assertEquals(48000000, sts.getSysDevInfo().getCpuFrequency());
+        assertEquals(100, sts.getSysDevInfo().getPollingFrequency());
+        assertEquals(true, sts.getSysDevInfo().isDefaultUnitMetric());
+        assertEquals(LanguageId.ENGLISH, sts.getSysDevInfo().getLanguage());
+        assertEquals("", sts.getSysDevInfo().getMcuName());
+        assertEquals("", sts.getSysDevInfo().getConsoleName());
     }
 }

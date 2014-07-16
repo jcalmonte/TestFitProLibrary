@@ -8,8 +8,24 @@
  */
 package com.ifit.sparky.fecp.tests.brute.interpreter.bitField;
 
-import com.ifit.sparky.fecp.interpreter.bitField.*;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.*;
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.AudioSourceConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.AudioSourceId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ByteConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.CaloriesConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.GradeConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.KeyObjectConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ResistanceConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ShortConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.SpeedConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.WeightConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.WorkoutConverter;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.WorkoutId;
 import com.ifit.sparky.fecp.interpreter.key.KeyCodes;
 import com.ifit.sparky.fecp.interpreter.key.KeyObject;
 
@@ -17,6 +33,7 @@ import junit.framework.TestCase;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 
 public class TestBitFieldId extends TestCase {
 
@@ -53,7 +70,7 @@ public class TestBitFieldId extends TestCase {
         Byte b2;
 
         idOne = BitFieldId.KPH;
-        idTwo = BitFieldId.INCLINE;
+        idTwo = BitFieldId.GRADE;
         b1 = 0x0B;
         b2 = 0x01;
         rawData.put(b1);
@@ -67,7 +84,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(false, idOne.getReadOnly());
         assertNotNull(idOne.getDescription());
 
-        assertEquals(BitFieldId.INCLINE, idTwo);
+        assertEquals(BitFieldId.GRADE, idTwo);
         assertEquals(1, idTwo.getVal());
         assertEquals(0, idTwo.getSection());
         assertEquals(1, idTwo.getBit());
@@ -110,7 +127,7 @@ public class TestBitFieldId extends TestCase {
         }
 
         //test Incline Converter
-        idOne = BitFieldId.INCLINE;
+        idOne = BitFieldId.GRADE;
         buff = ByteBuffer.allocate(2);
         buff.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -122,8 +139,8 @@ public class TestBitFieldId extends TestCase {
             buff.putShort((short) i);
             expectResult = (i + 0.0) / 100;
             converter = idOne.getData(buff);
-            assertEquals(InclineConverter.class, converter.getClass());//should be the same class
-            assertEquals(expectResult, ((InclineConverter)converter).getIncline());
+            assertEquals(GradeConverter.class, converter.getClass());//should be the same class
+            assertEquals(expectResult, ((GradeConverter)converter).getIncline());
         }
 
         //test Key object converter
@@ -311,14 +328,14 @@ public class TestBitFieldId extends TestCase {
         assertEquals(resultBuff2, bit.getRawFromData(5));//int test
 
         //test Incline
-        bit = BitFieldId.INCLINE;
-        assertEquals(BitFieldId.INCLINE, bit);
+        bit = BitFieldId.GRADE;
+        assertEquals(BitFieldId.GRADE, bit);
         assertEquals(1, bit.getVal());
         assertEquals(0, bit.getSection());
         assertEquals(1, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(false, bit.getReadOnly());
-        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        assertEquals(0.05, ((GradeConverter)bit.getData(buff2)).getIncline());
         resultBuff2.clear();
         resultBuff2.putShort((short) 500);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -500,30 +517,26 @@ public class TestBitFieldId extends TestCase {
 
         //test Audio Source
         bit = BitFieldId.AUDIO_SOURCE;
+        ByteBuffer tempAudioBuff = ByteBuffer.allocate(bit.getSize());
+        tempAudioBuff.order(ByteOrder.LITTLE_ENDIAN);
+        tempAudioBuff.put((byte) 5);
+        tempAudioBuff.putShort((short) 0x0027);
         assertEquals(BitFieldId.AUDIO_SOURCE, bit);
         assertEquals(14, bit.getVal());
         assertEquals(1, bit.getSection());
         assertEquals(6, bit.getBit());
-        assertEquals(1, bit.getSize());
+        assertEquals(3, bit.getSize());
         assertEquals(false, bit.getReadOnly());
-        assertEquals(AudioSourceId.TV, ((AudioSourceConverter)bit.getData(buff1)).getAudioSource());
-        resultBuff1.clear();
-        resultBuff1.put((byte) 5);
-        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
-
-        //test AndroidKeys
-        bit = BitFieldId.ANDROID_KEYS;
-        assertEquals(BitFieldId.ANDROID_KEYS, bit);
-        assertEquals(15, bit.getVal());
-        assertEquals(1, bit.getSection());
-        assertEquals(7, bit.getBit());
-        assertEquals(1, bit.getSize());
-        assertEquals(true, bit.getReadOnly());
-        assertEquals(5, ((ByteConverter)bit.getData(buff1)).getValue());
-        resultBuff1.clear();
-        resultBuff1.put((byte) 5);
-        assertEquals(resultBuff1, bit.getRawFromData(5.0));//double test
-        assertEquals(resultBuff1, bit.getRawFromData(5));//int test
+        assertEquals(AudioSourceId.TV, ((AudioSourceConverter)bit.getData(tempAudioBuff)).getAudioSource());
+        ArrayList<AudioSourceId> supportedAudioSrcs = ((AudioSourceConverter)bit.getData(tempAudioBuff)).getSupportedAudioSrcs();
+        assertTrue(supportedAudioSrcs.contains(AudioSourceId.FM));
+        assertTrue(supportedAudioSrcs.contains(AudioSourceId.MP3));
+        assertTrue(supportedAudioSrcs.contains(AudioSourceId.BRAIN_BOARD));
+        assertTrue(supportedAudioSrcs.contains(AudioSourceId.PC));
+        tempAudioBuff.clear();
+        tempAudioBuff.put((byte) 5);
+        tempAudioBuff.putShort((short)0x0000);
+        assertEquals(tempAudioBuff, bit.getRawFromData(AudioSourceId.TV));//int test
 
         //test Actual KPH
         bit = BitFieldId.ACTUAL_KPH;
@@ -547,7 +560,7 @@ public class TestBitFieldId extends TestCase {
         assertEquals(1, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        assertEquals(0.05, ((GradeConverter)bit.getData(buff2)).getIncline());
         resultBuff2.clear();
         resultBuff2.putShort((short) 500);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -639,28 +652,28 @@ public class TestBitFieldId extends TestCase {
         assertEquals(resultBuff1, bit.getRawFromData(5));//int test
 
         //test Max Incline
-        bit = BitFieldId.MAX_INCLINE;
-        assertEquals(BitFieldId.MAX_INCLINE, bit);
+        bit = BitFieldId.MAX_GRADE;
+        assertEquals(BitFieldId.MAX_GRADE, bit);
         assertEquals(27, bit.getVal());
         assertEquals(3, bit.getSection());
         assertEquals(3, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        assertEquals(0.05, ((GradeConverter)bit.getData(buff2)).getIncline());
         resultBuff2.clear();
         resultBuff2.putShort((short) 500);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
         assertEquals(resultBuff2, bit.getRawFromData(5));//int test
 
         //test Min Incline
-        bit = BitFieldId.MIN_INCLINE;
-        assertEquals(BitFieldId.MIN_INCLINE, bit);
+        bit = BitFieldId.MIN_GRADE;
+        assertEquals(BitFieldId.MIN_GRADE, bit);
         assertEquals(28, bit.getVal());
         assertEquals(3, bit.getSection());
         assertEquals(4, bit.getBit());
         assertEquals(2, bit.getSize());
         assertEquals(true, bit.getReadOnly());
-        assertEquals(0.05, ((InclineConverter)bit.getData(buff2)).getIncline());
+        assertEquals(0.05, ((GradeConverter)bit.getData(buff2)).getIncline());
         resultBuff2.clear();
         resultBuff2.putShort((short) 500);
         assertEquals(resultBuff2, bit.getRawFromData(5.0));//double test
@@ -797,7 +810,7 @@ public class TestBitFieldId extends TestCase {
         try
         {
             BitFieldId idOne = BitFieldId.getBitFieldId(0,1);
-            assertEquals(BitFieldId.INCLINE, idOne);
+            assertEquals(BitFieldId.GRADE, idOne);
         }
         catch (Exception ex)
         {

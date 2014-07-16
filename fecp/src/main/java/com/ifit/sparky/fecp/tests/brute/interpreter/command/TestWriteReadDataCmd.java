@@ -73,7 +73,7 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         //test 4th constructor
         map.put(BitFieldId.KPH, 10.5);//10.5 mph
-        idList.add(BitFieldId.INCLINE);
+        idList.add(BitFieldId.GRADE);
 
         cmd = new WriteReadDataCmd(DeviceId.TREADMILL, map, idList);
 
@@ -114,11 +114,11 @@ public class TestWriteReadDataCmd  extends TestCase {
         //set the original to be different
         cmd.removeWriteDataField(BitFieldId.KPH);
         cmd.removeReadDataField(BitFieldId.KPH);
-        cmd.addWriteData(BitFieldId.INCLINE, 32.1);
-        cmd.addReadBitField(BitFieldId.INCLINE);
+        cmd.addWriteData(BitFieldId.GRADE, 32.1);
+        cmd.addReadBitField(BitFieldId.GRADE);
         cmd.setDevId(DeviceId.INCLINE_TRAINER);
-        assertTrue(cmd.writeContainsBitField(BitFieldId.INCLINE));
-        assertTrue(cmd.readContainsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.writeContainsBitField(BitFieldId.GRADE));
+        assertTrue(cmd.readContainsBitField(BitFieldId.GRADE));
         assertFalse(cmd.writeContainsBitField(BitFieldId.KPH));
         assertFalse(cmd.readContainsBitField(BitFieldId.KPH));
         assertEquals(DeviceId.INCLINE_TRAINER, cmd.getDevId());//a little redundant
@@ -127,8 +127,8 @@ public class TestWriteReadDataCmd  extends TestCase {
         //check to make sure the copy didn't change
         assertTrue(copyCmd.writeContainsBitField(BitFieldId.KPH));
         assertTrue(copyCmd.readContainsBitField(BitFieldId.KPH));
-        assertFalse(copyCmd.writeContainsBitField(BitFieldId.INCLINE));
-        assertFalse(copyCmd.readContainsBitField(BitFieldId.INCLINE));
+        assertFalse(copyCmd.writeContainsBitField(BitFieldId.GRADE));
+        assertFalse(copyCmd.readContainsBitField(BitFieldId.GRADE));
         assertEquals(DeviceId.NONE, copyCmd.getDevId());//a little redundant
         assertEquals(CommandId.WRITE_READ_DATA, copyCmd.getCmdId());
     }
@@ -155,24 +155,24 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         //test adding multiple in different sections
         map.put(BitFieldId.KPH, 11.5);
-        map.put(BitFieldId.INCLINE, 11.50);
+        map.put(BitFieldId.GRADE, 11.50);
         cmd = new WriteReadDataCmd(DeviceId.TREADMILL);
 
         cmd.addWriteData(map);
         assertEquals(11, cmd.getLength());//default min length + 1 section
         assertTrue(cmd.writeContainsBitField(BitFieldId.KPH));
-        assertTrue(cmd.writeContainsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.writeContainsBitField(BitFieldId.GRADE));
 
         //add duplicates
 
         map.put(BitFieldId.KPH, 12.5);
-        map.put(BitFieldId.INCLINE, 12.50);//%12.5
+        map.put(BitFieldId.GRADE, 12.50);//%12.5
         map.put(BitFieldId.RESISTANCE, 10.50);//%10.5
         cmd.removeWriteDataField(BitFieldId.KPH);
         cmd.addWriteData(map);
         assertEquals(13, cmd.getLength());//2 sections, 3 short values
         assertTrue(cmd.writeContainsBitField(BitFieldId.KPH));
-        assertTrue(cmd.writeContainsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.writeContainsBitField(BitFieldId.GRADE));
         assertTrue(cmd.writeContainsBitField(BitFieldId.RESISTANCE));
 
     }
@@ -199,7 +199,7 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         //test removing 1 of 2
         map.put(BitFieldId.KPH, 5.5);
-        map.put(BitFieldId.INCLINE, 10.1);
+        map.put(BitFieldId.GRADE, 10.1);
         cmd = new WriteReadDataCmd(DeviceId.TREADMILL);
 
         cmd.addWriteData(map);
@@ -207,16 +207,16 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         assertEquals(9, cmd.getLength());//default min length + 1 section
         assertFalse(cmd.writeContainsBitField(BitFieldId.KPH));
-        assertTrue(cmd.writeContainsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.writeContainsBitField(BitFieldId.GRADE));
 
         //removing duplicates and from a list
         map.put(BitFieldId.KPH, 11.5);
-        map.put(BitFieldId.INCLINE, 12.5);
+        map.put(BitFieldId.GRADE, 12.5);
 
         cmd.removeWriteDataField(map.keySet());
         assertEquals(6, cmd.getLength());//default min length + 1 section
         assertFalse(cmd.writeContainsBitField(BitFieldId.KPH));
-        assertFalse(cmd.writeContainsBitField(BitFieldId.INCLINE));
+        assertFalse(cmd.writeContainsBitField(BitFieldId.GRADE));
     }
 
     /** Tests the the Add Write data function.
@@ -241,24 +241,24 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         //test adding multiple in different sections
         idList.add(BitFieldId.KPH);
-        idList.add(BitFieldId.INCLINE);
+        idList.add(BitFieldId.GRADE);
         cmd = new WriteReadDataCmd(DeviceId.TREADMILL);
 
         cmd.addReadBitField(idList);
         assertEquals(7, cmd.getLength());//default min length + 1 section
         assertTrue(cmd.readContainsBitField(BitFieldId.KPH));
-        assertTrue(cmd.readContainsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.readContainsBitField(BitFieldId.GRADE));
 
         //add duplicates
 
         idList.add(BitFieldId.KPH);
-        idList.add(BitFieldId.INCLINE);
+        idList.add(BitFieldId.GRADE);
         idList.add(BitFieldId.RESISTANCE);
         cmd.removeReadDataField(BitFieldId.KPH);
         cmd.addReadBitField(idList);
         assertEquals(7, cmd.getLength());//2 sections, 3 short values
         assertTrue(cmd.readContainsBitField(BitFieldId.KPH));
-        assertTrue(cmd.readContainsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.readContainsBitField(BitFieldId.GRADE));
         assertTrue(cmd.readContainsBitField(BitFieldId.RESISTANCE));
     }
 
@@ -284,7 +284,7 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         //test removing 1 of 2
         idList.add(BitFieldId.KPH);
-        idList.add(BitFieldId.INCLINE);
+        idList.add(BitFieldId.GRADE);
         cmd = new WriteReadDataCmd(DeviceId.TREADMILL);
 
         cmd.addReadBitField(idList);
@@ -292,16 +292,16 @@ public class TestWriteReadDataCmd  extends TestCase {
 
         assertEquals(7, cmd.getLength());//default min length + 1 section
         assertFalse(cmd.readContainsBitField(BitFieldId.KPH));
-        assertTrue(cmd.readContainsBitField(BitFieldId.INCLINE));
+        assertTrue(cmd.readContainsBitField(BitFieldId.GRADE));
 
         //removing duplicates and from a list
         idList.add(BitFieldId.KPH);
-        idList.add(BitFieldId.INCLINE);
+        idList.add(BitFieldId.GRADE);
 
         cmd.removeReadDataField(idList);
         assertEquals(6, cmd.getLength());//default min length + 1 section
         assertFalse(cmd.readContainsBitField(BitFieldId.KPH));
-        assertFalse(cmd.readContainsBitField(BitFieldId.INCLINE));
+        assertFalse(cmd.readContainsBitField(BitFieldId.GRADE));
     }
 
     /** Tests the Message make for the command

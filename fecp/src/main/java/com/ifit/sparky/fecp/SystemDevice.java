@@ -41,15 +41,25 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 public class SystemDevice extends Device implements Serializable{
 
+    public interface DataChangedListener
+    {
+        /**
+         * Function is called when any data changes.
+         * @param changedData Tree of only the data that changed.
+         */
+        void OnDataChanged(TreeMap<BitFieldId, BitfieldDataConverter> changedData);
+    };
     private GetSysInfoSts mSysInfoReply;//this is to help with other tablet querying for more info about this machine.
 
     private SystemDeviceInfo mSysDevInfo;
+    private ArrayList<DataChangedListener> mChangeListeners;
 
     private TreeMap<BitFieldId, BitfieldDataConverter> mCurrentSystemData;//anyTime data is received
     //it will send this to all the listeners. this is to make the delay of communication seem less
@@ -64,6 +74,7 @@ public class SystemDevice extends Device implements Serializable{
         super();
         this.mSysDevInfo = new SystemDeviceInfo();
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
+        this.mChangeListeners = new ArrayList<DataChangedListener>();
     }
 
     /**
@@ -74,13 +85,14 @@ public class SystemDevice extends Device implements Serializable{
         super(id);
         this.mSysDevInfo = new SystemDeviceInfo();
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
+        this.mChangeListeners = new ArrayList<DataChangedListener>();
     }
 
     /**
      * generates a System Device from a generic device.
      * easier for initialization
      * @param dev the device that will be the System Device
-     * @throws Exception
+     * @throws InvalidStatusException, InvalidCommandException
      */
     public SystemDevice(Device dev) throws InvalidStatusException, InvalidCommandException
     {
@@ -88,17 +100,9 @@ public class SystemDevice extends Device implements Serializable{
 
         this.mSysDevInfo = new SystemDeviceInfo();
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
+        this.mChangeListeners = new ArrayList<DataChangedListener>();
     }
 
-    /**
-     * the default constructor for the System Device
-     */
-    public SystemDevice(DeviceId id, SystemConfiguration config) throws InvalidStatusException, InvalidCommandException
-    {
-        super(id);
-        this.mSysDevInfo = new SystemDeviceInfo();
-        this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
-    }
 
     public SystemDevice(GetSysInfoSts sts) throws InvalidStatusException, InvalidCommandException
     {
@@ -107,6 +111,7 @@ public class SystemDevice extends Device implements Serializable{
         this.mSysDevInfo = sts.getSysDevInfo();
         this.mSysInfoReply = sts;
         this.mCurrentSystemData = new TreeMap<BitFieldId, BitfieldDataConverter>();
+        this.mChangeListeners = new ArrayList<DataChangedListener>();
 
     }
 
@@ -139,6 +144,24 @@ public class SystemDevice extends Device implements Serializable{
     }
 
     /**
+     * Gets only the changed data from the System
+     * @return TreeMap of all the latest changed data.
+     */
+    public TreeMap<BitFieldId, BitfieldDataConverter> getChangedSystemData() {
+        TreeMap<BitFieldId, BitfieldDataConverter> changedData = new TreeMap<BitFieldId, BitfieldDataConverter>();
+
+        for (Map.Entry<BitFieldId, BitfieldDataConverter> entry : this.mCurrentSystemData.entrySet()) {
+            if(entry.getValue().isIsDirty())
+            {
+                //if dirty add to the list, then make it clean
+                changedData.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return mCurrentSystemData;
+    }
+
+    /**
      * Updates the data that you need to know for displaying data.
      * @param sts Results of the command for any listeners
      */
@@ -147,12 +170,55 @@ public class SystemDevice extends Device implements Serializable{
         TreeMap<BitFieldId, BitfieldDataConverter> cmdResults;
 
         cmdResults = sts.getResultData();
+        boolean valuesChanged = false;
 
-        for (Map.Entry<BitFieldId, BitfieldDataConverter> entry : cmdResults.entrySet()) {
-                entry.getValue().setTimeRecieved(System.currentTimeMillis());
-            //todo add a set Value is dirty here, so we can get all of the values that have changed easier.
-                this.mCurrentSystemData.put(entry.getKey(), entry.getValue());
+        for (Map.Entry<BitFieldId, BitfieldDataConverter> entry : cmdResults.entrySet())
+        {
+            entry.getValue().setTimeReceived(System.currentTimeMillis());
+            if(this.mCurrentSystemData.get(entry.getKey()) != entry.getValue())
+            {
+                //dirty
+                entry.getValue().setIsDirty(false);
+                valuesChanged = true;
+            }
+            this.mCurrentSystemData.put(entry.getKey(), entry.getValue());
         }
+
+        if(valuesChanged)
+        {
+            for (DataChangedListener listener : this.mChangeListeners) {
+                listener.OnDataChanged(getChangedSystemData());
+            }
+        }
+    }
+
+    /**
+     * adds listener for any changes to the Data
+     * @param listener to be called
+     * @return true if not already added.
+     */
+    public boolean addOnDataChangedListener(DataChangedListener listener)
+    {
+        if(this.mChangeListeners.contains(listener)) {
+            this.mChangeListeners.add(listener);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * removes the on data changed listener
+     * @param listener to be removed from list
+     * @return true if removed, false if it wasn't in the list.
+     */
+    public boolean removeOnDataChangedListener(DataChangedListener listener)
+    {
+        if(this.mChangeListeners.contains(listener)) {
+            this.mChangeListeners.remove(listener);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -300,7 +366,7 @@ public class SystemDevice extends Device implements Serializable{
         resultDevice = new SystemDevice((GetSysInfoSts)sysInfoCmd.getStatus());
         SystemConfiguration tempConfig = resultDevice.getSysDevInfo().getConfig();
 
-        if(tempConfig == SystemConfiguration.MASTER || tempConfig == SystemConfiguration.SLAVE )//direct master connection
+        if(tempConfig == SystemConfiguration.MASTER || tempConfig == SystemConfiguration.SLAVE || tempConfig == SystemConfiguration.MULTI_MASTER)//direct master connection
         {
             tempDevice = getInitialDevice(comm, DeviceId.MAIN);
             resultDevice.addCommands(tempDevice.getCommandSet().values());

@@ -8,9 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.ifit.sparky.fecp.OnCommandReceivedListener;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.FecpController;
+import com.ifit.sparky.fecp.OnCommandReceivedListener;
+import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.BitfieldDataConverter;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.LongConverter;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * This fragment is either contained in a {@link com.ifit.sparkydevapp.sparkydevapp.ItemListActivity}
  * in two-pane mode (on tablets)
  */
-public abstract class BaseInfoFragment extends Fragment  implements OnCommandReceivedListener, Runnable {
+public abstract class BaseInfoFragment extends Fragment implements OnCommandReceivedListener, Runnable {
 
     protected FecpController mFecpCntrl;
     private String mIdString;

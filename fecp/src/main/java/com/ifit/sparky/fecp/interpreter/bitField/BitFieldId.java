@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 
 public enum BitFieldId {
     KPH(0, 2, false, new SpeedConverter(), "KPH"),
-    INCLINE(1, 2, false, new InclineConverter(), "Incline"),
+    GRADE(1, 2, false, new GradeConverter(), "Incline"),
     RESISTANCE(2, 2, false, new ResistanceConverter(), "Resistance"),
     WATTS(3, 2, true, new ShortConverter(), "Watts"),
     TORQUE(4, 2, true, new ShortConverter(), "Torque"),
@@ -26,10 +26,10 @@ public enum BitFieldId {
     RUNNING_TIME(11, 4, true, new LongConverter(), "Running Time"),
     WORKOUT_MODE(12, 1, false, new ModeConverter(), "Workout Mode"),
     CALORIES(13, 4, true, new CaloriesConverter(), "Calories"),
-    AUDIO_SOURCE(14, 1, false, new AudioSourceConverter(), "Audio Source"),
-    ANDROID_KEYS(15, 1, true, new ByteConverter(), "Android Keys"),
+    AUDIO_SOURCE(14, 3, false, new AudioSourceConverter(), "Audio Source, available srcs"),
+
     ACTUAL_KPH(16, 2, true, new SpeedConverter(), "Actual KPH"),
-    ACTUAL_INCLINE(17, 2, true, new InclineConverter(), "Actual Incline"),
+    ACTUAL_INCLINE(17, 2, true, new GradeConverter(), "Actual Incline"),
     ACTUAL_RESISTANCE(18, 2, true, new ResistanceConverter(), "Actual Resistance"),
     ACTUAL_DISTANCE(19, 4, true, new LongConverter(), "Actual Distance"),
     WORKOUT(20, 1, false, new WorkoutConverter(), "Current Workout User Selected"),
@@ -37,8 +37,8 @@ public enum BitFieldId {
     AGE(24, 1, false, new ByteConverter(), "Age"),
     WEIGHT(25, 2, false, new WeightConverter(), "Weight"),
     GEARS(26, 1, false, new ByteConverter(), "Gears"),
-    MAX_INCLINE(27, 2, true, new InclineConverter(), "Max Incline"),
-    MIN_INCLINE(28, 2, true, new InclineConverter(), "Min Incline"),
+    MAX_GRADE(27, 2, true, new GradeConverter(), "Max Incline"),
+    MIN_GRADE(28, 2, true, new GradeConverter(), "Min Incline"),
     TRANS_MAX(29, 2, false, new ShortConverter(), "Trans Max"),
     MAX_KPH(30, 2, true, new SpeedConverter(), "Max KPH"),
     MIN_KPH(31, 2, true, new SpeedConverter(), "Min KPH"),
@@ -46,9 +46,33 @@ public enum BitFieldId {
     BV_FREQUENCY(33, 2, false, new ShortConverter(), "Broadcast Vision Frequency"),
     IDLE_TIMEOUT(34, 2, false, new ShortConverter(), "Idle Timeout"),
     PAUSE_TIMEOUT(35, 2, false, new ShortConverter(), "Pause Timeout"),
+    SYSTEM_UNITS(36, 1, false, new BoolConverter(), "System Units"),
+    GENDER(37, 1, false, new BoolConverter(), "Gender(0 female, 1 male)"),
+    FIRST_NAME(38, 50, false, new NameConverter(), "First Name"),
+    LAST_NAME(39, 50, false, new NameConverter(), "Last Name"),
+    IFIT_USER_NAME(40, 50, false, new NameConverter(), "IFIT Username"),
+    HEIGHT(41, 2, false, new ShortConverter(), "User Height in cm"),
+    MAX_RESISTANCE(42, 1, true, new ByteConverter(), "Max Resistance"),
 
     AVERAGE_PULSE(48, 1, true, new ByteConverter(), "Average Pulse"),
-    MAX_PULSE(49, 1, true, new ByteConverter(), "Max Pulse");
+    MAX_PULSE(49, 1, true, new ByteConverter(), "Max Pulse"),
+    AVERAGE_KPH(50, 2, true, new SpeedConverter(), "Average KPH"),
+    WT_MAX_KPH(51, 2, true, new SpeedConverter(), "Max KPH"),
+    AVERAGE_GRADE(52, 2, true, new GradeConverter(), "Average Grade"),
+    WT_MAX_GRADE(53, 2, true, new GradeConverter(), "Max Grade"),
+    AVERAGE_WATTS(54, 2, true, new SpeedConverter(), "Average Watts"),
+    MAX_WATTS(55, 2, true, new SpeedConverter(), "Max Watts"),
+    AVERAGE_RPM(56, 2, true, new SpeedConverter(), "Average RPM"),
+    MAX_RPM(57, 2, true, new SpeedConverter(), "Max RPM"),
+
+    KPH_GOAL(58, 2, false, new SpeedConverter(), "KPH Goal"),
+    GRADE_GOAL(59, 2, false, new GradeConverter(), "Grade Goal"),
+    RESISTANCE_GOAL(60, 2, false, new ResistanceConverter(), "Resistance Goal"),
+    WATT_GOAL(61, 2, false, new ShortConverter(), "Watts Goal"),
+    TORQUE_GOAL(62, 2, false, new ShortConverter(), "Torque Goal"),
+    RPM_GOAL(63, 2, false, new ShortConverter(), "RPM Goal"),
+    DISTANCE_GOAL(64, 4, false, new LongConverter(), "Distance Goal"),
+    PULSE_GOAL(65, 1, false, new ByteConverter(), "Pulse Goal");
 
     private int mValue; // indexed at 1-255
     private int mSection;

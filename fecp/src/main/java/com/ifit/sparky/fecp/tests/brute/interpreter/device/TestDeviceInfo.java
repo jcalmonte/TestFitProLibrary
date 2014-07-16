@@ -43,7 +43,7 @@ public class TestDeviceInfo extends TestCase {
         DeviceInfo info;
         HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
         bitSet.add(BitFieldId.KPH);
-        bitSet.add(BitFieldId.INCLINE);
+        bitSet.add(BitFieldId.GRADE);
 
         info = new DeviceInfo();
 
@@ -73,7 +73,7 @@ public class TestDeviceInfo extends TestCase {
     public void testGettersSetters_device() throws Exception{
         DeviceInfo info;
         HashSet<BitFieldId> bitSet = new HashSet<BitFieldId>();
-        bitSet.add(BitFieldId.INCLINE);
+        bitSet.add(BitFieldId.GRADE);
 
 
         info = new DeviceInfo();

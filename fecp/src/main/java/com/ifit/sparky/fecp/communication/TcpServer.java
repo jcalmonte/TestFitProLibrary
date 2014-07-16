@@ -169,6 +169,11 @@ class TcpServer implements SystemStatusListener {
         //don't start the server waiting for validation on the machine type
     }
 
+    @Override
+    public void systemSecurityValidated() {
+
+    }
+
 
     private class ServerThread implements Runnable{
 
