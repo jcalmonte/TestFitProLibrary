@@ -4,6 +4,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.ifit.sfit.sparky.testsdrivers.BaseTest;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -16,7 +18,7 @@ import javax.mail.MessagingException;
  */
 public class SendEmailAsyncTask extends AsyncTask<Void, Void, Boolean> {
     //Set up default email with username and password
-    Mail m = new Mail("phil.icontesting@gmail.com", "icon2014");
+    Mail m = new Mail("fitprotesting.icon@gmail.com", "fitprotest2014");
     DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM hh:mm:ss a");
 
     public SendEmailAsyncTask(String toString) {
@@ -26,7 +28,7 @@ public class SendEmailAsyncTask extends AsyncTask<Void, Void, Boolean> {
         String[] toArr = {toString};
         m.setTo(toArr);
         //Who the email is from
-        m.setFrom("phil.icontesting@gmail.com");
+        m.setFrom("fitprotesting.icon@gmail.com");
         //Email subject
         m.setSubject("FitPro Automation Test Results: " + dateFormat.format(Calendar.getInstance().getTime()));
 //        m.setBody("see attachment");
@@ -36,14 +38,14 @@ public class SendEmailAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
             if(m.send()) {
                 for(int i = 0; i < toArr.length; i++){
-                    Toast.makeText(TestApp.getAppContext(), "Email was sent successfully to " + toArr[i], Toast.LENGTH_LONG).show();
+                    Toast.makeText(BaseTest.getAppContext(), "Email was sent successfully to " + toArr[i], Toast.LENGTH_LONG).show();
                 }
             } else {
-                Toast.makeText(TestApp.getAppContext(), "Email was not sent.", Toast.LENGTH_LONG).show();
+                Toast.makeText(BaseTest.getAppContext(), "Email was not sent.", Toast.LENGTH_LONG).show();
             }
         } catch(Exception e) {
             //Toast.makeText(MailApp.this, "There was a problem sending the email.", Toast.LENGTH_LONG).show();
-            Log.e("philsTestApp", "Could not send email", e);
+            Log.e("FitPro Test App", "Could not send email", e);
         }
 
     }
