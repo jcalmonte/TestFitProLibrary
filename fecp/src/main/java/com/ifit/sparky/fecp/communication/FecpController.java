@@ -29,7 +29,7 @@ import java.util.List;
 
 public class FecpController implements ErrorReporting {
     //Fecp System Version number
-    private final int VERSION = 1;
+    private final int VERSION = 12;
     private CommType mCommType;
     protected SystemDevice mSysDev;
     protected boolean mIsConnected;

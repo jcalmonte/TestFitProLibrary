@@ -7,6 +7,8 @@
  */
 package com.ifit.sparky.fecp.interpreter.device;
 
+import android.util.Log;
+
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
 
@@ -264,7 +266,13 @@ public class DeviceInfo implements Serializable {
             {
                 if((bits & (1 << j)) != 0)//if 1
                 {
-                    this.addBitfield(BitFieldId.getBitFieldId(i,j));
+                    try {
+                       this.addBitfield(BitFieldId.getBitFieldId(i, j));
+                    }
+                    catch (InvalidBitFieldException ex)
+                    {
+                        Log.e("INVALID_BITFIELD","Either non existant, or you are using an older version of the FitPro library");
+                    }
                 }
             }
         }
