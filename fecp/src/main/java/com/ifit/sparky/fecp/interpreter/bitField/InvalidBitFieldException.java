@@ -29,7 +29,7 @@ public class InvalidBitFieldException extends Exception {
      */
     public InvalidBitFieldException(int section, int bit)
     {
-        super("Invalid Bitfield id Section("+section+") and Bit("+bit+").");
+        super("Invalid Bitfield id("+((section * 8)+bit)+") Section("+section+") and Bit("+bit+").");
     }
 
     /**
