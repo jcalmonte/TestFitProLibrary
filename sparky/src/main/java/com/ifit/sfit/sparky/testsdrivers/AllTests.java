@@ -1,6 +1,7 @@
 package com.ifit.sfit.sparky.testsdrivers;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
@@ -10,28 +11,46 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.ifit.sfit.sparky.R;
-import com.ifit.sfit.sparky.TestAll;
-import com.ifit.sfit.sparky.TestBitfields;
-import com.ifit.sfit.sparky.TestIncline;
-import com.ifit.sfit.sparky.TestIntegration;
-import com.ifit.sfit.sparky.TestMotor;
+import com.ifit.sfit.sparky.activities.ManageTests;
+import com.ifit.sfit.sparky.helperclasses.SendEmailAsyncTask;
+import com.ifit.sfit.sparky.tests.TestBitfields;
+import com.ifit.sfit.sparky.tests.TestIncline;
+import com.ifit.sfit.sparky.tests.TestIntegration;
+import com.ifit.sfit.sparky.tests.TestMotor;
 
 /**
+ * Class to handle running all tests. In this class only the runAll method of each handle test class is run
  * Created by jc.almonte on 8/1/14.
  */
-public class AllTests extends BaseTest implements View.OnClickListener, AdapterView.OnItemSelectedListener, TestAll {
+public class AllTests extends BaseTest implements View.OnClickListener, AdapterView.OnItemSelectedListener{
 
      TestBitfields b;
      TestMotor m;
      TestIntegration i;
      TestIncline g ;
+     boolean isAlarmMessage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         init();
+        emailAddress = "jc.almonte@iconfitness.com";
+        // 1. get passed intent
+        Intent intent = getIntent();
+
+        // 2. get message value from intent
+        String message = intent.getStringExtra("message");
+        isAlarmMessage = message.equals("runAll");
+        if(isAlarmMessage == true);
+        {
+            testToRun = "All Tests";
+            runTest();
+        }
     }
 
+    /**
+     * Set up spinner and populated it with options specific to this test class
+     */
     private void init() {
 
         Spinner spinner = (Spinner) findViewById(R.id.spinnerMotor);
@@ -46,90 +65,17 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
 
     }
 
+    /**
+     * Run selected "runAll" test
+     */
     @Override
     void runTest() {
-         b = new TestBitfields(fecpController, (BaseTest) context, this.mSFitSysCntrl);
-         m = new TestMotor(fecpController, (BaseTest) context, this.mSFitSysCntrl);
-         i = new TestIntegration(fecpController, (BaseTest) context, this.mSFitSysCntrl);
-         g = new TestIncline(fecpController, (BaseTest) context, this.mSFitSysCntrl);
+         b = new TestBitfields(ManageTests.fecpController, (BaseTest) context, ManageTests.mSFitSysCntrl);
+         m = new TestMotor(ManageTests.fecpController, (BaseTest) context, ManageTests.mSFitSysCntrl);
+         i = new TestIntegration(ManageTests.fecpController, (BaseTest) context, ManageTests.mSFitSysCntrl);
+         g = new TestIncline(ManageTests.fecpController, (BaseTest) context, ManageTests.mSFitSysCntrl);
         final ScrollView scrollview = ((ScrollView) findViewById(R.id.scrollView));
 
-        b.setUpdateResultViewListener(new TestBitfields.UpdateResultView() {
-            @Override
-            public void onUpdate(final String msg) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        testingView.setText(Html.fromHtml(msg));
-                    }
-                });
-                scrollview.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        scrollview.fullScroll(ScrollView.FOCUS_DOWN);
-                    }
-                });
-
-            }
-        });
-
-
-        m.setUpdateResultViewListener(new TestMotor.UpdateResultView() {
-            @Override
-            public void onUpdate(final String msg) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        testingView.setText(Html.fromHtml(msg));
-                        scrollview.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                scrollview.fullScroll(ScrollView.FOCUS_DOWN);
-                            }
-                        });
-                    }
-                });
-
-            }
-        });
-
-        i.setUpdateResultViewListener(new TestIntegration.UpdateResultView() {
-            @Override
-            public void onUpdate(final String msg) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        testingView.setText(Html.fromHtml(msg));
-                        scrollview.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                scrollview.fullScroll(ScrollView.FOCUS_DOWN);
-                            }
-                        });
-                    }
-                });
-
-            }
-        });
-
-        g.setUpdateResultViewListener(new TestIncline.UpdateResultView() {
-            @Override
-            public void onUpdate(final String msg) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        testingView.setText(Html.fromHtml(msg));
-                        scrollview.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                scrollview.fullScroll(ScrollView.FOCUS_DOWN);
-                            }
-                        });
-                    }
-                });
-
-            }
-        });
         Thread th = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -148,7 +94,7 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
                             returnString = b.runAll();
                             break;
                         case "All Tests":
-                            runAll();
+                            returnString = runAll();
                             break;
                     }
                     try {
@@ -157,6 +103,9 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
                         outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
                         outputStream.write((returnString).getBytes());
                         outputStream.close();
+                        new SendEmailAsyncTask(emailAddress).execute();
+
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -178,6 +127,7 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                finish(); // Go back to previous activity screen
             }
         });
         th.start();
@@ -185,6 +135,13 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
 
     }
 
+    /**
+     * Indicates test to run based on item selected
+     * @param parent the parent adapter view
+     * @param view current view
+     * @param pos position of selected item
+     * @param id selected item id
+     */
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         testToRun = parent.getItemAtPosition(pos).toString();
@@ -195,8 +152,11 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
 
     }
 
-
-    @Override
+    /**
+     * Runs all tests for each test class
+     * @return text log of test results
+     * @throws Exception
+     */
     public String runAll() throws Exception {
 
         String results ="";
@@ -204,7 +164,6 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
         results += m.runAll();
         results += i.runAll();
         results += b.runAll();
-
         return results;
     }
 }

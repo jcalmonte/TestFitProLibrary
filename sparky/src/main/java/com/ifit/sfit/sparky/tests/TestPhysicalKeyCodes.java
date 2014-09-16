@@ -1,5 +1,8 @@
-package com.ifit.sfit.sparky;
+package com.ifit.sfit.sparky.tests;
 
+import com.ifit.sfit.sparky.helperclasses.CommonFeatures;
+import com.ifit.sfit.sparky.helperclasses.HandleCmd;
+import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.SystemDevice;
@@ -17,13 +20,14 @@ import java.nio.ByteBuffer;
 //This class tests that the program recognizes the physical key pressed
 // and it tells for how long it was pressed (in milliseconds)
 
-public class TestPhysicalKeyCodes extends TestCommons implements TestAll {
+public class TestPhysicalKeyCodes extends CommonFeatures {
     //Variables needed to initialize connection with Brainboard
     private FecpController mFecpController;
     private BaseTest mAct;
     private HandleCmd hCmd;
     private SFitSysCntrl mSFitSysCntrl;
     private SystemDevice MainDevice;
+    private String emailAddress;
 
     private FecpCommand rdCmd;
 
@@ -34,6 +38,7 @@ public class TestPhysicalKeyCodes extends TestCommons implements TestAll {
             this.mFecpController = fecpController;
             this.mAct = act;
             this.mSFitSysCntrl = ctrl;
+            this.emailAddress = "jc.almonte@iconfitness.com";
             hCmd = new HandleCmd(this.mAct);// Init handlers
             ByteBuffer secretKey = ByteBuffer.allocate(32);
             for(int i = 0; i < 32; i++)
@@ -55,8 +60,14 @@ public class TestPhysicalKeyCodes extends TestCommons implements TestAll {
             ex.printStackTrace();
         }
     }
-    //Test the Start Key
+
+    /**
+     * Verifies the proper code is read when start key is pressed
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testStartKey() throws Exception {
+        String results = " ";
         System.out.println("NOW RUNNING START KEY TEST.. PRESS AND HOLD START KEY<br>");
         String currentKey;
         int timeHeld;
@@ -75,10 +86,16 @@ public class TestPhysicalKeyCodes extends TestCommons implements TestAll {
             appendMessage("The " + currentKey + " key was pressed and held for " + timeHeld + " ms (should have been START key)<br>");
         }
 
-        return res;
+        return results;
     }
-    //Test the stop key
+
+    /**
+     * Verifies the proper code is read when stop key is pressed
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testStopKey() throws Exception {
+        String results =" ";
         String currentKey;
         int timeHeld;
 
@@ -97,10 +114,16 @@ public class TestPhysicalKeyCodes extends TestCommons implements TestAll {
             appendMessage("The " + currentKey + " key was pressed and held for " + timeHeld + " ms (should have been STOP key)<br>");
         }
 
-        return res;
+        return results;
     }
 
+    /**
+     * Verifies the proper code is read when each quick incline key is pressed
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testQuickInclineKeys() throws Exception {
+        String results = " ";
         String currentKey;
         int timeHeld;
         //max and min incline should eventually be read from the brainboard, but the max incline is currently set at 15%,
@@ -143,9 +166,15 @@ public class TestPhysicalKeyCodes extends TestCommons implements TestAll {
             }
         }
 
-        return res;
+        return results;
     }
 
+
+    /**
+     * Runs all Physical Key-codes tests
+     * @return text log of test results
+     * @throws Exception
+     */
     @Override
     public String runAll() throws Exception {
 
@@ -153,7 +182,6 @@ public class TestPhysicalKeyCodes extends TestCommons implements TestAll {
         results+=this.testStartKey();
         results+=this.testStopKey();
         results+=this.testQuickInclineKeys();
-
         return results;
     }
 }

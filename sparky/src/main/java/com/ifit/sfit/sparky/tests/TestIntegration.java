@@ -1,22 +1,24 @@
-package com.ifit.sfit.sparky;
+package com.ifit.sfit.sparky.tests;
 
+import com.ifit.sfit.sparky.helperclasses.CommonFeatures;
+import com.ifit.sfit.sparky.helperclasses.HandleCmd;
+import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
- import com.ifit.sparky.fecp.FecpCommand;
- import com.ifit.sparky.fecp.SystemDevice;
- import com.ifit.sparky.fecp.communication.FecpController;
- import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
- import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
- import com.ifit.sparky.fecp.interpreter.command.CommandId;
- import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
- import com.ifit.sparky.fecp.interpreter.device.Device;
- 
- import java.nio.ByteBuffer;
- import java.util.Calendar;
+import com.ifit.sparky.fecp.FecpCommand;
+import com.ifit.sparky.fecp.SystemDevice;
+import com.ifit.sparky.fecp.communication.FecpController;
+import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
+import com.ifit.sparky.fecp.interpreter.command.CommandId;
+import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
+
+import java.nio.ByteBuffer;
+import java.util.Calendar;
 
 /**
   * Created by jc.almonte on 7/2/14.
   */
- public class TestIntegration extends TestCommons implements TestAll {
+ public class TestIntegration extends CommonFeatures {
      private FecpController mFecpController;
      private BaseTest mAct;
      private HandleCmd hCmd;
@@ -24,13 +26,15 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
      private SystemDevice MainDevice;
      private  FecpCommand wrCmd;
      private  FecpCommand rdCmd;
- 
-     public TestIntegration(FecpController fecpController, BaseTest act, SFitSysCntrl ctrl) {
+    private String emailAddress;
+
+    public TestIntegration(FecpController fecpController, BaseTest act, SFitSysCntrl ctrl) {
          //Get controller sent from the main activity (TestApp)
          try {
              this.mFecpController = fecpController;
              this.mAct = act;
              this.mSFitSysCntrl = ctrl;
+             this.emailAddress = "jc.almonte@iconfitness.com";
              hCmd = new HandleCmd(this.mAct);// Init handlers
              ByteBuffer secretKey = ByteBuffer.allocate(32);
              for(int i = 0; i < 32; i++)
@@ -70,13 +74,12 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
              ex.printStackTrace();
          }
      }
- 
-     //--------------------------------------------//
-     //
-     //Testing Age
-     //
-     //--------------------------------------------//
-//TODO: Include tests for invalid ages ranges both below and above
+
+    /**
+     * Verifies valid age values can be set as well as invalid age values cant be set
+     * @return text log of test results
+     * @throws Exception
+     */
      public String testAge() throws Exception {
          //Redmine Support #937
          //Read the default Age
@@ -193,16 +196,16 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
-         appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-         ageResults+="\nThis test took a total of"+timeOfTest+"secs \n";
+         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+         ageResults+="\nThis test took a total of "+timeOfTest+" secs \n";
          return ageResults;
      }
-     //--------------------------------------------//
-     //
-     //Testing Weight
-     //
-     //--------------------------------------------//
- 
+
+    /**
+     * Verifies valid weight ranges can be set as well as invalid weight values cant be set
+     * @return text log of test results
+     * @throws Exception
+     */
 
      public String testWeight() throws Exception {
          //Weight is implemented in kilograms with a default weight of 185 lbs =84 kg
@@ -307,16 +310,17 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
-         appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-         weightResults+="\nThis test took a total of"+timeOfTest+"secs \n";
+         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+         weightResults+="\nThis test took a total of "+timeOfTest+" secs \n";
          return weightResults;
      }
- 
-     //--------------------------------------------//
-     //
-     //Testing System Configuration
-     //
-     //--------------------------------------------//
+
+    /**
+     * Verifies branboard config values are correct for the corresponding console
+     * @param inputString the string containing the values to check against
+     * @return text log of test results
+     * @throws Exception
+     */
      public String testSystemConfiguration(String inputString) throws Exception{
          //outline for code support #951
          //read System Config data from Brainboard
@@ -342,20 +346,18 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
          maxSpeed = hCmd.getMaxSpeed();
          minSpeed = hCmd.getMinSpeed();
          Thread.sleep(1000);
- 
-         //Need a new Device object for some of the device info
-         Device device = new Device();
+
          String brainboardLines[] = new String[11];
          //Split the user's input string into separate strings to be compared, line by line ("<br>" is the delimiter)
-         String inputLines[] = inputString.split("\r?<br>|\r");
+         String inputLines[] = inputString.split("\r?\n|\r");
  
          brainboardLines[0] = "Console Name: \"" + MainDevice.getSysDevInfo().getConsoleName() + "\"";
          brainboardLines[1] = "Model Number: \"" + MainDevice.getSysDevInfo().getModel() + "\"";
          brainboardLines[2] = "Part Number: \"" + MainDevice.getSysDevInfo().getPartNumber() + "\"";
-         brainboardLines[3] = "Software Version: \"" + device.getInfo().getSWVersion() + "\"";
-         brainboardLines[4] = "Hardware Version: \"" + device.getInfo().getHWVersion() + "\"";
-         brainboardLines[5] = "Serial Number: \"" + device.getInfo().getSerialNumber() + "\"";
-         brainboardLines[6] = "Manufacturing Number: \"" + device.getInfo().getManufactureNumber() + "\"";
+         brainboardLines[3] = "Software Version: \"" + MainDevice.getInfo().getSWVersion() + "\"";
+         brainboardLines[4] = "Hardware Version: \"" + MainDevice.getInfo().getHWVersion() + "\"";
+         brainboardLines[5] = "Serial Number: \"" + MainDevice.getInfo().getSerialNumber() + "\"";
+         brainboardLines[6] = "Manufacturing Number: \"" + MainDevice.getInfo().getManufactureNumber() + "\"";
          brainboardLines[7] = "Max Incline: \"" + maxIncline + "\"";
          brainboardLines[8] = "Min. Incline: \"" + minIncline + "\"";
          brainboardLines[9] = "Max Speed: \"" + maxSpeed + "\"";
@@ -383,15 +385,17 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
-         appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-         systemString+="\nThis test took a total of"+timeOfTest+"secs \n";
+         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+         systemString+="\nThis test took a total of "+timeOfTest+" secs \n";
          return systemString;
      }
-     //--------------------------------------------//
-     //
-     //Testing Pause Timeout
-     //
-     //--------------------------------------------//
+
+    /**
+     * Verifies that console switches from PAUSE to RESULTS after an elapsed time specified by PAUSE_TIMEOUT
+     * and from RESULTS to IDLE after an elapsed time specified by IDLE_TIMEOUT
+     * @return text log of test results
+     * @throws Exception
+     */
      public String testPauseIdleTimeout() throws Exception{
          //part of redmine #930
          //Set mode to Pause
@@ -520,16 +524,18 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
-         appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-         results+="\nThis test took a total of"+timeOfTest+"secs \n";
+         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+         results+="\nThis test took a total of "+timeOfTest+" secs \n";
          return results;
      }
- 
-     //--------------------------------------------//
-     //
-     //Testing Running Time
-     //
-     //--------------------------------------------//
+
+    /**
+     * Runs a workout for an specifed amount of time and checks that the running time recorded
+     * by the console is accurate
+     * @param runType if "m" run marathon workout (4 hours), else a normal workout.
+     * @return text log of test results
+     * @throws Exception
+     */
      public String testRunningTime(String runType) throws Exception{
          //outline for code support #930 in redmine
          
@@ -709,8 +715,8 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
-         appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-         results+="\nThis test took a total of"+timeOfTest+"secs \n";
+         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+         results+="\nThis test took a total of "+timeOfTest+" secs \n";
          return results;
      }
  
@@ -719,8 +725,13 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
      //              Testing Max Speed             //
      //                                            //
      //--------------------------------------------//
-     //the testMaxSpeedTime is planned to automate #59 of the software
-     //checklist to time the amount of time it takes to go from 0 to max speed
+
+    /**
+     * Records the amount of time it takes to go from 0 to max speed
+     * @return text log of test results
+     * @throws Exception
+     */
+
      public String testMaxSpeedTime() throws Exception{
          //outline for code #1051 in redmine
          //look up max speed for device (currently is not implemented - so just going to use 20kph)
@@ -766,7 +777,7 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
          double seconds = 0;
          long startime = System.nanoTime();
          //Read the actual speed and count elsaped time. Do this until speed has reached MAX
-         while(currentActualSpeed < 16)
+         while(currentActualSpeed < 16) // Replace 16 by maxSpeed once we have a motor that can reach more then 16 kph
          {
              currentActualSpeed = hCmd.getActualSpeed();
              elapsedTime = System.nanoTime() - startime;
@@ -775,8 +786,8 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
              appendMessage("actual speed "+currentActualSpeed+" elapsed time " + seconds +" seconds<br>");
              results+="actual speed "+currentActualSpeed+" elapsed time " + seconds +" seconds\n";
          }
- 
- 
+
+
          appendMessage("The max speed is " + maxSpeed + "<br>");
          appendMessage("The motor took " + seconds + " seconds to go to max speed<br>");
          results+="The max speed is " + maxSpeed + "\n";
@@ -818,11 +829,17 @@ import com.ifit.sfit.sparky.testsdrivers.BaseTest;
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
-         appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-         results+="\nThis test took a total of"+timeOfTest+"secs \n";
+         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+         results+="\nThis test took a total of "+timeOfTest+" secs \n";
          return results;
      }
-     @Override
+
+    /**
+     * Runs all Integration tests
+     * @return text log of test results
+     * @throws Exception
+     */
+    @Override
      public String runAll() {
         String results = "";
          try {

@@ -11,37 +11,34 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ifit.sfit.sparky.R;
-import com.ifit.sfit.sparky.SFitSysCntrl;
-import com.ifit.sfit.sparky.SendEmailAsyncTask;
-import com.ifit.sfit.sparky.TestIntegration;
+import com.ifit.sfit.sparky.activities.ManageTests;
+import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
+import com.ifit.sfit.sparky.helperclasses.SendEmailAsyncTask;
+import com.ifit.sfit.sparky.tests.TestIntegration;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.FitProUsb;
-import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.FecpController;
-import com.ifit.sparky.fecp.communication.SystemStatusListener;
-import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
-import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
-import com.ifit.sparky.fecp.interpreter.command.CommandId;
-import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
-import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 
 import java.io.FileOutputStream;
 
 /**
+ * Abstract Base class for all test drivers. Common features among test drivers are implemented on this class.
  * Created by jc.almonte on 7/29/14.
  */
-public abstract class BaseTest extends Activity implements View.OnClickListener, SystemStatusListener {
+public abstract class BaseTest extends Activity implements View.OnClickListener{
 
 
     /*
     testingView: Display test results
     resultView: Display result of test (PASS/FAIL)
+    Both variables declared "static" to be able to access them from "HandleResults" class
      */
-    protected TextView testingView;
+    public static TextView testingView;
+    public static ScrollView scrollview;
     protected TextView resultView;
 
     /*
@@ -52,7 +49,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
     protected SFitSysCntrl mSFitSysCntrl;
 
     //To display pop-up messages
-    protected Toast mToast;
+    public static Toast mToast; // Made static to use on email class
 
     /*
     passFail: holds result of test (PASS/FAIL)
@@ -86,7 +83,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
     protected Button clearButton;
 
     /*
-    Fields to enter information (kinda like text-boxes in C#)
+    Fields to enter information
     */
     protected EditText editConsoleName;
     protected EditText editModel;
@@ -121,29 +118,37 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
         super.onCreate(savedInstanceState);
 
       setContentView(R.layout.motor_layout);
+      initLayout();
 
-        try {
-            fecpController = new FitProUsb(getApplicationContext(), getIntent());
-            mSFitSysCntrl = new SFitSysCntrl(fecpController);
-            fecpController.initializeConnection(this);
-            initLayout();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        }
+//        try {
+//            fecpController = new FitProUsb(getApplicationContext(), getIntent());
+//            mSFitSysCntrl = new SFitSysCntrl(fecpController);
+//            fecpController.initializeConnection(this);
+//            initLayout();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//
+//        }
 
     }
-    //To return application context
+
+    /**
+     * To return application context
+     * @return
+     */
     public static Context getAppContext() {
         return BaseTest.context;
     }
 
-    //Initialize the application layout
+    /**
+     * Initialize the layout for the test screen
+     */
     private void initLayout(){
         //initialize views
         testingView = (TextView) findViewById(R.id.testView);
         resultView = (TextView)findViewById(R.id.passFailView);
+        scrollview = ((ScrollView) findViewById(R.id.scrollView));
         //Initializing buttons
         allTestsButton = (Button) findViewById(R.id.allTests);
         allTestsButton.setOnClickListener(this);
@@ -464,7 +469,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                         return false;//invalid data
                     }
                     try {
-                        maxIncline = Integer.parseInt(inputText);
+                        maxIncline = Double.parseDouble(inputText);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -484,7 +489,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                         inputText = "0";
                     }
 
-                    maxIncline = Integer.parseInt(inputText);
+                    maxIncline = Double.parseDouble(inputText);
                 }
 
             }
@@ -504,7 +509,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                         return false;//invalid data
                     }
                     try {
-                        minIncline = Integer.parseInt(inputText);
+                        minIncline = Double.parseDouble(inputText);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -524,7 +529,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                         inputText = "0";
                     }
 
-                    minIncline = Integer.parseInt(inputText);
+                    minIncline = Double.parseDouble(inputText);
                 }
 
             }
@@ -544,7 +549,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                         return false;//invalid data
                     }
                     try {
-                        maxSpeed = Integer.parseInt(inputText);
+                        maxSpeed = Double.parseDouble(inputText);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -564,7 +569,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                         inputText = "0";
                     }
 
-                    maxSpeed = Integer.parseInt(inputText);
+                    maxSpeed = Double.parseDouble(inputText);
                 }
 
             }
@@ -584,7 +589,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                         return false;//invalid data
                     }
                     try {
-                        minSpeed = Integer.parseInt(inputText);
+                        minSpeed = Double.parseDouble(inputText);
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
                     }
@@ -604,7 +609,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                         inputText = "0";
                     }
 
-                    minSpeed = Integer.parseInt(inputText);
+                    minSpeed = Double.parseDouble(inputText);
                 }
 
             }
@@ -667,30 +672,66 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
                     "\"\nSerial Number: \""+ serialNumber+"\"\nManufacturing Number: \""+manufactureNumber+
                     "\"\nMax Incline: \""+maxIncline+"\"\nMin. Incline: \""+minIncline+"\"\nMax Speed: \""+maxSpeed+"\"\n" +
                     "Min Speed: \""+minSpeed+"\"\n";
+//
+            final TestIntegration t = new TestIntegration(ManageTests.fecpController, (BaseTest) context, ManageTests.mSFitSysCntrl);
+            final ScrollView scrollview = ((ScrollView) findViewById(R.id.scrollView));
 
-            try{
-                TestIntegration system = new TestIntegration(this.fecpController,this,this.mSFitSysCntrl);
-                configString += system.testSystemConfiguration(systemString);
+//            t.setUpdateResultViewListener(new TestIntegration.UpdateResultView() {
+//                @Override
+//                public void onUpdate(final String msg) {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            testingView.setText(Html.fromHtml(msg));
+//                            scrollview.fullScroll(ScrollView.FOCUS_DOWN);
+//                        }
+//                    });
+//
+//
+//                }
+//            });
 
-                //try to write to the file in main from the machine control structure
-                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-                outputStream.write((configString).getBytes());
-                outputStream.close();
-            } catch(Exception e){
-                e.printStackTrace();
-            }
-            testingView.setText(configString);
-            if(configString.contains("FAIL")) {
-                passFail = "<font color = #ff0000>FAIL </font>";
-            }
-            else {
-                passFail = "<font color = #00ff00>PASS </font>";
-            }
-            resultView.setText(Html.fromHtml(passFail));
+            Thread th = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                      returnString = t.testSystemConfiguration(systemString);
+                        try {
+                            returnString += "\n" + systemString;
+
+                            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+                            outputStream.write((returnString).getBytes());
+                            outputStream.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (returnString.isEmpty()) {
+                            passFail = "<font color = #ff0000>ERROR</font>";
+                        } else if (returnString.contains("FAIL")) {
+                            passFail = "<font color = #ff0000>FAIL</font>";
+                        } else {
+                            passFail = "<font color = #00ff00>PASS</font>";
+                        }
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                resultView.setText(Html.fromHtml(passFail));
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            th.start();
         }
         else if(v==allTestsButton)
         {
             resultView.setText(" ");
+            testingView.setText(" ");
             runTest();
         }
         if(v == findFailButton) {
@@ -717,18 +758,13 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
         }
 
         if(v == emailButton) {
-            try {
+
                 if(editEmail.getText().toString().isEmpty()){
                     Toast.makeText(this, "Please enter an email!", Toast.LENGTH_LONG).show();
                 }
                 else {
                     new SendEmailAsyncTask(emailAddress).execute();
                 }
-            }catch(Exception e){
-                Toast.makeText(this, "Email was not sent.", Toast.LENGTH_LONG).show();
-                e.printStackTrace();
-            }
-
         }
 
         if(v == clearButton) {
@@ -739,14 +775,11 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
             }
 
         }
-
-
-        //Clear out the system device string to re-enter new values for next test
-        systemString = "";
-        //clear out print string to recheck values if needed from a typo
-        returnString = "";
     }
 
+    /**
+     * Abstract method to run test specific to each test class
+     */
     abstract void runTest();
 
     @Override
@@ -759,19 +792,6 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
         }
     }
 
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        boolean result = false;
-//        switch (keyCode)
-//        {
-//            case KeyEvent.KEYCODE_BACK:
-//            Intent myIntent = new Intent(BaseTest.this, ManageTests.class);
-//            startActivity(myIntent);
-//            result = false;
-//        }
-//        return result;
-//    }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -783,111 +803,5 @@ public abstract class BaseTest extends Activity implements View.OnClickListener,
     /**
      * this method is called when the system is disconnected.
      */
-    @Override
-    public void systemDisconnected() {
 
-        //change display back to the original screen
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if(null == mToast)
-                {
-                    mToast = Toast.makeText(getApplicationContext(), "Connection Lost", Toast.LENGTH_LONG);
-                }
-                mToast.setDuration(Toast.LENGTH_LONG);
-                mToast.setText("Connection Lost");
-
-                mToast.show();
-//                Toast.makeText(getApplicationContext(),"Connection Lost", Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    /**
-     * This is called after system is connected
-     *
-     * @param dev the System device that is connected.
-     */
-    @Override
-    public void systemDeviceConnected(final SystemDevice dev) {
-
-        //if successful the dev won't be null
-        //system is connected used this in the rest of the system.
-
-        if(dev == null || dev.getInfo().getDevId() == DeviceId.NONE)
-        {
-            Toast.makeText(this,"Connection Failed",Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if(null == mToast)
-                {
-                    mToast = Toast.makeText(getApplicationContext(), "Connected to "+ dev.getInfo().getDevId().getDescription()+ ":" + dev.getSysDevInfo().getConsoleName(), Toast.LENGTH_LONG);
-                }
-//                Toast.makeText(getApplicationContext(),"Connected to "+ dev.getInfo().getDevId().getDescription()+ ":" + dev.getConsoleName() , Toast.LENGTH_LONG).show();
-                mToast.setText("Connected to "+ dev.getInfo().getDevId().getDescription()+ ":" + dev.getSysDevInfo().getConsoleName() );
-                mToast.setDuration(Toast.LENGTH_LONG);
-                mToast.show();
-            }
-        });
-
-        //check if treadmill or incline trainer
-        if(dev.getInfo().getDevId() == DeviceId.INCLINE_TRAINER || dev.getInfo().getDevId() == DeviceId.TREADMILL)
-        {
-            if(dev.getInfo().getSupportedBitfields().contains(BitFieldId.WORKOUT_MODE)) {
-
-                try {
-
-                    this.mSystemStopCmd = new FecpCommand(dev.getCommand(CommandId.WRITE_READ_DATA));
-                    ((WriteReadDataCmd)this.mSystemStopCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    /**
-     * This will be called when the communication layer is connected. this is a lower level of
-     * communication notification.
-     */
-    @Override
-    public void systemCommunicationConnected() {
-        //nothing to do, implemented in fitpro layer
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (null == mToast) {
-                    mToast = Toast.makeText(getApplicationContext(), "Connected ", Toast.LENGTH_LONG);
-                }
-//                Toast.makeText(getApplicationContext(),"Connected to "+ dev.getInfo().getDevId().getDescription()+ ":" + dev.getConsoleName() , Toast.LENGTH_LONG).show();
-                mToast.setText("Connected ");
-                mToast.setDuration(Toast.LENGTH_LONG);
-                mToast.show();
-            }
-        });
-    }
-
-    @Override
-    public void systemSecurityValidated() {
-
-//        //system is validated you may control the system
-//        this.runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (null == mToast) {
-//                    mToast = Toast.makeText(getApplicationContext(), "System is Validated", Toast.LENGTH_LONG);
-//                }
-////                Toast.makeText(getApplicationContext(),"Connected to "+ dev.getInfo().getDevId().getDescription()+ ":" + dev.getConsoleName() , Toast.LENGTH_LONG).show();
-//                mToast.setText("System is Validated");
-//                mToast.setDuration(Toast.LENGTH_LONG);
-//                mToast.show();
-//            }
-//        });
-//        this.mSFitSysCntrl.getInitialSysItems(this, 0, 0);
-    }
 }

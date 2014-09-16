@@ -6,14 +6,14 @@ import android.text.Html;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.ifit.sfit.sparky.R;
-import com.ifit.sfit.sparky.TestIncline;
-import com.ifit.sfit.sparky.TestMotor;
+import com.ifit.sfit.sparky.activities.ManageTests;
+import com.ifit.sfit.sparky.tests.TestIncline;
 
 /**
+ * Incline test driver
  * Created by jc.almonte on 7/30/14.
  */
 public class InclineTest extends BaseTest implements View.OnClickListener, AdapterView.OnItemSelectedListener {
@@ -24,6 +24,9 @@ public class InclineTest extends BaseTest implements View.OnClickListener, Adapt
         init();
     }
 
+    /**
+     * Set up spinner and populated it with options specific to this test class
+     */
     private void init(){
 
         Spinner spinner = (Spinner) findViewById(R.id.spinnerMotor);
@@ -38,30 +41,13 @@ public class InclineTest extends BaseTest implements View.OnClickListener, Adapt
 
     }
 
+    /**
+     * Run selected Incline test
+     */
     @Override
     void runTest() {
 
-        final TestIncline t = new TestIncline(fecpController, (BaseTest) context, this.mSFitSysCntrl);
-        final ScrollView scrollview = ((ScrollView) findViewById(R.id.scrollView));
-
-        t.setUpdateResultViewListener(new TestMotor.UpdateResultView() {
-            @Override
-            public void onUpdate(final String msg) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        testingView.setText(Html.fromHtml(msg));
-                        scrollview.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                scrollview.fullScroll(ScrollView.FOCUS_DOWN);
-                            }
-                        });
-                    }
-                });
-
-            }
-        });
+        final TestIncline t = new TestIncline(ManageTests.fecpController, (BaseTest) context, ManageTests.mSFitSysCntrl);
 
         Thread th = new Thread(new Runnable() {
             @Override
@@ -87,6 +73,9 @@ public class InclineTest extends BaseTest implements View.OnClickListener, Adapt
                             break;
                         case "400 ms Pause":
                             returnString = t.testIncline400msPause();
+                            break;
+                        case "Calibrate":
+                            returnString = t.testInclineCalibration();
                             break;
                         case "Run All":
                             returnString = t.runAll();
@@ -126,6 +115,13 @@ public class InclineTest extends BaseTest implements View.OnClickListener, Adapt
 
     }
 
+    /**
+     * Indicates test to run based item selected
+     * @param parent the parent adapter view
+     * @param view current view
+     * @param pos position of selected item
+     * @param id selected item id
+     */
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         testToRun = parent.getItemAtPosition(pos).toString();

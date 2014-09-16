@@ -1,5 +1,8 @@
-package com.ifit.sfit.sparky;
+package com.ifit.sfit.sparky.tests;
 
+import com.ifit.sfit.sparky.helperclasses.CommonFeatures;
+import com.ifit.sfit.sparky.helperclasses.HandleCmd;
+import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.SystemDevice;
@@ -19,7 +22,7 @@ import java.util.Calendar;
  * Class for motor type tests
  * Used sean's TestMotor code and adapted it to work with SparkyAndroidLib 0.0.9
  */
-public class TestMotor extends TestCommons implements TestAll {
+public class TestMotor extends CommonFeatures {
     //Variables needed to initialize connection with Brainboard
     private FecpController mFecpController;
     private BaseTest mAct;
@@ -29,7 +32,7 @@ public class TestMotor extends TestCommons implements TestAll {
     private double currentSpeed; // Current motor speed
     private FecpCommand wrCmd;
     private FecpCommand rdCmd;
-
+    private String emailAddress;
 
     //To hold time lapsed
     private long stopTimer = 0;
@@ -44,6 +47,7 @@ public class TestMotor extends TestCommons implements TestAll {
             this.mFecpController = fecpController;
             this.mAct = act;
             this.mSFitSysCntrl = ctrl;
+            this.emailAddress = "jc.almonte@iconfitness.com";
             this.hCmd = new HandleCmd(this.mAct);// Init handlers
 
             ByteBuffer secretKey = ByteBuffer.allocate(32);
@@ -58,14 +62,14 @@ public class TestMotor extends TestCommons implements TestAll {
                 MainDevice = this.mFecpController.getSysDev();
                 this.wrCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), hCmd);
                 this.rdCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), hCmd, 0, 100);
-                ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.KPH);
-                ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_KPH);
+               ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_KPH);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.MAX_KPH);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.GRADE);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_INCLINE);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.DISTANCE);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
                 //  ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
+                ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.KPH);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.CALORIES);
                 mSFitSysCntrl.getFitProCntrl().addCmd(rdCmd);
                 Thread.sleep(1000);
@@ -85,6 +89,12 @@ public class TestMotor extends TestCommons implements TestAll {
     //--------------------------------------------//
     //The testStartSpeed is planned to automate #16 of the software
     //checklist to make sure that the machine starts at 1.0mph or 2.0kph
+
+    /**
+     * Makes sure machine starts at a speed 1.0mph/2.0kph (software checklist #16)
+     * @return text log of test results
+     * @throws Exception
+     */
 
     public String testStartSpeed() throws Exception {
 
@@ -190,8 +200,8 @@ public class TestMotor extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
 
 //        double actualSpeed = 0;
 //        while(true)
@@ -212,11 +222,12 @@ public class TestMotor extends TestCommons implements TestAll {
 
     }
 
-    //--------------------------------------------//
-    //                                            //
-    //              Testing Distance              //
-    //                                            //
-    //--------------------------------------------//
+    /**
+     * Runs a workout and verifies the distance recorded is accurate
+     * @return text log of test results
+     * @throws Exception
+     */
+
     public String testDistance() throws Exception {
         System.out.println("**************** DISTANCE TEST ****************");
 
@@ -227,10 +238,11 @@ public class TestMotor extends TestCommons implements TestAll {
         //read distance value
         //verify distance is 250 meters
 
-        double distance = 0;
-        double setSpeed = 10;// speed to use in the test in KPH
-        double expectedDistance = 250; //
-        long time = 90; // time to run test in seconds (1.5 mins in this case)
+        double distance = 0;//resulting distance
+        double [] setSpeed={10,5};// speeds to use in the test in KPH
+        double expectedDistance;// calcualted expected distance
+        BigDecimal expectedDistanceRounded;
+        long [] time ={90,30}; // time to run test in seconds
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
 
@@ -238,12 +250,20 @@ public class TestMotor extends TestCommons implements TestAll {
 
         appendMessage("<br>----------------------------DISTANCE TEST---------------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
-        appendMessage("Test runs for " +time+ " seconds at a speed of "+setSpeed+" KPH. Expected distance is: "+expectedDistance+" meters");
+
+        for(int i = 0; i<setSpeed.length;i++)
+        {
+
+        expectedDistance = setSpeed[i]*0.277778*time[i]; //D = S*T, S in m/s, and T in seconds
+        expectedDistanceRounded = new BigDecimal(expectedDistance);
+        expectedDistanceRounded = expectedDistanceRounded.setScale(0, BigDecimal.ROUND_UP);
+
+        appendMessage("Test runs for " +time[i]+ " seconds at a speed of "+setSpeed[i]+" KPH. Expected distance is: "+expectedDistanceRounded+" meters\n");
         appendMessage("Current Mode is: " + hCmd.getMode() + "<br>");
 
         results+="\n----------------------------DISTANCE TEST---------------------------\n\n";
         results+=Calendar.getInstance().getTime() + "\n\n";
-        results+="Test runs for " +time+ " seconds at a speed of "+setSpeed+" KPH. Expected distance is: "+expectedDistance+" meters";
+        results+="Test runs for " +time+ " seconds at a speed of "+setSpeed[i]+" KPH. Expected distance is: "+expectedDistance+" meters\n";
         results+="Current Mode is: " + hCmd.getMode() + "\n";
 
         //set mode to running
@@ -258,20 +278,20 @@ public class TestMotor extends TestCommons implements TestAll {
         results+="Current Mode is: " + hCmd.getMode() + "\n";
 
         //Set the motor speed to 10 KPH
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, setSpeed);
+        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, setSpeed[i]);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(1000);
 
-        appendMessage("The status of setting speed to "+setSpeed+" is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+        appendMessage("The status of setting speed to "+setSpeed[i]+" is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
         appendMessage("Current Mode is: " + hCmd.getMode() + "<br>");
-        appendMessage("Now wait "+time+" seconds...<br>");
+        appendMessage("Now wait "+time[i]+" seconds...<br>");
 
-        results+="The status of setting speed to "+setSpeed+" is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        results+="The status of setting speed to "+setSpeed[i]+" is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
         results+="Current Mode is: " + hCmd.getMode() + "\n";
-        results+="Now wait "+time+" seconds...\n";
+        results+="Now wait "+time[i]+" seconds...\n";
 
         //wait time seconds
-        Thread.sleep(time*1000);
+        Thread.sleep(time[i]*1000);
 
         distance = hCmd.getDistance();
         appendMessage("The distance was " + distance + "<br>");
@@ -313,6 +333,8 @@ public class TestMotor extends TestCommons implements TestAll {
             results+="\n* PASS *\n\nThe distance should be "+expectedDistance+"  meters and is " + distance + " meters which is within 5%\n\n";
 
         }
+
+        }
         //Remove all commands from the device that have a command ID = "WRITE_READ_DATA"
         mSFitSysCntrl.getFitProCntrl().removeCmd(wrCmd);
         Thread.sleep(1000);
@@ -320,118 +342,18 @@ public class TestMotor extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
 
         return results;
     }
 
 
-    //--------------------------------------------//
-    //                                            //
-    //                Testing Mode                //
-    //                                            //
-    //--------------------------------------------//
-    /*
-    Future tests include
-  //TODO: Testing commands supported on each mode
-  // Done: Testing transitions between modes
-  * */
-    public String testModes(String mode) throws Exception {
-
-        String results="";
-        System.out.println("**************** MODES TEST ****************");
-        double timeOfTest = 0; //how long test took in seconds
-        long startTestTimer = System.nanoTime();
-
-        appendMessage("<br><br>----------------------------MODE TEST RESULTS----------------------------<br><br>");
-        appendMessage(Calendar.getInstance().getTime() + "<br><br>");
-
-        results+="\n\n----------------------------MODE TEST RESULTS----------------------------\n\n";
-        results+=Calendar.getInstance().getTime() + "\n\n";
-
-        int[] Modes;
-
-        switch (mode) {
-            case "IDLE":
-            case "DEBUG":
-            case "MAINTENANCE":
-            case "LOG":
-                Modes = new int[]{1, 5, 1, 6, 1, 7, 1};// idle, debug, idle, log, idle, Maintenance, idle
-                appendMessage("<br><br>----------------------------IDLE/DEBUG/MAINTENANCE/LOG MODE TEST RESULTS----------------------------<br><br>");
-
-                results+="\n\n----------------------------IDLE/DEBUG/MAINTENANCE/LOG MODE TEST RESULTS----------------------------\n\n";
-
-                results+=runModesTest(Modes, wrCmd);
-                break;
-
-            case "RUNNING":
-            case "PAUSE":
-            case "RESULTS":
-                Modes = new int[]{2, 3, 2, 3, 4, 1};// running, pause,running, pause,results,idle
-                appendMessage("<br><br>----------------------------RUNNING/PAUSE/RESULTS MODE TEST RESULTS----------------------------<br><br>");
-
-                results+="\n\n----------------------------RUNNING/PAUSE/RESULTS MODE TEST RESULTS----------------------------\n\n";
-
-                results+=runModesTest(Modes, wrCmd);
-                break;
-
-            default:
-                Modes = new int[]{1, 5, 1, 6, 1, 7, 1, 2, 3, 2, 3, 4, 1};// run both of previous cases if nothing is specified
-                appendMessage("<br><br>----------------------------ALL MODES TEST RESULTS----------------------------<br><br>");
-
-                results+="\n\n----------------------------ALL MODES TEST RESULTS----------------------------\n\n";
-
-                results+=runModesTest(Modes, wrCmd);
-                break;
-        }
-        timeOfTest = System.nanoTime() - startTestTimer;
-        timeOfTest = timeOfTest / 1.0E09;
-
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
-       return results;
-    }
-
-    private String runModesTest(int[] modes, FecpCommand wrCmd) {
-
-      String results="";
-        for (int i = 0; i < modes.length; i++) {
-            try {
-                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modes[i]);
-                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-                Thread.sleep(1000);
-
-                appendMessage("Status of changing mode: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-                appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
-
-                results+="Status of changing mode: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-                results+="Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
-
-                if (hCmd.getMode().getValue() == modes[i]) {
-                    appendMessage("This mode matches : <br><font color = #00ff00>* PASS *</font><br><br>");
-
-                    results+="This mode matches : \n* PASS *\n\n";
-                }
-                    else {
-                    appendMessage("This mode does not match : <br><font color = #ff0000>* FAIL *</font><br><br>");
-
-                    results+="This mode does not match : \n* FAIL *\n\n";
-
-                }
-                } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        return results;
-    }
-
-    //--------------------------------------------//
-    //                                            //
-    //          Testing Pause/Resume Speed        //
-    //                                            //
-    //--------------------------------------------//
+    /**
+     * Makes sure machine starts at a speed 1.0mph/2.0kph after a pause (redmine support #954)
+     * @return text log of test results
+     * @throws Exception
+     */
 
 
      public String testPauseResume() throws Exception {
@@ -492,9 +414,9 @@ public class TestMotor extends TestCommons implements TestAll {
         //Set Mode to Pause
         ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        appendMessage("Set mode to pasue and give 5 secs for motor to speed down...<br>");
+        appendMessage("Set mode to pause and give 5 secs for motor to speed down...<br>");
 
-        results+="Set mode to pasue and give 5 secs for motor to speed down...\n";
+        results+="Set mode to pause and give 5 secs for motor to speed down...\n";
 
         Thread.sleep(5000); // Give time for motor to stop seconds
 
@@ -573,18 +495,16 @@ public class TestMotor extends TestCommons implements TestAll {
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
-         appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-         results+="\nThis test took a total of"+timeOfTest+"secs \n";
+         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+         results+="\nThis test took a total of "+timeOfTest+" secs \n";
         return results;
     }
 
-    //--------------------------------------------//
-    //                                            //
-    //  Testing All Speeds (in decrements of 0.1) //
-    //                                            //
-    //--------------------------------------------//
-
-
+    /**
+     * Verify all speed values can be set properly and speed changes accordingly
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testSpeedController() throws Exception {
         System.out.println("**************** SPEED CONTROLLER TEST ****************");
         final double MAX_SPEED = 16; //hardcode the value until we can read it
@@ -734,8 +654,8 @@ public class TestMotor extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
         return results;
     }
 
@@ -797,7 +717,8 @@ public class TestMotor extends TestCommons implements TestAll {
         startTimer = System.currentTimeMillis();
         ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, setSpeed);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-
+        appendMessage("Wait "+time+" secs...<br>");
+        results+="Wait "+time+" secs...\n";
         //wait time
         Thread.sleep(time * 1000);
         //read calories
@@ -834,13 +755,19 @@ public class TestMotor extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
         return results;
     }
 
-    public String testCals() throws Exception
-    {
+    /**
+     * Runs trough a series of workouts with different weight,incline and speeds
+     * and verifies calories values are as expected
+     * @return text log of test results
+     * @throws Exception
+     */
+
+    public String testCals() throws Exception {
         /*
         * Calories Formula
         *
@@ -874,7 +801,7 @@ public class TestMotor extends TestCommons implements TestAll {
         BigDecimal expectedCalories;
 
         double [] incline ={0,5,10,15};      // Incline to be used for the test (in % grade)
-                                                      //-2,0,5,10,15 % grade respectively
+                                                      //0,5,10,15 % grade respectively
 
         double [] weight= {115,185,400}; //weight to be used for the test (in lbs)
                                                 //52.16,83.91 and 181.44 kgs respectively
@@ -1090,13 +1017,12 @@ public class TestMotor extends TestCommons implements TestAll {
         return results;
     }
 
-    //--------------------------------------------//
-    //                                            //
-    //           Testing PWM Overshoot            //
-    //                                            //
-    //--------------------------------------------//
-    /*Futures test includes
-    * */
+    /**
+     * Verifies speed on belt motor doesn't shoot up when motor has been running at a high speed,
+     * stop is pressed and then start is pressed right away
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testPwmOvershoot() throws Exception {
         System.out.println("**************** PWM OVERSHOOT TEST ****************");
 
@@ -1248,23 +1174,27 @@ public class TestMotor extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of"+timeOfTest+"secs \n";
         return results;
     }
 
+    /**
+     * Runs all Motor tests
+     * @return text log of test results
+     * @throws Exception
+     */
     @Override
     public String runAll() {
         String results="";
         try {
             results+=this.testStartSpeed();
-            results+=this.testModes("all");
             results+=this.testPauseResume();
-            results+=this.testCalories();
-            results+=this.testPwmOvershoot();
+            //results+=this.testCalories();
+           results+=this.testPwmOvershoot();
             results+=this.testDistance();
-            results+=this.testSpeedController();
-            //results+= this.testCals();
+           results+=this.testSpeedController();
+            results+= this.testCals();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

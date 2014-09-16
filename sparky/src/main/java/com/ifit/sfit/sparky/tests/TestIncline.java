@@ -1,22 +1,28 @@
-package com.ifit.sfit.sparky;
+package com.ifit.sfit.sparky.tests;
 
+import com.ifit.sfit.sparky.helperclasses.CommonFeatures;
+import com.ifit.sfit.sparky.helperclasses.HandleCmd;
+import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
+import com.ifit.sparky.fecp.interpreter.command.CalibrateCmd;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
+import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Calendar;
 
 /**
  * Created by jc.almonte on 7/14/14.
  */
-public class TestIncline extends TestCommons implements TestAll {
+public class TestIncline extends CommonFeatures {
 
     //Variables needed to initialize connection with Brainboard
     private FecpController mFecpController;
@@ -27,10 +33,12 @@ public class TestIncline extends TestCommons implements TestAll {
 
     private FecpCommand wrCmd;
     private FecpCommand rdCmd;
+    private FecpCommand calibrateCmd;
     private String currentWorkoutMode = "";
     private double currentIncline = 0.0;
     private double actualInlcine = 0.0;
     private final int NUM_TESTS = 1;
+    private String emailAddress;
 
     public TestIncline(FecpController fecpController, BaseTest act, SFitSysCntrl ctrl) {
         //Get controller sent from the main activity (TestApp)
@@ -38,6 +46,7 @@ public class TestIncline extends TestCommons implements TestAll {
             this.mFecpController = fecpController;
             this.mAct = act;
             this.mSFitSysCntrl = ctrl;
+            this.emailAddress = "jc.almonte@iconfitness.com";
             hCmd = new HandleCmd(this.mAct);// Init handlers
             //Get current system device
             MainDevice = this.mFecpController.getSysDev();
@@ -53,6 +62,8 @@ public class TestIncline extends TestCommons implements TestAll {
                 //Get current system device
                 MainDevice = this.mFecpController.getSysDev();
                 this.wrCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd);
+                this.calibrateCmd = new FecpCommand(MainDevice.getSubDevice(DeviceId.GRADE).getCommand(CommandId.CALIBRATE),hCmd);
+
                 this.rdCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd,0,100);
                 ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.MAX_GRADE);
                 ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.MIN_GRADE);
@@ -73,11 +84,11 @@ public class TestIncline extends TestCommons implements TestAll {
 
     }
 
-    //--------------------------------------------//
-    //                                            //
-    //Testing All Inclines (in decrements of 0.5%)//
-    //                                            //
-    //--------------------------------------------//
+    /**
+     * Verify all incline values can be set properly and incline changes accordingly
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testInclineController() throws Exception{
         //outline for code support #928 in redmine
         //Read the Max Incline value from the brainboard
@@ -87,7 +98,7 @@ public class TestIncline extends TestCommons implements TestAll {
         //Read current sent incline
         //Read actual incline
         //Check current sent incline against actual incline
-        //Run the above logic for the entire range of incline values from Max Incline to Min Incline in decrements of 0.5%
+        //Run the above logic for the entire range of incline values from Max Incline to Min Incline in 0.5% grade steps
 
         String results="";
         System.out.println("NOW RUNNING INCLINE CONTROLLER TEST<br>");
@@ -139,9 +150,9 @@ public class TestIncline extends TestCommons implements TestAll {
             //This value "J" will be set to maxIncline later on when we use it on a motor with higher incline range
             for(double j = 15; j >= minIncline; j = j-0.5)
             {
-                appendMessage("Sending a command for incline at " + j + "% to the FecpController<br>");
+                appendMessage("Sending a command to set incline to " + j + "%<br>");
 
-                results+="Sending a command for incline at " + j + "% to the FecpController\n";
+                results+="Sending a command to set incline to " + j + "%\n";
 
                 //Set value for the incline
                 ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, j);
@@ -149,59 +160,49 @@ public class TestIncline extends TestCommons implements TestAll {
                 Thread.sleep(1000);
 
                 //Check status of the command to send the incline
-                appendMessage("Status of sending incline " + j + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                appendMessage("Status of setting incline to " + j + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
                 appendMessage("Checking incline will reach set value...<br>");
 
-                results+="Status of sending incline " + j + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                results+="Status of setting incline to " + j + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
                 results+="Checking incline will reach set value...\n";
                 startime= System.nanoTime();
                 do
                 {
                     currentActualIncline = hCmd.getActualIncline();
                     Thread.sleep(300);
-                    appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + j+" time elapsed: "+seconds+"<br>");
-                    results+="Current Incline is: " + currentActualIncline+ " goal: " + j+" time elapsed: "+seconds+"\n";
+                    appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + j+" time elapsed: "+String.format("%.2f",seconds)+" secs<br>");
+                    results+="Current Incline is: " + currentActualIncline+ " goal: " + j+" time elapsed: "+String.format("%.2f",seconds)+" secs\n";
                     elapsedTime = System.nanoTime() - startime;
                     seconds = elapsedTime / 1.0E09;
-                } while(j!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+                } while(j!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet o.r took more than 1 mins
 
                 currentWorkoutMode = "Workout mode of incline at " + j + "% is " + hCmd.getMode() + "<br>";
                 appendMessage(currentWorkoutMode);
 
                 results+="Workout mode of incline at " + j + "% is " + hCmd.getMode() + "\n";
 
-
-                appendMessage("The last set incline is " + hCmd.getIncline() + "%<br>");
-
-                results+="The last set incline is " + hCmd.getIncline() + "%\n";
-
-                System.out.println("The last set incline is " + hCmd.getIncline() + "%<br>");
-
                 //Read the actual incline off of device
                 actualInlcine = hCmd.getActualIncline();
-                appendMessage("The actual incline is currently at: " + actualInlcine + "%<br>");
-
-                results+="The actual incline is currently at: " + actualInlcine + "%\n";
-
-                System.out.println("The actual incline is currently at: " + actualInlcine + "%<br>");
-
-                appendMessage("<br>For Incline at " + j + "%:<br>");
-
-                results+="\nFor Incline at " + j + "%:\n";
-
 
                 if(j == actualInlcine)
                 {
                     appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
 
+                    appendMessage("The current actual incline matches set value: " + actualInlcine + "%<br><br>");
+
+
+
                     results+="\n* PASS *\n\n";
+                    results+="The current actual incline matches set value: "  + actualInlcine + "%\n\n";
 
                 }
                 else
                 {
                     appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The incline is off by " + (j - actualInlcine) + "%<br><br>");
+                    appendMessage("The current actual incline "+actualInlcine + " DOES NOT match set value: " + j + "%<br><br>");
 
                     results+="\n* FAIL *\n\nThe incline is off by " + (j - actualInlcine) + "%\n\n";
+                    results+="The current actual incline "+actualInlcine + " DOES NOT match set value: " + j + "%\n\n";
 
                 }
                 Thread.sleep(3000);
@@ -222,13 +223,17 @@ public class TestIncline extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+String.format("%.2f",timeOfTest)+" secs <br>");
+        results+="\nThis test took a total of "+String.format("%.2f",timeOfTest)+" secs \n";
         return results;
     }
 
 
-// ISSUE FOUND: if incline is set to a value and stop button is pressed (or Mode is set to pause), incline keeps going which it should not
+    /**
+     * Verifies the incline stops going as soon as stop button is pressed
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testStopIncline() throws Exception{
         //Redmine Support #1182
         //Set Incline to 0 or Min Incline
@@ -322,7 +327,7 @@ public class TestIncline extends TestCommons implements TestAll {
 
             elapsedTime = System.nanoTime() - startime;
             seconds = elapsedTime / 1.0E09;
-        } while(minIncline!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+        } while(setIncline!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
 
         //Stop
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
@@ -395,7 +400,7 @@ public class TestIncline extends TestCommons implements TestAll {
 
             elapsedTime = System.nanoTime() - startime;
             seconds = elapsedTime / 1.0E09;
-        } while(minIncline!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+        } while(setIncline!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
 
         //Stop
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
@@ -439,17 +444,17 @@ public class TestIncline extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
         return results;
     }
 
-    //--------------------------------------------//
-    //                                            //
-    //          Testing Retained Incline          //
-    //                                            //
-    //--------------------------------------------//
-    // ISSUE FOUND: Incline always calibrates when it goes to IDLE mode after it has been in running mode.
+    /**
+     * Tests that incline doesn't change when start button is pressed. In other words that the incline value
+     * the console had before pressing start, is retained after pressing start
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testRetainedIncline() throws Exception {
         //Redmine Support #1077
         //Set Incline to 5%
@@ -582,11 +587,17 @@ public class TestIncline extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
         return results;
     }
 
+    /**
+     * Verifies speed changes as Incline changes according to the rules specified on software
+     * checklist #201B, #9
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testSpeedInclineLimit() throws Exception {
         //TODO: As of 3/12/14, this functionality is not yet implemented
         //Redmine issue #953
@@ -618,6 +629,7 @@ public class TestIncline extends TestCommons implements TestAll {
         long startime = 0;
         double setIncline =0;
         double currentSpeed = 0;
+        BigDecimal speedRounded;
 
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
@@ -667,8 +679,11 @@ public class TestIncline extends TestCommons implements TestAll {
         } while(currentIncline!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1 mins
 
         //set speed to max
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, 16); // Our motor's speed limit is 16mph
+        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, 19); // Our motor's speed limit is 20kph
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        appendMessage("Wait 23 seconds...<br>");
+        results+="Wait 23 seconds...\n";
         Thread.sleep(23000); // give it 23 secs to reach max speed
 /* THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
                 startime= System.nanoTime();
@@ -720,165 +735,167 @@ public class TestIncline extends TestCommons implements TestAll {
 
 
             currentSpeed = hCmd.getSpeed();
+            speedRounded = new BigDecimal(currentSpeed*0.625);
+            speedRounded = speedRounded.setScale(0, BigDecimal.ROUND_FLOOR);
 //TODO: Limits change based on home/club units. So Include tests for those cases
 //TODO: Change limits to KPH. Take into consideration the Max Speed to run the limits
 
-            //0% to 15% = 12 mph
+            //0% to 15% = 12 mph                
             if( ( i<= 0 && i >= 15)  && currentSpeed == 19.31) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if (( i<= 0 && i >= 15) && currentSpeed != 19.31) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 12 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 12 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 12 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 12 MPH, but it is " + speedRounded + " mph\n";
             }
 
             //15.5% to 25% = 8 mph
             if( ( i<= 15.5 && i >= 25)  && currentSpeed == 12.87) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if (( i<= 15.5 && i >= 25) && currentSpeed !=12.87) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 8 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 8 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 8 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 8 MPH, but it is " + speedRounded + " mph\n";
             }
 
             //25.5% to 40% = 6 mph
             if( ( i<= 25.5 && i >= 40)  && currentSpeed == 9.65) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if (( i<= 25.5 && i >= 40) && currentSpeed != 9.65) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 6 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 6 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 6 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 6 MPH, but it is " + speedRounded + " mph\n";
             }
 
             //-1% to -0.1% = 9 mph
             if( ( i<= 0 && i >= -1)  && currentSpeed == 14.48) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if (( i<= 0 && i >= -1) && currentSpeed != 14.48) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 9 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 9 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 9 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 9 MPH, but it is " + speedRounded + " mph\n";
             }
 
             //-2% to -1.1% = 8.5 mph
             if((i <= -1 && i >= -2)  && currentSpeed == 13.6) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if ( (i<= -1 && i >= -2) && currentSpeed != 13.6) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 8.5 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 8.5 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 8.5 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 8.5 MPH, but it is " + speedRounded + " mph\n";
             }
 
             //-3% to -2.1% = 8 mph
             if( (i<= -2 && i >= -3) && currentSpeed == 12.87) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if ( (i<= -2 && i >= -3) && currentSpeed != 12.87) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 8.0 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 8.0 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 8.0 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 8.0 MPH, but it is " + speedRounded + " mph\n";
             }
 
             //-4.5% to -3.1% = 7 mph
             if( (i< -3.5 && i >= -4.5) && currentSpeed == 11.26) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if ( (i<= -3.5 && i >= -4.5) && currentSpeed != 11.26) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 7.0 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 7.0 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 7.0 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 7.0 MPH, but it is " + speedRounded + " mph\n";
             }
 
             //-6% to -5% = 6 mph
             if( (i< -5 && i >= -6) && currentSpeed == 9.65) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if ( (i<= -5 && i >= -6) && currentSpeed != 9.65) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + speedRounded + " mph\n";
             }
             //>15% to 25% = 8 mph
             if( (i> 15 && i <= 25) && currentSpeed == 12.87) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if ( (i> 15 && i <= 25) && currentSpeed != 12.87) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + speedRounded + " mph\n";
             }
             //>25% to 40% = 6 mph
             if( (i> 25 && i <= 40) && currentSpeed == 9.65) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph<br>");
 
                 results+="\n* PASS *\n\n";
-                results+="At Incline " +currentIncline+", Current speed is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+", Current speed is " + speedRounded + " mph\n";
             }
             else if ( (i> 25 && i <= 40) && currentSpeed != 9.65) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + currentSpeed + " mph<br>");
+                appendMessage("At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + speedRounded + " mph<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + currentSpeed + " mph\n";
+                results+="At Incline " +currentIncline+" Current speed should be 6.0 MPH, but it is " + speedRounded + " mph\n";
             }
 
         }
@@ -896,16 +913,16 @@ public class TestIncline extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
         return results;
     }
 
-    //--------------------------------------------//
-         //                                            //
-         //Testing Incline Condition from Checklist #44//
-         //                                            //
-         //--------------------------------------------//
+    /**
+     * Testing that Incline value is retained after DMK key is pulled and put back (software checklist #44)
+     * @return text log of test results
+     * @throws Exception
+     */
     public String testInclineRetentionDmkRecall() throws Exception {
              //From Software Checklist #44
              //Redmine Support #1079
@@ -995,11 +1012,12 @@ public class TestIncline extends TestCommons implements TestAll {
              appendMessage("Waiting for DMK key to be pulled...<br>");
 
              results+="Waiting for DMK key to be pulled...\n";
-            inclineAtDMKpull = hCmd.getActualIncline();
+
             while(hCmd.getMode()!=ModeId.DMK);
              {
                  // Stay here until DMK Key is pulled
              }
+             inclineAtDMKpull = hCmd.getActualIncline();
              System.out.println("DMK Key Pulled!");
              appendMessage("DMK key pulled!<br>");
 
@@ -1042,6 +1060,7 @@ public class TestIncline extends TestCommons implements TestAll {
              {
                  // Stay here until DMK Key put back on console
              }
+             actualIncline = hCmd.getActualIncline();
              System.out.println("DMK Key Put back");
              appendMessage("DMK key put back!<br>");
 
@@ -1049,7 +1068,7 @@ public class TestIncline extends TestCommons implements TestAll {
 
 
         //Compare the value read for actual incline after key has been pulled to value read after key was put back
-             if(actualIncline ==hCmd.getActualIncline()){
+             if(actualIncline ==inclineAfterDMKpull){
                  appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                  appendMessage("Actual Incline after DMK put back is at " + actualIncline + "% which is the same as when the key was pulled<br>");
 
@@ -1058,10 +1077,10 @@ public class TestIncline extends TestCommons implements TestAll {
              }
              else {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("Actual Incline should be " + actualIncline + "%, but it is currently at " + hCmd.getActualIncline() + "%<br>");
+                appendMessage("Actual Incline should be " + inclineAfterDMKpull + "%, but it is currently at " + actualIncline + "%<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="Actual Incline should be " + actualIncline + "%, but it is currently at " + hCmd.getActualIncline() + "%\n";
+                results+="Actual Incline should be " + inclineAfterDMKpull + "%, but it is currently at " + actualIncline + "%\n";
              }
 
              //set mode back to idle to stop the test
@@ -1080,10 +1099,16 @@ public class TestIncline extends TestCommons implements TestAll {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-        results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
              return results;
          }
+
+    /**
+     * Verifies that there is a minimum of 400ms pause between incline direction changes
+     * @return text log of test results
+     * @throws Exception
+     */
 
     public String testIncline400msPause() throws Exception
     {
@@ -1222,20 +1247,61 @@ public class TestIncline extends TestCommons implements TestAll {
         return results;
     }
 
+    /**
+     * Tests incline calibration routine
+     * @return text log of test results
+     * @throws Exception
+     */
+
+    public String testInclineCalibration() throws Exception{
+        String results = "";
+
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE,ModeId.MAINTENANCE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+
+        ((CalibrateCmd)calibrateCmd.getCommand()).setDevId(DeviceId.GRADE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(calibrateCmd);
+        Thread.sleep(1000);
+
+
+        return results;
+    }
+
+    /**
+     * Runs all Incline tests
+     * @return text log of test results
+     * @throws Exception
+     */
         @Override
     public String runAll() {
         String results="";
         try {
+//          results+=this.testInclineRetentionDmkRecall();
+//            appendMessage("Wait for incline to finish calibrating...<br>");
+//            results+="Wait for incline to finish calibrating...\n";
+//            Thread.sleep(90000);
           results+=this.testIncline400msPause();
-          results+=this.testInclineRetentionDmkRecall();
+            appendMessage("Wait for incline to finish calibrating...<br>");
+            results+="Wait for incline to finish calibrating...\n";
+            Thread.sleep(90000);
           results+=this.testRetainedIncline();
+            appendMessage("Wait for incline to finish calibrating...<br>");
+            results+="Wait for incline to finish calibrating...\n";
+            Thread.sleep(90000);
           results+=this.testSpeedInclineLimit();
+            appendMessage("Wait for incline to finish calibrating...<br>");
+            results+="Wait for incline to finish calibrating...\n";
+            Thread.sleep(90000);
           results+=this.testStopIncline();
+            appendMessage("Wait for incline to finish calibrating...<br>");
+            results+="Wait for incline to finish calibrating...\n";
+            Thread.sleep(90000);
           results+=this.testInclineController();
         }
         catch (Exception ex) {
             ex.printStackTrace();
         }
-        return results;
+            return results;
     }
 }

@@ -6,11 +6,11 @@ import android.text.Html;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.ifit.sfit.sparky.R;
-import com.ifit.sfit.sparky.TestMotor;
+import com.ifit.sfit.sparky.activities.ManageTests;
+import com.ifit.sfit.sparky.tests.TestMotor;
 
 /**
  * Created by jc.almonte on 7/29/14.
@@ -23,6 +23,9 @@ public class MotorTest extends BaseTest implements AdapterView.OnItemSelectedLis
         init();
     }
 
+    /**
+     * Set up spinner and populated it with options specific to this test class
+     */
     private void init(){
 
         Spinner spinner = (Spinner) findViewById(R.id.spinnerMotor);
@@ -37,30 +40,13 @@ public class MotorTest extends BaseTest implements AdapterView.OnItemSelectedLis
 
     }
 
+    /**
+     * Run selected Motor test
+     */
     @Override
     void runTest() {
 
-        final TestMotor t = new TestMotor(fecpController, (BaseTest) context, this.mSFitSysCntrl);
-        final ScrollView scrollview = ((ScrollView) findViewById(R.id.scrollView));
-
-        t.setUpdateResultViewListener(new TestMotor.UpdateResultView() {
-            @Override
-            public void onUpdate(final String msg) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        testingView.setText(Html.fromHtml(msg));
-                        scrollview.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                scrollview.fullScroll(ScrollView.FOCUS_DOWN);
-                            }
-                        });
-                    }
-                });
-
-            }
-        });
+        final TestMotor t = new TestMotor(ManageTests.fecpController, (BaseTest) context, ManageTests.mSFitSysCntrl);
 
         Thread th = new Thread(new Runnable() {
             @Override
@@ -78,9 +64,6 @@ public class MotorTest extends BaseTest implements AdapterView.OnItemSelectedLis
                         case "Distance":
                             returnString = t.testDistance();
                         break;
-                        case "Modes":
-                            returnString = t.testModes("all");
-                        break;
                         case "Speed Controller":
                             returnString = t.testSpeedController();
                         break;
@@ -88,8 +71,10 @@ public class MotorTest extends BaseTest implements AdapterView.OnItemSelectedLis
                             returnString = t.testPwmOvershoot();
                         break;
                         case "Calories":
-                            returnString = t.testCals();
-                        break;
+                            //returnString = t.testCals();
+                            returnString = t.testCalories();
+
+                            break;
                         case "Run All":
                             returnString = t.runAll();
                         break;
@@ -128,6 +113,13 @@ public class MotorTest extends BaseTest implements AdapterView.OnItemSelectedLis
 
     }
 
+    /**
+     * Indicates test to run based item selected
+     * @param parent the parent adapter view
+     * @param view current view
+     * @param pos position of selected item
+     * @param id selected item id
+     */
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         testToRun = parent.getItemAtPosition(pos).toString();

@@ -6,12 +6,10 @@ import android.text.Html;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.ifit.sfit.sparky.R;
-import com.ifit.sfit.sparky.TestMotor;
-import com.ifit.sfit.sparky.TestTreadmillKeyCodes;
+import com.ifit.sfit.sparky.tests.TestTreadmillKeyCodes;
 
 /**
  * Created by jc.almonte on 8/6/14.
@@ -24,6 +22,9 @@ public class TreadmillKeyCodesTest  extends BaseTest implements AdapterView.OnIt
         init();
     }
 
+    /**
+     * Set up spinner and populated it with options specific to this test class
+     */
     private void init(){
 
         Spinner spinner = (Spinner) findViewById(R.id.spinnerMotor);
@@ -38,30 +39,13 @@ public class TreadmillKeyCodesTest  extends BaseTest implements AdapterView.OnIt
 
     }
 
+    /**
+     * Run selected Treadmill Key Code test
+     */
     @Override
     void runTest() {
 
         final TestTreadmillKeyCodes t = new TestTreadmillKeyCodes(fecpController, (BaseTest) context, this.mSFitSysCntrl);
-        final ScrollView scrollview = ((ScrollView) findViewById(R.id.scrollView));
-
-        t.setUpdateResultViewListener(new TestMotor.UpdateResultView() {
-            @Override
-            public void onUpdate(final String msg) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        testingView.setText(Html.fromHtml(msg));
-                        scrollview.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                scrollview.fullScroll(ScrollView.FOCUS_DOWN);
-                            }
-                        });
-                    }
-                });
-
-            }
-        });
 
         Thread th = new Thread(new Runnable() {
             @Override
@@ -73,6 +57,37 @@ public class TreadmillKeyCodesTest  extends BaseTest implements AdapterView.OnIt
                         case "Stop Key":
                             returnString = t.testStopKey();
                             break;
+                        case "Start Key":
+                            returnString = t.testStartKey();
+                            break;
+                        case "Incline Up":
+                            returnString = t.testInclineUpKey();
+                            break;
+                        case "Incline Down":
+                            returnString = t.testInclineDownKey();
+                            break;
+                        case "Speed Up":
+                            returnString = t.testSpeedUpKey();
+                            break;
+                        case "Speed Down":
+                            returnString = t.testSpeedDownKey();
+                            break;
+                        case "Quick Speed":
+                            returnString = t.testQuickSpeedKeys();
+                            break;
+                        case "Quick Incline":
+                            returnString = t.testQuickInclineKeys();
+                            break;
+                        case "Age Up":
+                            returnString = t.testAgeUpKey();
+                            break;
+                        case "Age Down":
+                            returnString = t.testAgeDownKey();
+                            break;
+                        case "Run All":
+                            returnString = t.runAll();
+                            break;
+
                     }
                     try {
                         returnString += "\n" + systemString;
@@ -108,6 +123,13 @@ public class TreadmillKeyCodesTest  extends BaseTest implements AdapterView.OnIt
 
     }
 
+    /**
+     * Indicates test to run based item selected
+     * @param parent the parent adapter view
+     * @param view current view
+     * @param pos position of selected item
+     * @param id selected item id
+     */
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         testToRun = parent.getItemAtPosition(pos).toString();
