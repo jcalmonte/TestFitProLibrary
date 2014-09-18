@@ -55,8 +55,8 @@ import java.util.Calendar;
                  ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_KPH);
                  ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.KPH);
                  ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.GRADE);
-                // ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.AGE);
-                 //((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
+                 ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.AGE);
+                 ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
                  ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
                  ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.PAUSE_TIMEOUT);
                  ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.IDLE_TIMEOUT);
@@ -90,13 +90,16 @@ import java.util.Calendar;
  
          System.out.println("NOW RUNNING AGE TEST<br>");
  
-         String ageResults;
+         String results;
  
-         ageResults = "\n\n------------------------AGE TEST RESULTS------------------------\n\n";
-         ageResults += Calendar.getInstance().getTime() + "\n\n";
+         results = "\n\n------------------------AGE TEST RESULTS------------------------\n\n";
+         results += Calendar.getInstance().getTime() + "\n\n";
 
          appendMessage("<br><br>------------------------AGE TEST RESULTS------------------------<br><br>");
          appendMessage(Calendar.getInstance().getTime() + "<br><br>");
+
+         appendMessage("<br><br>---------------Valid Age Values------------------<br><br>");
+         results+="\n\n---------------Valid Age Values------------------\n\n";
  
          double age;
          double prevAge;
@@ -104,7 +107,7 @@ import java.util.Calendar;
          long startTestTimer = System.nanoTime();
  
          age = hCmd.getAge();
-         ageResults += "The default age is set to " + age + " years old\n";
+         results += "The default age is set to " + age + " years old\n";
 
          appendMessage("The default age is set to " + age + " years old<br>");
  
@@ -118,87 +121,69 @@ import java.util.Calendar;
          for(i = 18; i <=95; i++) {
              ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
              mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             age = hCmd.getAge();
-             startTime = System.currentTimeMillis();
-             //Keep reading the value until is the on you set it too or until it has try for long enough (25ms) that
-             // we can conclude the reading has failed
-             while(age!=i && elapsedTime < 25){
-                 age = hCmd.getAge();
-                 elapsedTime = System.currentTimeMillis() - startTime;
-                 }
-             System.out.println(elapsedTime);
+             Thread.sleep(500);
  
-             ageResults += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+             results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
 
              appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
+             age = hCmd.getAge();
              if(age == i){
-                 ageResults += "\n* PASS *\n\n";
-                 ageResults += "Current Age is set to: " + age + " years old (age should really be " + i + ")\n";
+                 results += "\n* PASS *\n\n";
+                 results += "Current Age is set to: " + age + " years old (age should really be " + i + ")\n";
 
-                 appendMessage("<br>* PASS *<br><br>");
+                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                  appendMessage("Current Age is set to: " + age + " years old (age should really be " + i + ")<br>");
                  failureCounter++;
              }
              else{
-                 ageResults += "\n<font color = #ff0000>* FAIL *</font>\n\n";
-                 ageResults += "Current Age is set to: " + age + " years old, but should be set to: " + i + " years old\n";
+                 results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
+                 results += "Current Age is set to: " + age + " years old, but should be set to: " + i + " years old\n";
 
                  appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                  appendMessage("Current Age is set to: " + age + " years old, but should be set to: " + i + " years old<br>");
              }
-             mSFitSysCntrl.getFitProCntrl().removeCmd(wrCmd);
          }
 
 
-         appendMessage("<br><br>---------------Out of Range Age Values------------------<br><br>");
-         ageResults+="\n\n---------------Out of Range Age Values------------------\n\n";
+         appendMessage("<br><br>---------------Invalid Age Values------------------<br><br>");
+         results+="\n\n---------------Invalid Age Values------------------\n\n";
 
-//         for(i = 1; i <=105; i++) {
-//             if(i==18)
-//             {
-//                 i=96;
-//             }
-//             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
-//             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-//             age = hCmd.getAge();
-//             startTime = System.currentTimeMillis();
-//             //Keep reading the value until is the on you set it too or until it has try for long enough (25ms) that
-//             // we can conclude the reading has failed
-//             while(age!=i && elapsedTime < 25){
-//                 age = hCmd.getAge();
-//                 elapsedTime = System.currentTimeMillis() - startTime;
-//             }
-//             System.out.println(elapsedTime);
-//
-//             ageResults += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-//
-//             appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-//
-//             if(age !=i) // i is invalid age so it should not have been written
-//             {
-//                 ageResults += "\n* PASS *\n\n";
-//                 ageResults += "Current age is set to: " + age + " years. Invalid value " + i + " was not written!\n";
-//
-//                 appendMessage("<br>* PASS *<br><br>");
-//                 appendMessage("Current age is set to: " + age + " years. Invalid value " + i + " was not written!\n");
-//             }
-//             else{
-//                 ageResults += "\n<font color = #ff0000>* FAIL *</font>\n\n";
-//                 ageResults += "Current age is set to: " + age + " which matches invalid value " + i + " \n";
-//
-//                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-//                 appendMessage("Current age is set to: " + age + " which matches invalid value " + i + " \n");
-//
-//             }
-//             mSFitSysCntrl.getFitProCntrl().removeCmd(wrCmd);
-//         }
+         for(i = 1; i <=105; i++) {
+             if(i==18)
+             {
+                 i=96;
+             }
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(500);
+
+             results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+             appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             age = hCmd.getAge();
+             if(age !=i) // i is invalid age so it should not have been written
+             {
+                 results += "\n* PASS *\n\n";
+                 results += "Current age is set to: " + age + " years. Invalid value " + i + " was not written!\n";
+
+                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
+                 appendMessage("Current age is set to: " + age + " years. Invalid value " + i + " was not written!<br>");
+             }
+             else{
+                 results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
+                 results += "Current age is set to: " + age + " which matches invalid value " + i + "<br>";
+
+                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
+                 appendMessage("Current age is set to: " + age + " which matches invalid value " + i + " \n");
+
+             }
+         }
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
          appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
-         ageResults+="\nThis test took a total of "+timeOfTest+" secs \n";
-         return ageResults;
+         results+="\nThis test took a total of "+timeOfTest+" secs \n";
+         return results;
      }
 
     /**
@@ -215,19 +200,22 @@ import java.util.Calendar;
          //Read the Weight
          //Validate the Weight
          //Repeat 6 times with different values
-         String weightResults;
+         String results;
          System.out.println("NOW RUNNING WEIGHT TEST<br>");
  
-         weightResults = "\n\n------------------------WEIGHT TEST RESULTS------------------------\n\n";
-         weightResults += Calendar.getInstance().getTime() + "\n\n";
+         results = "\n\n------------------------WEIGHT TEST RESULTS------------------------\n\n";
+         results += Calendar.getInstance().getTime() + "\n\n";
          appendMessage("<br><br>------------------------WEIGHT TEST RESULTS------------------------<br><br>");
          appendMessage(Calendar.getInstance().getTime() + "<br><br>");
+
+         appendMessage("<br><br>---------------Valid Weight Values------------------<br><br>");
+         results+="\n\n---------------Valid Weight Values------------------\n\n";
          double weight;
          double timeOfTest = 0; //how long test took in seconds
          long startTestTimer = System.nanoTime();
  
          weight = hCmd.getWeight();
-         weightResults += "The default weight is set to " + weight + " kilograms\n";
+         results += "The default weight is set to " + weight + " kilograms\n";
          appendMessage("The default weight is set to " + weight + " kilograms<br>");
 
          double diff;
@@ -237,10 +225,9 @@ import java.util.Calendar;
  
              ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
              mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             //need more time for weight controller
-             Thread.sleep(1000);
+             Thread.sleep(500);
  
-             weightResults += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+             results += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
              appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
 
              weight = hCmd.getWeight();
@@ -248,9 +235,9 @@ import java.util.Calendar;
  
            if(diff < i*.01) // if values are within 1% of each other
            {
-                 weightResults += "\n* PASS *\n\n";
-                 weightResults += "Current Weight is set to: " + weight + " kilograms should be set to: " + i + " kilograms\n";
-                 weightResults+="set and read values have a difference of "+diff+" which is within 1% tolerance\n";
+                 results += "\n* PASS *\n\n";
+                 results += "Current Weight is set to: " + weight + " kilograms should be set to: " + i + " kilograms\n";
+                 results+="set and read values have a difference of "+diff+" which is within 1% tolerance\n";
 
                appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                appendMessage("Current Weight is set to: " + weight + " kilograms should be set to: " + i + " kilograms<br>");
@@ -259,9 +246,9 @@ import java.util.Calendar;
 
            }
              else{
-                 weightResults += "\n<font color = #ff0000>* FAIL *</font>\n\n";
-                 weightResults += "Current Weight is set to: " + weight + " kilograms, but should be set to: " + i + " kilograms\n";
-                 weightResults+="set and read values have a difference of "+diff+" which is outside the 1% tolerance\n";
+                 results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
+                 results += "Current Weight is set to: " + weight + " kilograms, but should be set to: " + i + " kilograms\n";
+                 results+="set and read values have a difference of "+diff+" which is outside the 1% tolerance\n";
 
                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                appendMessage("Current Weight is set to: " + weight + " kilograms, but should be set to: " + i + " kilograms<br>");
@@ -269,50 +256,49 @@ import java.util.Calendar;
 
            }
          }
-         appendMessage("<br><br>---------------Out of Range Weight Values------------------<br><br>");
-         weightResults+="\n\n---------------Out of Range Weight Values------------------\n\n";
+         appendMessage("<br><br>---------------Ivalid Weight Values------------------<br><br>");
+         results+="\n\n---------------Ivalid Weight Values------------------\n\n";
          //Set weight to 1 kg and increment by 5
-//         for(double i = 0; i <=220; i+=5) {
-//
-//             //Jump to beyond max invalid weights
-//             if(i >= 45)
-//             {
-//                 i=181;
-//             }
-//             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
-//             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-//             //need more time for weight controller
-//             Thread.sleep(1000);
-//
-//             weightResults += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-//             appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-//
-//             weight = hCmd.getWeight();
-//
-//             if(weight !=i) // i is invalid weight so it should not have been written
-//             {
-//                 weightResults += "\n* PASS *\n\n";
-//                 weightResults += "Current Weight is set to: " + weight + " kilograms. Invalid value " + i + " kilograms was not written!\n";
-//
-//                 appendMessage("<br>* PASS *<br><br>");
-//                 appendMessage("Current Weight is set to: " + weight + " kilograms. Invalid value " + i + " kilograms was not written!\n");
-//             }
-//             else{
-//                 weightResults += "\n<font color = #ff0000>* FAIL *</font>\n\n";
-//                 weightResults += "Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms\n";
-//
-//                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-//                 appendMessage("Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms\n");
-//
-//             }
-//         }
-         mSFitSysCntrl.getFitProCntrl().removeCmd(wrCmd);
+         for(double i = 0; i <=220; i+=5) {
+
+             //Jump to beyond max invalid weights
+             if(i == 45)
+             {
+                 i=190;
+             }
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             //need more time for weight controller
+             Thread.sleep(500);
+
+             results += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+             appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+
+             weight = hCmd.getWeight();
+
+             if(weight !=i) // i is invalid weight so it should not have been written
+             {
+                 results += "\n* PASS *\n\n";
+                 results += "Current Weight is set to: " + weight + " kilograms. Invalid value " + i + " kilograms was not written!\n";
+
+                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
+                 appendMessage("Current Weight is set to: " + weight + " kilograms. Invalid value " + i + " kilograms was not written!\n");
+             }
+             else{
+                 results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
+                 results += "Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms\n";
+
+                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
+                 appendMessage("Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms\n");
+
+             }
+         }
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
-         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
-         weightResults+="\nThis test took a total of "+timeOfTest+" secs \n";
-         return weightResults;
+         appendMessage("<br><br>This test took a total of "+timeOfTest+" secs <br>");
+         results+="\n\nThis test took a total of "+timeOfTest+" secs \n";
+         return results;
      }
 
     /**
