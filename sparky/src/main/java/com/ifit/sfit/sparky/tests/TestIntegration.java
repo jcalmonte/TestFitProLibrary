@@ -777,7 +777,7 @@ import java.util.Calendar;
          double seconds = 0;
          long startime = System.nanoTime();
          //Read the actual speed and count elsaped time. Do this until speed has reached MAX
-         while(currentActualSpeed < 16) // Replace 16 by maxSpeed once we have a motor that can reach more then 16 kph
+         while(currentActualSpeed < maxSpeed) // Replace 16 by maxSpeed once we have a motor that can reach more then 16 kph
          {
              currentActualSpeed = hCmd.getActualSpeed();
              elapsedTime = System.nanoTime() - startime;
@@ -801,8 +801,8 @@ import java.util.Calendar;
          //TODO: Calculate seconds for pass/pail standard based on Max Speed. For example a 10mph max speed unit might reach max speed quicker than a 15mph max speed unit
          //%5 pass standard with a 23 sec spec from #59
          if((seconds <= 22) || (seconds >= 24)) {
-             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The motor was off by " + (seconds - 23) + " seconds<br>");
-             results+="\n* FAIL *\n\nThe motor was off by " + (seconds - 23) + " seconds\n";
+             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The time for motor to reach max speed was off by " + (seconds - 23) + " seconds<br>");
+             results+="\n* FAIL *\n\nThe time for motor to reach max speed was off by " + (seconds - 23) + " seconds\n";
          }
  
          else {
