@@ -91,7 +91,7 @@ public class ManageTests extends Activity implements View.OnClickListener, Syste
             fecpController = new FitProUsb(getApplicationContext(), getIntent());
             mSFitSysCntrl = new SFitSysCntrl(fecpController);
             fecpController.initializeConnection(this);
-            alarm.setAlarm(this);
+          //  alarm.setAlarm(this);
 
         } catch (Exception e) {
             e.printStackTrace();

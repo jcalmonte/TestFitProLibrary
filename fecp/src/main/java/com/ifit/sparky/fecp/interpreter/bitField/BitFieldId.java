@@ -34,6 +34,8 @@ public enum BitFieldId {
     ACTUAL_DISTANCE(19, 4, true, new LongConverter(), "Actual Distance"),
     WORKOUT(20, 1, false, new WorkoutConverter(), "Current Workout User Selected"),
 
+    REQUESTED_WORKOUT(21, 1, false, new WorkoutConverter(), "Current Requested Workout User Selected"),
+
     AGE(24, 1, false, new ByteConverter(), "Age"),
     WEIGHT(25, 2, false, new WeightConverter(), "Weight"),
     GEARS(26, 1, false, new ByteConverter(), "Gears"),
@@ -54,6 +56,7 @@ public enum BitFieldId {
     HEIGHT(41, 2, false, new ShortConverter(), "User Height in cm"),
     MAX_RESISTANCE(42, 1, true, new ByteConverter(), "Max Resistance"),
 
+    MAX_WEIGHT(43, 2, true, new WeightConverter(), "Max Weight"),
     AVERAGE_PULSE(48, 1, true, new ByteConverter(), "Average Pulse"),
     MAX_PULSE(49, 1, true, new ByteConverter(), "Max Pulse"),
     AVERAGE_KPH(50, 2, true, new SpeedConverter(), "Average KPH"),
