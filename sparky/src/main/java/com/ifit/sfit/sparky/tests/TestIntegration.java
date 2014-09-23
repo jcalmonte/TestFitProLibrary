@@ -5,7 +5,6 @@ import com.ifit.sfit.sparky.helperclasses.HandleCmd;
 import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
@@ -19,13 +18,10 @@ import java.util.Calendar;
   * Created by jc.almonte on 7/2/14.
   */
  public class TestIntegration extends CommonFeatures {
-     private FecpController mFecpController;
-     private BaseTest mAct;
-     private HandleCmd hCmd;
-     private SFitSysCntrl mSFitSysCntrl;
-     private SystemDevice MainDevice;
-     private  FecpCommand wrCmd;
-     private  FecpCommand rdCmd;
+
+    private String testValidation = "", currentVersion="", gitHubWikiName="", issuesListHtml="", issuesList="";
+    private int failsCount = 0, totalTestsCount = 0;
+
     private String emailAddress;
 
     public TestIntegration(FecpController fecpController, BaseTest act, SFitSysCntrl ctrl) {
@@ -829,9 +825,9 @@ import java.util.Calendar;
      public String runAll() {
         String results = "";
          try {
-            // this.testAge();
+             results+=this.testAge();
+             results+=this.testWeight();
              results+=this.testMaxSpeedTime();
-            // this.testWeight();
              results+=this.testRunningTime(" ");
              results+=this.testPauseIdleTimeout();
          }

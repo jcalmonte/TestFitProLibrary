@@ -47,6 +47,13 @@ public class ManageTests extends Activity implements View.OnClickListener, Syste
         init();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //Make sure application doesn't run in background when app is exited
+       android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
     /**
      * Initialize menu
      * @param menu the menu
@@ -91,7 +98,7 @@ public class ManageTests extends Activity implements View.OnClickListener, Syste
             fecpController = new FitProUsb(getApplicationContext(), getIntent());
             mSFitSysCntrl = new SFitSysCntrl(fecpController);
             fecpController.initializeConnection(this);
-          //  alarm.setAlarm(this);
+           alarm.setAlarm(this);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -141,7 +148,7 @@ public class ManageTests extends Activity implements View.OnClickListener, Syste
 
             case R.id.bAllTests:
                 Intent allTests = new Intent(ManageTests.this, AllTests.class);
-                allTests.putExtra("message", new String("none"));
+                allTests.putExtra("message", "none");
                 startActivity(allTests);
             break;
 

@@ -5,7 +5,6 @@ import com.ifit.sfit.sparky.helperclasses.HandleCmd;
 import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
@@ -26,14 +25,8 @@ import java.util.Calendar;
  */
 public class TestTreadmillKeyCodes extends CommonFeatures {
 
-        //Variables needed to initialize connection with Brainboard
-        private FecpController mFecpController;
-        private BaseTest mAct;
-        private HandleCmd hCmd;
-        private SFitSysCntrl mSFitSysCntrl;
-        private SystemDevice MainDevice;
-        private FecpCommand wrCmd;
-        private FecpCommand rdCmd;
+        private String testValidation = "", currentVersion="", gitHubWikiName="", issuesListHtml="", issuesList="";
+        private int failsCount = 0, totalTestsCount = 0;
         private FecpCommand sendKeyCmd;
         private String emailAddress;
 
@@ -64,8 +57,8 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_KPH);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.KPH);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.GRADE);
-                    // ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.AGE);
-                    //((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
+                    ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.AGE);
+                    ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.PAUSE_TIMEOUT);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.IDLE_TIMEOUT);

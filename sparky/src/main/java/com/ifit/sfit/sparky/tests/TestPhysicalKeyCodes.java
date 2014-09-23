@@ -5,7 +5,6 @@ import com.ifit.sfit.sparky.helperclasses.HandleCmd;
 import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
@@ -21,15 +20,10 @@ import java.nio.ByteBuffer;
 // and it tells for how long it was pressed (in milliseconds)
 
 public class TestPhysicalKeyCodes extends CommonFeatures {
-    //Variables needed to initialize connection with Brainboard
-    private FecpController mFecpController;
-    private BaseTest mAct;
-    private HandleCmd hCmd;
-    private SFitSysCntrl mSFitSysCntrl;
-    private SystemDevice MainDevice;
-    private String emailAddress;
 
-    private FecpCommand rdCmd;
+    private String testValidation = "", currentVersion="", gitHubWikiName="", issuesListHtml="", issuesList="";
+    private int failsCount = 0, totalTestsCount = 0;
+    private String emailAddress;
 
 
     public TestPhysicalKeyCodes(FecpController fecpController, BaseTest act, SFitSysCntrl ctrl) {

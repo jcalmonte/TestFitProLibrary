@@ -5,7 +5,6 @@ import com.ifit.sfit.sparky.helperclasses.HandleCmd;
 import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
@@ -16,14 +15,13 @@ import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Random;
 
 /**************************************************************************************
  * Created by jc.almonte on 7/2/14.                                                    *
  * Test class for the BitFields                                                        *
  * Tests to perform:                                                                   *
- *      1. Test read/write operation on each bitfield - testBitfieldRdWr()             *
+ *      1. Test read/write operation on each bitfield - testBitfields()             *
  *                                                                                     *
  *                                                                                     *
  *          - If read only, verify writing operation to bitfield fails                 *
@@ -36,13 +34,10 @@ import java.util.Random;
  **************************************************************************************/
 
 public class TestBitfields extends CommonFeatures {
-    //Variables needed to initialize connection with Brainboard
-    private FecpController mFecpController;
-    private BaseTest mAct;
-    private HandleCmd hCmd;
-    private SFitSysCntrl mSFitSysCntrl;
-    private SystemDevice MainDevice;
-    private  FecpCommand wrCmd;
+
+    private String testValidation = "", currentVersion="", gitHubWikiName="", issuesListHtml="", issuesList="";
+    private int failsCount = 0, totalTestsCount = 0;
+
     private String emailAddress;
 
     public TestBitfields(FecpController fecpController, BaseTest act, SFitSysCntrl ctrl) {
@@ -64,6 +59,7 @@ public class TestBitfields extends CommonFeatures {
                 Thread.sleep(1000);
                 //Get current system device
                 MainDevice = this.mFecpController.getSysDev();
+                this.currentVersion = "SAL v"+ String.valueOf(mFecpController.getVersion());
                 this.wrCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd);
                 ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
@@ -77,28 +73,132 @@ public class TestBitfields extends CommonFeatures {
     }
 
     /**
-     * Test read/write access on supported read-only bit fields
-     *  - verify writing operation to bitfield fails for read only
-     *  - If bitfield is not supported, verify exception is thrown
+     * Run all bitfields tests
      * @return text log of test Results
      * @throws Exception
      */
-    public String testBitfieldRdWr() throws Exception {
+    public String testBitfields() throws Exception {
         String results = "";
-        System.out.println("NOW RUNNING READ ACCESS & UNSUPPORTED BITFIELDS TEST...<br>");
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+
+        results+=testBitfieldsUnsupported();
+        results+=testBitfieldsRdOnly();
+        results+=testBitfieldValuesValidation();
+
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of  "+timeOfTest+"  secs \n";
+        mAct.filename = "Bf - All.txt";
+        return results;
+    }
+
+    /**
+     * Verify writing operation to bitfield fails for read only
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testBitfieldsRdOnly() throws Exception{
+        String results = "";
+        gitHubWikiName = "Bitfields%20ReadOnly";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Bf - Read Only.txt";
+
         Object valueToWrite = 10;
+        ArrayList<BitFieldId> supportedBitFields = new ArrayList<BitFieldId>(MainDevice.getInfo().getSupportedBitfields());
+        ArrayList<BitFieldId> supportedRdBitFields = new ArrayList<BitFieldId>(MainDevice.getInfo().getSupportedReadOnlyBitfields());
 
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
-        appendMessage("<br><br>----------------------------BITFIELDS TEST RESULTS----------------------------<br><br>");
-        appendMessage("------Testing Unsupported Bitfields------<br><br>"); //to store results of test
+        appendMessage("------Testing Read/Write Access for Supported READ-ONLY Bitfields------<br><br>"); //to store results of test
 
-        results+="\n\n----------------------------BITFIELDS TEST RESULTS----------------------------\n\n";
-        results+="------Testing Unsupported Bitfields------\n\n"; //to store results of test
+        results+="------Testing Read/Write Access for Supported READ-ONLY Bitfields------\n\n"; //to store results of test
 
+        //Loop through all readonly supported fields
+        for(BitFieldId b: supportedRdBitFields)
+        {
+            //if it's readonly, try to write to it and verify exception is thrown
+
+            try {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(b, 10);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(1000);
+                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> NO Exception thrown when trying to write read-only bitfield:  " + b.name() + "<br>");
+                issuesListHtml+="<br>- "+"NO Exception thrown when trying to write read-only bitfield:  " + b.name()+"<br>";
+                results+="\n* FAIL *\n\n NO Exception thrown when trying to write read-only bitfield:  " + b.name() + "\n";
+                issuesList+="\n- "+ "NO Exception thrown when trying to write read-only bitfield:  " + b.name() + "\n";
+                testValidation = "FAILED";
+                failsCount++;
+
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+                appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> Exception thrown when trying to write read-only bitfield:  "+b.name()+ "<br>");
+                appendMessage(" Details: " + ex.getMessage() +"<br><br>");
+                results+="\n\n* PASS *\n\n Exception thrown when trying to write read-only bitfield:  "+b.name()+ "\n";
+                results+=" Details: " + ex.getMessage() +"\n\n";
+            }
+            totalTestsCount++;
+        }
+        //set mode back to idle to stop the test
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of  "+timeOfTest+"  secs \n";
+
+        if(issuesList.equals(" "))
+        {
+            issuesListHtml = "<br>No Issues Found<br>";
+            issuesList = "\nNo Issues Found\n";
+        }
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+
+        return results;
+    }
+
+    /**
+     * If bitfield is not supported, verify exception is thrown
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testBitfieldsUnsupported() throws Exception{
+        String results = "";
+        gitHubWikiName = "Bitfields%20Unsupported";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Bf - Unsupported.txt";
+        Object valueToWrite = 10;
 
         ArrayList<BitFieldId> supportedBitFields = new ArrayList<BitFieldId>(MainDevice.getInfo().getSupportedBitfields());
         ArrayList<BitFieldId> supportedRdBitFields = new ArrayList<BitFieldId>(MainDevice.getInfo().getSupportedReadOnlyBitfields());
+
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+
+        appendMessage("------Testing Unsupported Bitfields------<br><br>"); //to store results of test
+        results+="------Testing Unsupported Bitfields------\n\n"; //to store results of test
+
 
         //loop through all bitfields, try to read unsupported ones, verify exception is thrown
 
@@ -110,7 +210,7 @@ public class TestBitfields extends CommonFeatures {
                 //Try to read a value from this bitfeld and verify that it throws exception
                 try{
                     appendMessage("current bitfield: "+ bf.name()+"<br>");
-                    
+
                     results+="current bitfield: "+ bf.name()+"\n";
 
                     ((WriteReadDataCmd)wrCmd.getCommand()).addReadBitField(bf);
@@ -118,10 +218,13 @@ public class TestBitfields extends CommonFeatures {
                     Thread.sleep(1000);
                     appendMessage("Status trying to read unsupported bitfield: "+ bf.name() +" " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
                     appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> NO Exception thrown when trying to read unsupported bitfield:  "+bf.name()+ "<br>");
+                    issuesListHtml+="<br>- "+"NO Exception thrown when trying to read unsupported bitfield:  " + bf.name()+"<br>";
 
                     results+="Status trying to read unsupported bitfield: "+ bf.name() +" " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
                     results+="\n* FAIL *\n\n NO Exception thrown when trying to read unsupported bitfield:  "+bf.name()+ "\n";
-
+                    issuesList+="\n- "+"NO Exception thrown when trying to read unsupported bitfield:  " + bf.name()+"\n";
+                    failsCount++;
+                    testValidation = "FAILED";
                 }
                 catch (Exception ex)
                 {
@@ -138,38 +241,10 @@ public class TestBitfields extends CommonFeatures {
                     mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
                     Thread.sleep(1000);
                 }
+                totalTestsCount++;
             }
         }
 
-        appendMessage("------Testing Read/Write Access for Supported READ-ONLY Bitfields------<br><br>"); //to store results of test
-
-        results+="------Testing Read/Write Access for Supported READ-ONLY Bitfields------\n\n"; //to store results of test
-
-        //Loop through all readonly supported fields
-        for(BitFieldId b: supportedRdBitFields)
-        {
-            //if it's readonly, try to write to it and verify exception is thrown
-
-            try {
-                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(b, 10);
-                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-                Thread.sleep(1000);
-                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> NO Exception thrown when trying to write read-only bitfield:  " + b.name() + "<br>");
-
-                results+="\n* FAIL *\n\n NO Exception thrown when trying to write read-only bitfield:  " + b.name() + "\n";
-
-            }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
-                appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> Exception thrown when trying to write read-only bitfield:  "+b.name()+ "<br>");
-                appendMessage(" Details: " + ex.getMessage() +"<br><br>");
-
-                results+="\n\n* PASS *\n\n Exception thrown when trying to write read-only bitfield:  "+b.name()+ "\n";
-                results+=" Details: " + ex.getMessage() +"\n\n";
-
-            }
-        }
         //set mode back to idle to stop the test
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
@@ -180,21 +255,20 @@ public class TestBitfields extends CommonFeatures {
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(1000);
-        mSFitSysCntrl.getFitProCntrl().removeCmd(wrCmd);
 
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of  "+timeOfTest+"  secs \n";
+        if(issuesList.equals(" "))
+        {
+            issuesListHtml = "<br>No Issues Found<br>";
+            issuesList = "\nNo Issues Found\n";
+        }
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
-    //-------------------------------------------------------------------------------//
-    //   Test input values for each bitfield - testBitfieldValuesValidation()        //
-    //                                                                               //
-    //      - Send invalid values to each bitfield and verify exception is thrown    //
-    //      - Send valid values and then read them to verify it                      //
-    //-------------------------------------------------------------------------------//
 
     /**
      * Test input values for each bitfield
@@ -206,6 +280,14 @@ public class TestBitfields extends CommonFeatures {
     public String testBitfieldValuesValidation() throws Exception
     {
         String results = "";
+        gitHubWikiName = "Bitfields%20RdWr%20Access";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Bf - Values Validation.txt";
+
         System.out.println("NOW RUNNING READ/WRITE ACCESS FOR SUPPORTED BITFIELDS...<br>");
         appendMessage("------Testing Read/Write Access with valid values for Supported WRITE/READ Bitfields------<br><br>"); //to store results of test
        
@@ -335,8 +417,7 @@ public class TestBitfields extends CommonFeatures {
                     break;
 
             }
-            // mSFitSysCntrl.getFitProCntrl().removeCmd(cmd);
-            // Thread.sleep(1000);
+           totalTestsCount++;
 
         }
 //set mode back to idle to stop the test
@@ -355,6 +436,12 @@ public class TestBitfields extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
+        if(issuesList.equals(" "))
+        {
+            issuesListHtml = "<br>No Issues Found<br>";
+            issuesList = "\nNo Issues Found\n";
+        }
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -397,8 +484,11 @@ public class TestBitfields extends CommonFeatures {
             
             } else {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "<br>");
-               
+                issuesListHtml+="<br>- "+"value "+ hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"<br>";
                 results+="\n* FAIL *\n\n value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "\n";
+                issuesList+="\n- "+"value "+ hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"\n";
+                testValidation = "FAILED";
+
             }
         }
         else
@@ -408,8 +498,12 @@ public class TestBitfields extends CommonFeatures {
 
             if (hCmd.getValue(bitFieldId) == valueToWrite) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() + "<br>");
-                
+                issuesListHtml="";
+                issuesListHtml+="<br>- "+"invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() +"<br>";
                 results+="\n* FAIL *\n\n invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() + "\n";
+                issuesList="";
+                issuesList+="\n- "+"invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() +"\n";
+                testValidation = "FAILED";
 
             } else {
                 appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> invalid value " + valueToWrite + " was not written to brainboard for bitfield " + bitFieldId.name()+" value "+hCmd.toString() + " was written instead<br>");
@@ -438,101 +532,119 @@ public class TestBitfields extends CommonFeatures {
     public String testModes() throws Exception {
 
         String results="";
+
         System.out.println("**************** MODES TEST ****************");
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
 
-        appendMessage("<br><br>----------------------------MODE TEST RESULTS----------------------------<br><br>");
-        appendMessage(Calendar.getInstance().getTime() + "<br><br>");
+        results+=testModesValid();
+        results+=testModesInValid();
+        results+=testModesActions();
 
-        results+="\n\n----------------------------MODE TEST RESULTS----------------------------\n\n";
-        results+=Calendar.getInstance().getTime() + "\n\n";
-
-        ModeId [] Modes;
-
-        Modes = new ModeId[]{ ModeId.IDLE, ModeId.DEBUG, ModeId.IDLE, ModeId.LOG, ModeId.IDLE, ModeId.MAINTENANCE, ModeId.IDLE,
-                                      ModeId.RUNNING,ModeId.PAUSE,ModeId.RUNNING, ModeId.PAUSE, ModeId.RESULTS, ModeId.IDLE };// run both of previous cases if nothing is specified
-        appendMessage("<br><br>----------------------------TESTING VALID MODE TRANSITIONS----------------------------<br><br>");
-        results+="\n\n----------------------------TESTING VALID MODE TRANSITIONS----------------------------\n\n";
-        results+=runModesTest(Modes, wrCmd, true);
-
-        appendMessage("<br><br>----------------------------TESTING INVALID MODE TRANSITIONS----------------------------<br><br>");
-        results+="\n\n----------------------------TESTING INVALID MODE TRANSITIONS----------------------------\n\n";
-        Modes = null; //Initialized inside the Method
-        results+=runModesTest(Modes, wrCmd, false);
-
-        appendMessage("<br><br>----------------------------TESTING BITFIELDS FUNCTIONS per MODE----------------------------<br><br>");
-        results+="\n\n----------------------------TESTING BITFIELDS BITFIELDS FUNCTIONS per MODE----------------------------\n\n";
-
-
-//        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-//        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-//        Thread.sleep(1000);
-//
-//        appendMessage("Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-//        appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
-//
-//        results += "Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-//        results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
-//        appendMessage("Speed before setting it to 4 in IDLE: "+hCmd.getSpeed()+"<br>");
-//        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, 16);
-//        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-//        Thread.sleep(1000);
-//        appendMessage("Speed after setting it to 4 in IDLE: "+hCmd.getSpeed()+"<br>");
-//
-//
-//
-//        appendMessage("Status of setting speed "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-//
-//        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.DEBUG);
-//        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-//        Thread.sleep(1000);
-//
-//        appendMessage("Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-//        appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
-//
-//        results += "Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-//        results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
-//
-//
-//        while(hCmd.getMode()==ModeId.DEBUG)
-//        {
-//
-//        }
-        Modes = new ModeId[]{ModeId.IDLE,ModeId.RUNNING,ModeId.PAUSE, ModeId.RESULTS, ModeId.IDLE,
-                ModeId.DEBUG, ModeId.IDLE, ModeId.LOG, ModeId.IDLE, ModeId.MAINTENANCE};
-        results+=runBitfieldsAccessInModes(Modes);
-
-
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-
-        appendMessage("Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-        appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
-
-        results += "Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-        results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
-        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
-        results+="\nThis test took a total of "+timeOfTest+" secs \n";
+        appendMessage("<br>Combined, all Mode tests took a total of "+timeOfTest+" secs <br>");
+        results+="\nCombined, all Mode tests took a total of "+timeOfTest+" secs \n";
 
+        mAct.filename = "Modes - All.txt";
         return results;
     }
 
     /**
-     * Helper function of {@link #testModes()}. Tests the following:
-     *  1. Valid transitions between modes
-     *  2. Invalid transitions between modes
-     * @param modes array of all modes to be tested
-     * @param wrCmd command to be used to write bitfield values
-     * @param validMode if true test 1. is performed, 2. if false
+     * Tests valid tansitions between modes
      * @return text log of test results
+     * @throws Exception
      */
-    private String runModesTest(ModeId[] modes, FecpCommand wrCmd, boolean validMode) {
-
+    public String testModesValid() throws Exception{
         String results="";
+        gitHubWikiName="modes%20Valid%20Transitions";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Modes - Valid.txt";
+
+        ModeId [] modes;
+        ModeId currentMode;
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+
+        modes = new ModeId[]{ ModeId.IDLE, ModeId.DEBUG, ModeId.IDLE, ModeId.LOG, ModeId.IDLE, ModeId.MAINTENANCE, ModeId.IDLE,
+                ModeId.RUNNING,ModeId.PAUSE,ModeId.RUNNING, ModeId.PAUSE, ModeId.RESULTS, ModeId.IDLE };
+        appendMessage("<br><br>----------------------------TESTING VALID MODE TRANSITIONS----------------------------<br><br>");
+        results+="\n\n----------------------------TESTING VALID MODE TRANSITIONS----------------------------\n\n";
+
+
+        try {
+            ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        for (int i = 0; i < modes.length; i++) {
+            try {
+                currentMode = hCmd.getMode();
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modes[i].getValue());
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(1000);
+
+                appendMessage("Status of changing mode to "+modes[i].name()+": "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
+
+                results += "Status of changing mode to "+modes[i].name()+": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
+
+                if (hCmd.getMode().getValue() == modes[i].getValue()) {
+                    appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>Mode succesfully transitioned from "+currentMode+" to: "+hCmd.getMode()+"<br>");
+
+                    results += "\n* PASS *\n\nMode succesfully transitioned from "+currentMode+" to: "+hCmd.getMode()+"\n";
+                } else {
+                    appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>Mode DID NOT transition from "+currentMode+" to: "+hCmd.getMode()+"<br>");
+                    issuesListHtml+="<br>- "+"Mode DID NOT transition from "+currentMode+" to: "+hCmd.getMode() +"<br>";
+                    results += "\n* FAIL *\n\nMode DID NOT transition from "+currentMode+" to: "+modes[i].name()+"\n";
+                    issuesList+="\n- "+"Mode DID NOT transition from "+currentMode+" to: "+hCmd.getMode() +"\n";
+                    failsCount++;
+                    testValidation = "FAILED";
+
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            totalTestsCount++;
+        }
+
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
+        if(issuesList.equals(" "))
+        {
+            issuesListHtml = "<br>No Issues Found<br>";
+            issuesList = "\nNo Issues Found\n";
+        }
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+        return results;
+    }
+
+    /**
+     * Tests Invalid tansitions between modes
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testModesInValid() throws Exception{
+        String results="";
+        gitHubWikiName="Modes%20Invalid%20Transitions";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Modes - Invalid.txt";
+
+        ModeId [] modes = null;
         ModeId transitionMode = ModeId.UNKNOWN; // Mode to transition to the next state to be tested
         ModeId currentMode;
         boolean testFailed = false;
@@ -546,222 +658,190 @@ public class TestBitfields extends CommonFeatures {
         //This array will help get back to the mode currently being tested once a transition has failed
         ModeId [] validTransitionsFlow = new ModeId[]{ModeId.IDLE,ModeId.RUNNING,ModeId.PAUSE,ModeId.RESULTS, ModeId.IDLE,ModeId.DEBUG, ModeId.IDLE,ModeId.LOG, ModeId.IDLE,ModeId.MAINTENANCE};
 
-        if(validMode) {
-            //Testing valid transitions
-//            currentMode = hCmd.getMode();
-//            if(currentMode!=ModeId.IDLE)
-//            {
-//                for (int x = 0; x<validTransitionsFlow.length; x++)
-//                {
-//                    try {
-//                    ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, validTransitionsFlow[x].getValue());
-//                        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-//                        Thread.sleep(1000);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    if (hCmd.getMode() == ModeId.IDLE)
-//                    {
-//                        break;
-//                    }
-//                }
-//            }
-            try {
-            ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+        appendMessage("<br><br>----------------------------TESTING INVALID MODE TRANSITIONS----------------------------<br><br>");
+        results+="\n\n----------------------------TESTING INVALID MODE TRANSITIONS----------------------------\n\n";
 
-            for (int i = 0; i < modes.length; i++) {
-                try {
-                    currentMode = hCmd.getMode();
-                    ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modes[i].getValue());
-                    mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-                    Thread.sleep(1000);
 
-                    appendMessage("Status of changing mode to "+modes[i].name()+": "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-                    appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
-
-                    results += "Status of changing mode to "+modes[i].name()+": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-                    results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
-
-                    if (hCmd.getMode().getValue() == modes[i].getValue()) {
-                        appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>Mode succesfully transitioned from "+currentMode+" to: "+hCmd.getMode()+"<br>");
-
-                        results += "\n* PASS *\n\nMode succesfully transitioned from "+currentMode+" to: "+hCmd.getMode()+"\n";
-                    } else {
-                        appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>Mode DID NOT transition from "+currentMode+" to: "+hCmd.getMode()+"<br>");
-
-                        results += "\n* FAIL *\n\nMode DID NOT transition from "+currentMode+" to: "+modes[i].name()+"\n";
+        // Testing invalid transitions
+        //ISSUES FOUND: Mode can do invalid transitions RUNNING->RESULTS, PAUSE->IDLE
+        do {
+            currentMode = hCmd.getMode();
+            switch (currentMode.name()) {
+                case "DEBUG":
+                    transitionMode = ModeId.IDLE;
+                    modes = new ModeId[]{ModeId.RUNNING, ModeId.PAUSE, ModeId.RESULTS,ModeId.LOG,ModeId.MAINTENANCE};
+                    count++;
+                    break;
+                case "MAINTENANCE":
+                    transitionMode = ModeId.IDLE;
+                    modes = new ModeId[]{ModeId.RUNNING, ModeId.PAUSE, ModeId.RESULTS,ModeId.DEBUG,ModeId.LOG};
+                    count++;
+                    break;
+                case "LOG":
+                    transitionMode = ModeId.IDLE;
+                    modes = new ModeId[]{ModeId.RUNNING, ModeId.PAUSE, ModeId.RESULTS,ModeId.DEBUG,ModeId.MAINTENANCE};
+                    count++;
+                    break;
+                case "RUNNING":
+                    transitionMode = ModeId.PAUSE;
+                    modes = new ModeId[]{ModeId.RESULTS,ModeId.IDLE,ModeId.DEBUG, ModeId.LOG, ModeId.MAINTENANCE};
+                    count++;
+                    break;
+                case "PAUSE":
+                    transitionMode = ModeId.RESULTS;
+                    modes = new ModeId[]{ModeId.IDLE, ModeId.DEBUG, ModeId.LOG, ModeId.MAINTENANCE};
+                    count++;
+                    break;
+                case "RESULTS":
+                    transitionMode = ModeId.IDLE;
+                    modes = new ModeId[]{ModeId.RUNNING, ModeId.PAUSE, ModeId.DEBUG, ModeId.LOG, ModeId.MAINTENANCE};
+                    count++;
+                    break;
+                case "IDLE":
+                    idleCount++;
+                    if(idleCount==1 ){
+                        transitionMode = ModeId.RUNNING;
                     }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-        else
-        {
-
-            // Testing invalid transitions
-            //ISSUES FOUND: Mode can do invalid transitions RUNNING->RESULTS, PAUSE->IDLE
-            do {
-                currentMode = hCmd.getMode();
-                switch (currentMode.name()) {
-                    case "DEBUG":
-                        transitionMode = ModeId.IDLE;
-                        modes = new ModeId[]{ModeId.RUNNING, ModeId.PAUSE, ModeId.RESULTS,ModeId.LOG,ModeId.MAINTENANCE};
-                        count++;
-                        break;
-                    case "MAINTENANCE":
-                        transitionMode = ModeId.IDLE;
-                        modes = new ModeId[]{ModeId.RUNNING, ModeId.PAUSE, ModeId.RESULTS,ModeId.DEBUG,ModeId.LOG};
-                        count++;
-                        break;
-                    case "LOG":
-                        transitionMode = ModeId.IDLE;
-                        modes = new ModeId[]{ModeId.RUNNING, ModeId.PAUSE, ModeId.RESULTS,ModeId.DEBUG,ModeId.MAINTENANCE};
-                        count++;
-                        break;
-                    case "RUNNING":
-                        transitionMode = ModeId.PAUSE;
-                        modes = new ModeId[]{ModeId.RESULTS,ModeId.IDLE,ModeId.DEBUG, ModeId.LOG, ModeId.MAINTENANCE};
-                        count++;
-                        break;
-                    case "PAUSE":
-                        transitionMode = ModeId.RESULTS;
-                        modes = new ModeId[]{ModeId.IDLE, ModeId.DEBUG, ModeId.LOG, ModeId.MAINTENANCE};
-                        count++;
-                        break;
-                    case "RESULTS":
-                        transitionMode = ModeId.IDLE;
-                        modes = new ModeId[]{ModeId.RUNNING, ModeId.PAUSE, ModeId.DEBUG, ModeId.LOG, ModeId.MAINTENANCE};
-                        count++;
-                        break;
-                    case "IDLE":
-                        idleCount++;
-                        if(idleCount==1 ){
-                            transitionMode = ModeId.RUNNING;
-                        }
-                        else
-                        {
-                            switch (idleCount)
-                            {
-                                case 2:
-                                    transitionMode = ModeId.DEBUG;
-                                    break;
-                                case 3:
-                                    transitionMode = ModeId.LOG;
-                                    break;
-                                case 4:
-                                    transitionMode = ModeId.MAINTENANCE;
-                                    break;
-                            }
-                            try {
-                                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, transitionMode.getValue());
-                                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-                                Thread.sleep(1000);
-
-                                appendMessage("Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-                                appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
-
-                                results += "Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-                                results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                            continue; // Skip to the next run of the while loop
-                        }
-                        modes = new ModeId[]{ModeId.PAUSE, ModeId.RESULTS};
-                        count++;
-                        break;
-                }
-                appendMessage("<br><font color = #80C0FF> ********Testing invalid transitions for mode: "+currentMode+"********</font><br><br>");
-                results+="\nTesting invalid transitions for mode: "+currentMode+"\n\n";
-                for(int i = 0; i<modes.length; i++) // Go through each invalid mode and verify transition to them is not possible
-                {
-                    if (!failedTransitions.contains(currentMode.name() + modes[i].name())) // If this transition failed, don't try it again to avoid circular dependencies
+                    else
                     {
+                        switch (idleCount)
+                        {
+                            case 2:
+                                transitionMode = ModeId.DEBUG;
+                                break;
+                            case 3:
+                                transitionMode = ModeId.LOG;
+                                break;
+                            case 4:
+                                transitionMode = ModeId.MAINTENANCE;
+                                break;
+                        }
                         try {
-                            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modes[i].getValue());
+                            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, transitionMode.getValue());
                             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
                             Thread.sleep(1000);
 
-                            appendMessage("Status of sending command to change mode to "+modes[i].name()+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                            appendMessage("Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
                             appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
 
-                            results += "Status of sending command to change mode to "+modes[i].name()+" " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                            results += "Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
                             results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
-
-                            if (hCmd.getMode() != modes[i]) {
-                                appendMessage("<br><font color = #00ff00>* PASS *</font><br><br> Mode " + currentMode + " did not transition to invalid mode " + modes[i] + " <br>");
-
-                                results += "\n* PASS *\n\n Mode " + currentMode + " did not transition to invalid mode " + modes[i] + "\n";
-                                testFailed = false;
-                            } else {
-                                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>Mode " + currentMode + " transitioned to invalid mode " + modes[i] + "<br>");
-
-                                results += "\n* FAIL *\n\n Mode " + currentMode + " transitioned to invalid mode  " + modes[i] + "\n";
-                                testFailed = true;
-
-                                // Try to get back to mode being tested before transition failed
-                                for (int x = 0; x<validTransitionsFlow.length; x++)
-                                {
-                                    ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, validTransitionsFlow[x].getValue());
-                                    mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-                                    Thread.sleep(1000);
-                                    if (hCmd.getMode() == currentMode)
-                                    {
-                                        break;
-                                    }
-                                }
-                                failedTransitionStr = currentMode.name() + modes[i].name();
-                                failedTransitions.add(failedTransitionStr);
-                            }
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
+                        continue; // Skip to the next run of the while loop
                     }
+                    modes = new ModeId[]{ModeId.PAUSE, ModeId.RESULTS};
+                    count++;
+                    break;
+            }
+            appendMessage("<br><font color = #80C0FF> ********Testing invalid transitions for mode: "+currentMode+"********</font><br><br>");
+            results+="\nTesting invalid transitions for mode: "+currentMode+"\n\n";
+            for(int i = 0; i<modes.length; i++) // Go through each invalid mode and verify transition to them is not possible
+            {
+                if (!failedTransitions.contains(currentMode.name() + modes[i].name())) // If this transition failed, don't try it again to avoid circular dependencies
+                {
+                    try {
+                        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modes[i].getValue());
+                        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                        Thread.sleep(1000);
 
+                        appendMessage("Status of sending command to change mode to "+modes[i].name()+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                        appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
+
+                        results += "Status of sending command to change mode to "+modes[i].name()+" " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                        results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
+
+                        if (hCmd.getMode() != modes[i]) {
+                            appendMessage("<br><font color = #00ff00>* PASS *</font><br><br> Mode " + currentMode + " did not transition to invalid mode " + modes[i] + " <br>");
+
+                            results += "\n* PASS *\n\n Mode " + currentMode + " did not transition to invalid mode " + modes[i] + "\n";
+                        } else {
+                            appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>Mode " + currentMode + " transitioned to invalid mode " + modes[i] + "<br>");
+                            issuesListHtml+="<br>- "+"Mode " + currentMode + " transitioned to invalid mode " + modes[i] +"<br>";
+                            results += "\n* FAIL *\n\n Mode " + currentMode + " transitioned to invalid mode  " + modes[i] + "\n";
+                            issuesList+="\n- "+"Mode " + currentMode + " transitioned to invalid mode " + modes[i] +"\n";
+                            failsCount++;
+                            testValidation = "FAILED";
+
+                            // Try to get back to mode being tested before transition failed
+                            for (int x = 0; x<validTransitionsFlow.length; x++)
+                            {
+                                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, validTransitionsFlow[x].getValue());
+                                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                                Thread.sleep(1000);
+                                if (hCmd.getMode() == currentMode)
+                                {
+                                    break;
+                                }
+                            }
+                            failedTransitionStr = currentMode.name() + modes[i].name();
+                            failedTransitions.add(failedTransitionStr);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
+                totalTestsCount++;
+
+            }
                 /*Now switch to the next mode to test invalid transitions for it. */
 
-                try {
-                    ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, transitionMode.getValue());
-                    mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-                    Thread.sleep(1000);
+            try {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, transitionMode.getValue());
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(1000);
 
-                    appendMessage("Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-                    appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
+                appendMessage("Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
 
-                    results += "Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-                    results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                results += "Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
 
-            } while(count<7); // Do until all mode have been tested
+        } while(count<7); // Do until all mode have been tested
+        if(issuesList.equals(" "))
+        {
+            issuesListHtml = "<br>No Issues Found<br>";
+            issuesList = "\nNo Issues Found\n";
         }
-
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
     /**
-     * Helper function of {@link #testModes()} to test actions (changing bitfield values) allowed on each mode
-     * Goes through every bitfield on every mode
-     * @param modes the modes to be tested
-     * @return text log of results
+     * Tests actions (changing bitfield values) allowed on each mode
+     * @return text log of test results
      * @throws Exception
      */
+    public String testModesActions() throws Exception{
 
-    private String runBitfieldsAccessInModes(ModeId [] modes) throws Exception {
+        String results="";
+        gitHubWikiName="Modes%20Actions%20Allowed";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Modes - Actions.txt";
+
         ArrayList<BitFieldId> supportedWrBitFields = new ArrayList<BitFieldId>(MainDevice.getInfo().getSupportedWriteBitfields());
-        String results = "";
         Object expectedValue,valueToWrite;
 
         Random rand = new Random();
+
+        ModeId [] modes;
+        appendMessage("<br><br>----------------------------TESTING BITFIELDS FUNCTIONS per MODE----------------------------<br><br>");
+        results+="\n\n----------------------------TESTING BITFIELDS BITFIELDS FUNCTIONS per MODE----------------------------\n\n";
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+        modes = new ModeId[]{ModeId.IDLE,ModeId.RUNNING,ModeId.PAUSE, ModeId.RESULTS, ModeId.IDLE,
+                ModeId.DEBUG, ModeId.IDLE, ModeId.LOG, ModeId.IDLE, ModeId.MAINTENANCE};
+
 
         //Go through each mode and verify supported bitfield access
         for(int i = 0; i<modes.length; i++) {
@@ -1253,17 +1333,37 @@ public class TestBitfields extends CommonFeatures {
                         break;
 
                 }
-                // mSFitSysCntrl.getFitProCntrl().removeCmd(cmd);
-                // Thread.sleep(1000);
+               totalTestsCount++;
 
             }
 
         }
-        return  results;
+
+
+        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+
+        appendMessage("Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+        appendMessage("Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "<br><br>");
+
+        results += "Status of sending mode command: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        results += "Current Mode is: " + hCmd.getMode() + "  and its value is  " + hCmd.getMode().getValue() + "\n\n";
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
+        if(issuesList.equals(" "))
+        {
+            issuesListHtml = "<br>No Issues Found<br>";
+            issuesList = "\nNo Issues Found\n";
+        }
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+        return results;
     }
 
     /**
-     * Helper function of {@link #runBitfieldsAccessInModes(com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId[])}
+     * Helper function of {@link #testModes()} to test actions (changing bitfield values) allowed on each mode
      * Performs corresponding action on bitfield and validates it
      * @param bf the bitfiled being tested
      * @param canWrite true of we are suppose to write to "bf" on the current mode, else otherwise
@@ -1274,6 +1374,7 @@ public class TestBitfields extends CommonFeatures {
 
     private String testBitfieldAccessInModes(BitFieldId bf, boolean canWrite, Object valueToWrite, Object expectedResult) {
         String results = "";
+
         long time=1000;
 //        if(bf.name() =="KPH" || bf  .name() =="GRADE")
 //        {
@@ -1307,8 +1408,11 @@ public class TestBitfields extends CommonFeatures {
 
             } else {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bf.name() + "<br>");
-
+                issuesListHtml+="<br>- "+ "value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bf.name()+" Mode: "+hCmd.getMode()+"<br>";
                 results+="\n* FAIL *\n\n value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bf.name() + "\n";
+                issuesList+="\n- "+ "value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bf.name()+" Mode: "+hCmd.getMode()+"\n";
+                failsCount++;
+                testValidation = "FAILED";
             }
         }
         else
@@ -1318,8 +1422,11 @@ public class TestBitfields extends CommonFeatures {
 
             if (hCmd.getValue(bf.name()) == ((double)valueToWrite)) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bf.name() + "<br>");
-
+                issuesListHtml+="<br>- "+"invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bf.name()+" Mode: "+hCmd.getMode()+"<br>";
                 results+="\n* FAIL *\n\n invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bf.name() + "\n";
+                issuesList+="\n- "+"invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bf.name()+" Mode: "+hCmd.getMode()+"\n";
+                failsCount++;
+                testValidation = "FAILED";
 
             } else {
 
@@ -1348,10 +1455,14 @@ public class TestBitfields extends CommonFeatures {
         String results = "";
 
        results="";
-       results+=this.testBitfieldRdWr();
+       results+=this.testBitfieldsUnsupported();
+       results+=this.testBitfieldsRdOnly();
        results+=this.testBitfieldValuesValidation();
-       results+=this.testModes();
+       results+=this.testModesValid();
+       results+=this.testModesInValid();
+       results+=this.testModesActions();
+       mAct.filename = "All Bf & Modes.txt";
 
-        return results;
+       return results;
     }
 }

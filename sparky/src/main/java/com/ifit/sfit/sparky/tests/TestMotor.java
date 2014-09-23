@@ -5,7 +5,6 @@ import com.ifit.sfit.sparky.helperclasses.HandleCmd;
 import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
@@ -23,15 +22,11 @@ import java.util.Calendar;
  * Used sean's TestMotor code and adapted it to work with SparkyAndroidLib 0.0.9
  */
 public class TestMotor extends CommonFeatures {
-    //Variables needed to initialize connection with Brainboard
-    private FecpController mFecpController;
-    private BaseTest mAct;
-    private HandleCmd hCmd;
-    private SFitSysCntrl mSFitSysCntrl;
-    private SystemDevice MainDevice;
+
+    private String testValidation = "", currentVersion="", gitHubWikiName="", issuesListHtml="", issuesList="";
+    private int failsCount = 0, totalTestsCount = 0;
+
     private double currentSpeed; // Current motor speed
-    private FecpCommand wrCmd;
-    private FecpCommand rdCmd;
     private String emailAddress;
 
     //To hold time lapsed
@@ -41,7 +36,6 @@ public class TestMotor extends CommonFeatures {
 
     //TestMotor constructor. Receive needed parameters from main activity(TestApp) to initialize controller
     public TestMotor(FecpController fecpController, BaseTest act, SFitSysCntrl ctrl) {
-        System.out.println("^^^^^^^^^^^ MOTOR TESTS ^^^^^^^^^^^");
         //Get controller sent from the main activity (TestApp)
         try {
             this.mFecpController = fecpController;
@@ -68,7 +62,7 @@ public class TestMotor extends CommonFeatures {
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_INCLINE);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.DISTANCE);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
-                //  ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
+                ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.KPH);
                 ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.CALORIES);
                 mSFitSysCntrl.getFitProCntrl().addCmd(rdCmd);
@@ -163,7 +157,7 @@ public class TestMotor extends CommonFeatures {
         results+="The current speed after 5 seconds running is: " + currentSpeed + "\n";
         results+="The ACTUAL speed after 5 seconds running is: " + actualspeed + "\n";
 
-        if (currentSpeed == 2.0) {
+        if (currentSpeed == 1.61) {
             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
             appendMessage("Speed correctly started at 2.0 kph<br>");
 
@@ -242,6 +236,7 @@ public class TestMotor extends CommonFeatures {
         double [] setSpeed={10,5};// speeds to use in the test in KPH
         double expectedDistance;// calcualted expected distance
         BigDecimal expectedDistanceRounded;
+        BigDecimal resultDistanceRounded;
         long [] time ={90,30}; // time to run test in seconds
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
@@ -294,6 +289,9 @@ public class TestMotor extends CommonFeatures {
         Thread.sleep(time[i]*1000);
 
         distance = hCmd.getDistance();
+        resultDistanceRounded = new BigDecimal(expectedDistance);
+        resultDistanceRounded = resultDistanceRounded.setScale(0, BigDecimal.ROUND_UP);
+
         appendMessage("The distance was " + distance + "<br>");
         appendMessage("The status of reading the distance is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
 
@@ -322,15 +320,17 @@ public class TestMotor extends CommonFeatures {
         Thread.sleep(1000);
 
         //5% tolerance for passing: 250 meters = +/- 12.5
-        if (Math.abs(expectedDistance-distance) > expectedDistance*0.05) {
-            appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The distance was off by " + (expectedDistance-distance) + "meters <br><br>");
+        if (Math.abs(expectedDistance-distance) > 3) {
+            appendMessage("<br><font color = #ff0000>* FAIL *</font><br>");
+            appendMessage("<br> Expected distance: "+expectedDistanceRounded + " read distance: "+distance+", The distance was off by " + (expectedDistance-distance) + "meters <br><br>");
 
             results+="\n* FAIL *\n\nThe distance was off by " + (expectedDistance-distance) + "meters \n\n";
+            results+="\n Expected distance: "+expectedDistanceRounded + " read distance: "+distance+", The distance was off by " + (expectedDistance-distance) + "meters \n";
 
         } else {
-            appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The distance should be " + expectedDistance + "  meters and is " + distance + " meters which is within 5%<br><br>");
+            appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The distance should be " + expectedDistance + "  meters and is " + distance + " meters which is within +/- 3 tolerance<br><br>");
 
-            results+="\n* PASS *\n\nThe distance should be "+expectedDistance+"  meters and is " + distance + " meters which is within 5%\n\n";
+            results+="\n* PASS *\n\nThe distance should be "+expectedDistance+"  meters and is " + distance + " meters which is within +/- 3 tolerance\n\n";
 
         }
 
@@ -456,7 +456,7 @@ public class TestMotor extends CommonFeatures {
 
         currentSpeed = hCmd.getSpeed();// Read speed again
 
-        if (currentSpeed == 2.0) {
+        if (currentSpeed == 1.61) {
             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
             appendMessage("The speed should be 2.0 kph and it is currently set at: " + currentSpeed + " kph<br>");
 
@@ -659,107 +659,6 @@ public class TestMotor extends CommonFeatures {
         return results;
     }
 
-    public String testCalories() throws Exception {
-
-        //this test is for #964 in redmine and later #1052 when incline is implemented
-        //currently not implemented by the FECP library or brainboard and will fail
-        //calories depend on weight so we need to check weight also for the proper calorie calculation
-        //we also need to implement the incline with calorie verification #1052
-        //see TestIncline.java
-        String results="";
-        double calories = 0;
-        double expectedCalories = 15.64;
-        double setSpeed = 10; // Speed in Kph
-        long time = 60; //seconds
-        double incline = 0;// Incline in % grade
-        double weight = 83.91; //weight in Kgs
-        double timeOfTest = 0; //how long test took in seconds
-        long startTestTimer = System.nanoTime();
-
-        System.out.println("NOW RUNNING CALORIES TEST<br>");
-        appendMessage("<br><br>----------------------------CALORIE TEST----------------------------<br>");
-        appendMessage(Calendar.getInstance().getTime() + "<br><br>");
-        appendMessage(expectedCalories+" calories are expected at speed of "+setSpeed+ ", incline of "+incline+", time of "+time+" seconds and weight of "+weight+"<br><br>");
-
-        results+="\n\n----------------------------CALORIE TEST----------------------------\n";
-        results+=Calendar.getInstance().getTime() + "\n\n";
-        results+=expectedCalories+" calories are expected at speed of "+setSpeed+ ", incline of "+incline+", time of "+time+" seconds and weight of "+weight+"\n\n";
-
-        //read the weight value for calorie calculation
-        appendMessage("<br>The current weight before setting to 83.91 kg is " + hCmd.getWeight() + "<br>");
-
-        results+="\nThe current weight before setting to 83.91 kg is " + hCmd.getWeight() + "\n";
-
-        System.out.println("The current weight before setting to 83.91 kg is " + hCmd.getWeight());
-        //set the weight value for calorie calculation
-//        if(hCmd.getWeight() != 83.91) {
-//            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, 83.91);
-//            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-//            Thread.sleep(1000);
-//            calorieResults += "<br><br>The weight is not 83.91 kg = 185 pounds so we are setting it<br><br>";
-//            calorieResults += "<br><br>The status of setting the weight is " + wrCmd.getCommand().getStatus().getStsId().getDescription();
-//            calorieResults += "The current weight after setting to 83.91 kg is read as " + hCmd.getWeight() + "<br>";
-//        }
-        System.out.println("The current weight after setting to 83.91 kg is " + hCmd.getWeight());
-        //set incline to target incline for this test
-        if(hCmd.getIncline()!=incline)
-        {
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, incline);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-        }
-        //set mode to running
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-
-        //send speed
-        startTimer = System.currentTimeMillis();
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, setSpeed);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        appendMessage("Wait "+time+" secs...<br>");
-        results+="Wait "+time+" secs...\n";
-        //wait time
-        Thread.sleep(time * 1000);
-        //read calories
-        calories = hCmd.getCalories();
-        //set mode to back to idle to end the test.
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        stopTimer = System.currentTimeMillis() - startTimer;
-        //Thread.sleep(16000);
-        appendMessage("The status of the calorie command is: " + wrCmd.getCommand().getStatus().getStsId().getDescription()+"\n");
-
-        results+="The status of the calorie command is: " + wrCmd.getCommand().getStatus().getStsId().getDescription()+"\n";
-
-        //5% tolerance for passing expect 15.20 for 1 min
-        if (Math.abs(expectedCalories - calories) > 0.05) {
-            appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The calories were " + calories + " and were off by " + (calories - expectedCalories) + "<br><br>");
-            
-            results+="\n* FAIL *\n\nThe calories were " + calories + " and were off by " + (calories - expectedCalories) + "\n\n";
-
-        } else {
-            appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The calories should be " + expectedCalories + " and is " + calories + " which is within 5%<br><br>");
-           
-            results+="\n* PASS *\n\nThe calories should be " + expectedCalories + " and is " + calories + " which is within 5%\n\n";
-
-        }
-
-        appendMessage("The calories are now " + hCmd.getCalories() + "<br>");
-        appendMessage("The test took " + ((stopTimer) / 1000) + " seconds<br>");
-
-        results+="The calories are now " + hCmd.getCalories() + "\n";
-        results+="The test took " + ((stopTimer) / 1000) + " seconds\n";
-        //stop the call back
-        mFecpController.removeCmd(wrCmd);
-        timeOfTest = System.nanoTime() - startTestTimer;
-        timeOfTest = timeOfTest / 1.0E09;
-
-        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
-        results+="\nThis test took a total of "+timeOfTest+" secs \n";
-        return results;
-    }
-
     /**
      * Runs trough a series of workouts with different weight,incline and speeds
      * and verifies calories values are as expected
@@ -803,14 +702,16 @@ public class TestMotor extends CommonFeatures {
         double [] incline ={0,5,10,15};      // Incline to be used for the test (in % grade)
                                                       //0,5,10,15 % grade respectively
 
-        double [] weight= {115,185,400}; //weight to be used for the test (in lbs)
-                                                //52.16,83.91 and 181.44 kgs respectively
+        double [] weight= {52.16,83.91,181.44}; //weight to be used for the test (kgs)
+                                                //115,185 and 400 kgs respectively
 
         double [] speed ={1.6,3.21,4.82,6.43,8.04,9.65};   // Speeds to be used for the test (in kph) ---> 1 kph = 0.28 m/s
                                                               //0.45,0.90,1.35,1.80,2.25,2.70 m/s respectively or 1,2,3,4,5,6 mph respectively
         double speedMPH = 0; // To convert to mph
         double currentSpeed = 0;
         double currentWeight = 0;
+        double currentWeightLbs = 0;
+        BigDecimal currentWeightLbsRounded;
         double currentActualIncline = 0;
 
         double n1,n2; // Constants
@@ -842,26 +743,44 @@ public class TestMotor extends CommonFeatures {
 
         for(int w = 0; w < wLen; w++)  // Weight Loop
         {
-            appendMessage("<br><br>--------------WEIGHT = "+weight[w]+" lbs--------------<br>");
-            results+="\n--------------WEIGHT = "+weight[w]+" lbs\n";
             currentWeight = hCmd.getWeight();
-            appendMessage("Weight is currently set to "+currentWeight+" lbs--------------<br>");
-            results+="Weight is currently set to "+currentWeight+" lbs\n";
-        //TODO: Uncomment this part as once we have weight bitfield working again
-//            if(currentWeight!= weight[w]) {
-//                appendMessage("Setting weight to "+weight[w]+" kgs<br>");
-//                results+="Setting weight to "+weight[w]+" kgs\n";
-//
-//                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, weight[w]);
-//                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-//                Thread.sleep(1000);
-//                currentWeight = hCmd.getWeight();
-//                appendMessage("The status of setting weight is: " + wrCmd.getCommand().getStatus().getStsId().getDescription()+"<br>");
-//                results+="The status of setting weight is: " + wrCmd.getCommand().getStatus().getStsId().getDescription()+"\n";
-//
-//                appendMessage("Weight is currently set to "+currentWeight+" lbs<br>");
-//                results+="Weight is currently set to "+currentWeight+" lbs\n";
-//            }
+            currentWeightLbs = weight[w] * 2.20462; // convert weight from kgs to lbs
+            currentWeightLbsRounded = new BigDecimal(currentWeightLbs);
+            currentWeightLbsRounded = currentWeightLbsRounded.setScale(0,BigDecimal.ROUND_HALF_UP);
+
+            appendMessage("<br><br>--------------WEIGHT = "+weight[w]+" kgs ("+currentWeightLbsRounded+" lbs)--------------<br>");
+            results+="\n\n--------------WEIGHT = "+weight[w]+" kgs ("+currentWeightLbsRounded+" lbs)--------------\n";
+
+            currentWeightLbs = currentWeight * 2.20462; // convert weight from kgs to lbs
+            currentWeightLbsRounded = new BigDecimal(currentWeightLbs);
+            currentWeightLbsRounded = currentWeightLbsRounded.setScale(0,BigDecimal.ROUND_HALF_UP);
+
+            appendMessage("Weight is currently set to "+currentWeight+" kgs ("+currentWeightLbsRounded+" lbs)<br>");
+            results+="Weight is currently set to "+currentWeight+" kgs ("+currentWeightLbsRounded+" lbs)\n";
+
+
+            currentWeightLbs = weight[w] * 2.20462; // convert weight from kgs to lbs
+            currentWeightLbsRounded = new BigDecimal(currentWeightLbs);
+            currentWeightLbsRounded = currentWeightLbsRounded.setScale(0,BigDecimal.ROUND_HALF_UP);
+
+            //if(currentWeight!= weight[w]) {
+                appendMessage("Setting weight to "+weight[w]+" kgs ("+currentWeightLbsRounded+" lbs)<br>");
+                results+="Setting weight to "+weight[w]+" kgs ("+currentWeightLbsRounded+" lbs)\n";
+
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, weight[w]);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(1000);
+                currentWeight = hCmd.getWeight();
+                currentWeightLbs = currentWeight * 2.20462; // convert weight from kgs to lbs
+                currentWeightLbsRounded = new BigDecimal(currentWeightLbs);
+                currentWeightLbsRounded = currentWeightLbsRounded.setScale(0,BigDecimal.ROUND_HALF_UP);
+
+                appendMessage("The status of setting weight is: " + wrCmd.getCommand().getStatus().getStsId().getDescription()+"<br>");
+                results+="The status of setting weight is: " + wrCmd.getCommand().getStatus().getStsId().getDescription()+"\n";
+
+                appendMessage("Weight is currently set to "+currentWeight+" kgs ("+currentWeightLbsRounded+" lbs)<br>");
+                results+="Weight is currently set to "+currentWeight+" kgs ("+currentWeightLbsRounded+" lbs)\n";
+          //  }
 
                     for(int i = 0; i < iLen; i++) //Incline loop
                     {
@@ -870,8 +789,8 @@ public class TestMotor extends CommonFeatures {
                         results+="Incline is currently set to "+currentActualIncline+" %\n";
 
                         if(currentActualIncline != incline[i]) {
-                            appendMessage("Setting speed to " + incline[i] + " %<br>");
-                            results += "Setting speed to " + incline[i] + " %\n";
+                            appendMessage("Setting incline to " + incline[i] + " %<br>");
+                            results += "Setting incline to " + incline[i] + " %\n";
 
                             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, incline[i]);
                             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
@@ -899,6 +818,37 @@ public class TestMotor extends CommonFeatures {
 
                         for(int s = 0; s < sLen; s++) // Speed Loop
                         {
+
+                            //TODO: Eliminate this code snippet once calibration issue has been resolved
+                            currentActualIncline = hCmd.getActualIncline();
+                            appendMessage("Incline is currently set to "+currentActualIncline+" %<br>");
+                            results+="Incline is currently set to "+currentActualIncline+" %\n";
+
+                            if(currentActualIncline != incline[i]) {
+                                appendMessage("Setting incline to " + incline[i] + " %<br>");
+                                results += "Setting incline to " + incline[i] + " %\n";
+
+                                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, incline[i]);
+                                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                                Thread.sleep(1000);
+
+                                appendMessage("The status of setting incline is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+                                results += "The status of setting incline is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+
+                                appendMessage("Waiting for incline to reach set value...<br>");
+                                results += "Waiting for incline to reach set value...\n";
+                                startime = System.nanoTime();
+                                do {
+                                    currentActualIncline = hCmd.getActualIncline();
+                                    Thread.sleep(350);
+                                    appendMessage("Current Incline is: " + currentActualIncline + " goal: " + incline[i] + " time elapsed: " + seconds + "<br>");
+                                    results += "Current Incline is: " + currentActualIncline + " goal: " + incline[i] + " time elapsed: " + seconds + "\n";
+                                    elapsedTime = System.nanoTime() - startime;
+                                    seconds = elapsedTime / 1.0E09;
+                                }
+                                while (incline[i] != currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+                            }
+                            //----------------------TODO: End of code snippet to be eliminated---------------------------------
 
                             // Console has to be in running mode to be able to set speed
                             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
@@ -955,9 +905,11 @@ public class TestMotor extends CommonFeatures {
                                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
                                 Thread.sleep(1000);
 
-                                currentWeight = weight[w];    //TODO: Elimiate this line once Levi adds weight bitfiled to config file
+                                currentActualIncline = hCmd.getActualIncline();
+                                currentWeight = hCmd.getWeight();
+                                currentWeightLbs = currentWeight * 2.20462; // convert weight from kgs to lbs
 
-                                caloriesPersec=(currentWeight * (n1 * speedMPH * 270 + 350 + (currentActualIncline / 100 * speedMPH * 270 * n2))) / 2640000;
+                                caloriesPersec=(currentWeightLbs * (n1 * speedMPH * 270 + 350 + (currentActualIncline / 100 * speedMPH * 270 * n2))) / 2640000;
                                 eCalories = caloriesPersec*time;
                                 expectedCalories = new BigDecimal(eCalories);
                                 expectedCalories = expectedCalories.setScale(2, BigDecimal.ROUND_FLOOR);
@@ -977,16 +929,16 @@ public class TestMotor extends CommonFeatures {
                                     results+="\n* PASS *\n\n";
 
                                     appendMessage("Read calories value is: "+resultCalories+" which is within 5% tolerance of expected value "+expectedCalories+"<br>");
-                                    appendMessage("Weight-->"+currentWeight+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>");
+                                    appendMessage("Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>");
                                     results+="Read calories value is: "+resultCalories+" which is within 5% tolerance of expected value "+expectedCalories+"\n";
-                                    results+="Weight-->"+currentWeight+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
+                                    results+="Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
                                 }
                                 else
                                 {
                                     appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>Calories value is:"+resultCalories+" and it should have been "+expectedCalories+" Calories were off by " + (eCalories - rCalories) + "<br><br>");
                                     results+="\n* FAIL *\n\nCalories value is:"+resultCalories+" and it should have been "+expectedCalories+" Calories were off by " + (eCalories - rCalories) + "\n\n";
-                                    appendMessage("Weight-->"+currentWeight+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>");
-                                    results+="Weight-->"+currentWeight+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
+                                    appendMessage("Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>");
+                                    results+="Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
 
                                 }
 

@@ -4,6 +4,8 @@ package com.ifit.sfit.sparky.helperclasses;
  * Created by jc.almonte on 7/10/14.
  */
 
+import com.ifit.sfit.sparky.testsdrivers.BaseTest;
+
 import java.util.Date;
 import java.util.Properties;
 
@@ -117,7 +119,7 @@ public class Mail extends javax.mail.Authenticator {
         BodyPart messageBodyPart = new MimeBodyPart();
         DataSource source = new FileDataSource(filename);
         messageBodyPart.setDataHandler(new DataHandler(source));
-        messageBodyPart.setFileName("Test Results");
+        messageBodyPart.setFileName(BaseTest.filename);
 
         _multipart.addBodyPart(messageBodyPart);
     }
