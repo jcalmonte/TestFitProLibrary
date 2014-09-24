@@ -22,8 +22,12 @@
     </string-array>
 
     <string-array name="integration_array">
-        <item>Age</item>
-        <item>Weight</item>
+        <item>Age - Valid</item>
+        <item>Age - Invalid</item>
+        <item>Age - All</item>
+        <item>Weight - Valid</item>
+        <item>Weight - Invalid</item>
+        <item>Weight - All</item>
         <item>Max Speed</item>
         <item>Running Time</item>
         <item>Mar Running Time</item>

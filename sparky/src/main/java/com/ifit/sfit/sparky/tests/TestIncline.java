@@ -43,6 +43,7 @@ public class TestIncline extends CommonFeatures {
             hCmd = new HandleCmd(this.mAct);// Init handlers
             //Get current system device
             MainDevice = this.mFecpController.getSysDev();
+            this.currentVersion = "SAL v"+ String.valueOf(mFecpController.getVersion());
             ByteBuffer secretKey = ByteBuffer.allocate(32);
             for(int i = 0; i < 32; i++)
             {
@@ -94,7 +95,14 @@ public class TestIncline extends CommonFeatures {
         //Run the above logic for the entire range of incline values from Max Incline to Min Incline in 0.5% grade steps
 
         String results="";
-        System.out.println("NOW RUNNING INCLINE CONTROLLER TEST<br>");
+
+        gitHubWikiName = "Incline%20Controller";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Incline Controller.txt";
 
         appendMessage("<br>----------------------INCLINE CONTROLLER TEST RESULTS----------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
@@ -193,11 +201,15 @@ public class TestIncline extends CommonFeatures {
                 {
                     appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The incline is off by " + (j - actualInlcine) + "%<br><br>");
                     appendMessage("The current actual incline "+actualInlcine + " DOES NOT match set value: " + j + "%<br><br>");
-
+                    issuesListHtml+="<br>- "+"The current actual incline "+actualInlcine + " DOES NOT match set value: " + j + "%<br>";
                     results+="\n* FAIL *\n\nThe incline is off by " + (j - actualInlcine) + "%\n\n";
                     results+="The current actual incline "+actualInlcine + " DOES NOT match set value: " + j + "%\n\n";
+                    issuesListHtml+="\n- "+"The current actual incline "+actualInlcine + " DOES NOT match set value: " + j + "%\n";
+                    testValidation = "FAILED";
+                    failsCount++;
 
                 }
+                totalTestsCount++;
                 Thread.sleep(3000);
             }
         }
@@ -218,6 +230,7 @@ public class TestIncline extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+String.format("%.2f",timeOfTest)+" secs <br>");
         results+="\nThis test took a total of "+String.format("%.2f",timeOfTest)+" secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -240,8 +253,15 @@ public class TestIncline extends CommonFeatures {
         //Read the Incline
         //Validate that the Incline is not set to the Min Incline
         
-        System.out.println("NOW RUNNING STOP INCLINE TEST<br>");
         String results="";
+        gitHubWikiName = "Stop-Incline";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Stop Incline.txt";
+
         double maxIncline;
         double minIncline;
         double maxToMinIncline1;
@@ -349,6 +369,7 @@ public class TestIncline extends CommonFeatures {
         results+="read actual incline again...\n";
         minToMaxIncline2 = hCmd.getActualIncline();
 
+        totalTestsCount++;
         if(minToMaxIncline1 == minToMaxIncline2){
             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
             appendMessage("The incline value from Min Incline to Max Incline was the same in both readings indicating incline stopped: " + minToMaxIncline1 + "%<br><br>");
@@ -360,10 +381,12 @@ public class TestIncline extends CommonFeatures {
         else{
             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
             appendMessage("The first incline value read -> "+minToMaxIncline1+  " was different than second incline value read -> "+minToMaxIncline2+ " indicating incline DID NOT stop<br><br>");
-
+            issuesListHtml+="<br>- "+"The first incline value read -> "+minToMaxIncline1+  " was different than second incline value read -> "+minToMaxIncline2+ " indicating incline DID NOT stop<br>";
             results+="\n* FAIL *\n\n";
             results+="The first incline value read -> "+minToMaxIncline1+  " was different than second incline value read -> "+minToMaxIncline2+ " indicating incline DID NOT stop\n\n";
-
+            issuesList+="\n- "+"The first incline value read -> "+minToMaxIncline1+  " was different than second incline value read -> "+minToMaxIncline2+ " indicating incline DID NOT stop\n";
+            testValidation = "FAILED";
+            failsCount++;
         }
 
         //Set Incline to Max Incline
@@ -435,6 +458,8 @@ public class TestIncline extends CommonFeatures {
         results+="read actual incline again...\n";
         maxToMinIncline2 = hCmd.getActualIncline();
 
+        totalTestsCount++;
+
         if(maxToMinIncline1 == maxToMinIncline2){
             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
             appendMessage("The incline value from Max Incline to Min Incline was the same in both readings indicating incline stopped: " + maxToMinIncline1 + "%<br>");
@@ -446,8 +471,12 @@ public class TestIncline extends CommonFeatures {
             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
             appendMessage("The first incline value read -> "+maxToMinIncline1+  " was different than second incline value read -> "+maxToMinIncline2+ " indicating incline DID NOT stop<br>");
 
+            issuesListHtml+="<br>- "+"The first incline value read -> "+maxToMinIncline1+  " was different than second incline value read -> "+maxToMinIncline2+ " indicating incline DID NOT stop<br>";
             results+="\n* FAIL *\n\n";
             results+="The first incline value read -> "+maxToMinIncline1+  " was different than second incline value read -> "+maxToMinIncline2+ " indicating incline DID NOT stop\n";
+            issuesList+="\n- "+"The first incline value read -> "+maxToMinIncline1+  " was different than second incline value read -> "+maxToMinIncline2+ " indicating incline DID NOT stop\n";
+            testValidation = "FAILED";
+            failsCount++;
         }
     //set mode back to idle to stop the test
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
@@ -465,6 +494,8 @@ public class TestIncline extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+
         return results;
     }
 
@@ -479,8 +510,15 @@ public class TestIncline extends CommonFeatures {
         //Set Incline to 5%
         //Set mode to Running
         //Read the incline to verify that it hasn't change
-        System.out.println("NOW RUNNING RETAINED INCLINE TEST<br>");
         String results="";
+        gitHubWikiName = "Retained-Incline";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Retained Incline.txt";
+
         appendMessage("<br><br>----------------------RETAINED INCLINE TEST RESULTS----------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
 
@@ -551,7 +589,7 @@ public class TestIncline extends CommonFeatures {
         results+="Wait 30 secs...\n";
         //let the workout run for 30 sec
         Thread.sleep(30000);
-
+        totalTestsCount++;
         currentIncline2 = hCmd.getActualIncline();
 
         if(currentIncline1 == currentIncline2 && currentIncline1 == testIncline && currentMode.equals("RUNNING")){
@@ -565,9 +603,12 @@ public class TestIncline extends CommonFeatures {
             if(!currentMode.equals("RUNNING")){
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                 appendMessage("Mode didn't change to Running<br>");
-
+                issuesListHtml+="<br>- "+"Mode didn't change to Running<br>";
                 results+="\n* FAIL *\n\n";
                 results+="Mode didn't change to Running\n";
+                issuesList+="\n- "+"Mode didn't change to Running\n";
+                testValidation  = "FAILED";
+                failsCount++;
             }
             if(currentIncline1 != currentIncline2) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
@@ -580,10 +621,13 @@ public class TestIncline extends CommonFeatures {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                 appendMessage("The incline did not go to " + testIncline + " %<br>");
                 appendMessage("The incline was at " + currentIncline1 + " % before mode change and " + currentIncline2 + " % afterwards <br>");
-
+                issuesListHtml+="<br>- "+"The incline was at " + currentIncline1 + " % before mode change and " + currentIncline2 + " % afterwards <br>";
                 results+="\n* FAIL *\n\n";
                 results+="The incline did not go to " + testIncline + " %\n";
                 results+="The incline was at " + currentIncline1 + " % before mode change and " + currentIncline2 + " % afterwards \n";
+                issuesList+="\n- "+"The incline was at " + currentIncline1 + " % before mode change and " + currentIncline2 + " % afterwards \n";
+                testValidation  = "FAILED";
+                failsCount++;
             }
         }
 
@@ -605,6 +649,7 @@ public class TestIncline extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -650,7 +695,6 @@ public class TestIncline extends CommonFeatures {
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         String results="";
-        System.out.println("NOW RUNNING SPEED INCLINE LIMIT TEST<br>");
 
         appendMessage("<br>----------------------SPEED/INCLINE LIMITS TEST RESULTS----------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
@@ -955,7 +999,14 @@ public class TestIncline extends CommonFeatures {
              //Set mode to DMK
              //Read actual Incline to verify the console has correct current incline
         String results="";
-        System.out.println("NOW RUNNING INCLINE RETENTION AFTER DMK TEST<br>");
+        gitHubWikiName = "Incline-Retention-After-DMK-&-DMK-Incline-Recall";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Dmk Incline.txt";
+
         long elapsedTime = 0;
         double seconds = 0;
         long startime = 0;
@@ -1051,7 +1102,7 @@ public class TestIncline extends CommonFeatures {
               inclineAfterDMKpull = hCmd.getActualIncline();
 
         //Read Incline and verify it is not equal to max incline or less than, or equal to, zero
-        //TODO: Just for formatting, take into account that units incline is in degress and not percent. Does IFIT handle this?
+             totalTestsCount++;
              if(inclineAfterDMKpull == inclineAtDMKpull){
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                 appendMessage("Actual Incline before DMK Pulled was: " + inclineAtDMKpull + "which matches actual incline after DMK was put back and waited 5 secs<br>");
@@ -1062,9 +1113,12 @@ public class TestIncline extends CommonFeatures {
              else {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                 appendMessage("Actual Incline should be " + inclineAtDMKpull + "%, but it is currently at " + inclineAfterDMKpull + "%<br>");
-
+                issuesList+="<br>- "+"Actual Incline should be " + inclineAtDMKpull + "%, but it is currently at " + inclineAfterDMKpull + "%<br>";
                 results+="\n* FAIL *\n\n";
                 results+="Actual Incline should be " + inclineAtDMKpull + "%, but it is currently at " + inclineAfterDMKpull + "%\n";
+                issuesList+="\n- "+"Actual Incline should be " + inclineAtDMKpull + "%, but it is currently at " + inclineAfterDMKpull + "%\n";
+                testValidation  = "FAILED";
+                failsCount++;
              }
 
             appendMessage("<br>----------------------DMK RECALL INCLINE TEST RESULTS----------------------<br><br>");
@@ -1087,7 +1141,7 @@ public class TestIncline extends CommonFeatures {
 
              results+="DMK key put back!\n";
 
-
+            totalTestsCount++;
         //Compare the value read for actual incline after key has been pulled to value read after key was put back
              if(actualIncline ==inclineAfterDMKpull){
                  appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
@@ -1099,9 +1153,12 @@ public class TestIncline extends CommonFeatures {
              else {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                 appendMessage("Actual Incline should be " + inclineAfterDMKpull + "%, but it is currently at " + actualIncline + "%<br>");
-
+                issuesListHtml+="<br>- "+"Actual Incline should be " + inclineAfterDMKpull + "%, but it is currently at " + actualIncline + "%<br>";
                 results+="\n* FAIL *\n\n";
                 results+="Actual Incline should be " + inclineAfterDMKpull + "%, but it is currently at " + actualIncline + "%\n";
+                issuesList+="\n- "+"Actual Incline should be " + inclineAfterDMKpull + "%, but it is currently at " + actualIncline + "%\n";
+                testValidation  = "FAILED";
+                failsCount++;
              }
 
              //set mode back to idle to stop the test
@@ -1122,7 +1179,8 @@ public class TestIncline extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
-             return results;
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+        return results;
          }
 
     /**
@@ -1134,7 +1192,14 @@ public class TestIncline extends CommonFeatures {
     public String testIncline400msPause() throws Exception
     {
         String results="";
-        System.out.println("NOW RUNNING INCLINE 400 ms PAUSE TEST<br>");
+        gitHubWikiName = "Incline-Pause-Direction";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Incline 400ms Pause.txt";
+
         long elapsedTime = 0;
         double seconds = 0;
         long startime = 0;
@@ -1268,8 +1333,9 @@ public class TestIncline extends CommonFeatures {
             incline1= hCmd.getActualIncline();
             Thread.sleep(50);
             incline2 = hCmd.getActualIncline();
-           appendMessage(" incline1: "+incline1+" incline 2: "+incline2+" elapsed time: "+elapsedTime+ "<br>");
-           results+=" incline1: "+incline1+" incline 2: "+incline2+"\n";
+            elapsedTime = System.nanoTime()-startime;
+            appendMessage(" incline1: "+incline1+" incline 2: "+incline2+" elapsed time: "+elapsedTime+ "<br>");
+           results+=" incline1: "+incline1+" incline 2: "+incline2+" elapsed time: "+elapsedTime+ "\n";
             count++;
         }
         elapsedTime = System.nanoTime()-startime;
@@ -1279,6 +1345,7 @@ public class TestIncline extends CommonFeatures {
         results+="Pause time was "+timeMillisecs+" milliseconds\n";
         count = 0;
 
+        totalTestsCount++;
         if(timeMillisecs > 400 && timeMillisecs < 600)
         {
             if(aIncline2 < aIncline1) {
@@ -1294,6 +1361,10 @@ public class TestIncline extends CommonFeatures {
                 results+="Elapsed time was "+timeMillisecs+" ms which is within the valid range of 400-600 ms BUT incline DIDN'T changed direction!\n";
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                 appendMessage("Elapsed time was "+timeMillisecs+" ms which is within the valid range of 400-600 ms BUT incline DIDN'T changed direction!<br>");
+                issuesListHtml+="<br>- "+"Elapsed time was "+timeMillisecs+" ms which is within the valid range of 400-600 ms BUT incline DIDN'T changed direction!<br>";
+                issuesList+="\n- "+"Elapsed time was "+timeMillisecs+" ms which is within the valid range of 400-600 ms BUT incline DIDN'T changed direction!\n";
+                testValidation  = "FAILED";
+                failsCount++;
             }
         }
         else
@@ -1302,8 +1373,14 @@ public class TestIncline extends CommonFeatures {
             results+="Elapsed time was "+timeMillisecs+" ms which is out of the valid range of 400-600 ms\n";
             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
             appendMessage("Elapsed time was "+timeMillisecs+" ms which is out of the valid range of 400-600 ms<br>");
+            issuesListHtml+="<br>- "+"Elapsed time was "+timeMillisecs+" ms which is out of the valid range of 400-600 ms<br>";
+            issuesListHtml+="\n- "+"Elapsed time was "+timeMillisecs+" ms which is out of the valid range of 400-600 ms\n";
+            testValidation  = "FAILED";
+            failsCount++;
 
         }
+
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -1337,26 +1414,11 @@ public class TestIncline extends CommonFeatures {
     public String runAll() {
         String results="";
         try {
-//          results+=this.testInclineRetentionDmkRecall();
-//            appendMessage("Wait for incline to finish calibrating...<br>");
-//            results+="Wait for incline to finish calibrating...\n";
-//            Thread.sleep(90000);
+//        results+=this.testInclineRetentionDmkRecall();
           results+=this.testIncline400msPause();
-            appendMessage("Wait for incline to finish calibrating...<br>");
-            results+="Wait for incline to finish calibrating...\n";
-            Thread.sleep(90000);
           results+=this.testRetainedIncline();
-            appendMessage("Wait for incline to finish calibrating...<br>");
-            results+="Wait for incline to finish calibrating...\n";
-            Thread.sleep(90000);
           results+=this.testSpeedInclineLimit();
-            appendMessage("Wait for incline to finish calibrating...<br>");
-            results+="Wait for incline to finish calibrating...\n";
-            Thread.sleep(90000);
           results+=this.testStopIncline();
-            appendMessage("Wait for incline to finish calibrating...<br>");
-            results+="Wait for incline to finish calibrating...\n";
-            Thread.sleep(90000);
           results+=this.testInclineController();
         }
         catch (Exception ex) {

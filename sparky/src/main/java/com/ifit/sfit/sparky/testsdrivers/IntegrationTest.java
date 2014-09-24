@@ -56,10 +56,22 @@ import com.ifit.sfit.sparky.tests.TestIntegration;
 
                      switch (testToRun)
                      {
-                         case "Age":
+                         case "Age - Valid":
+                             returnString = t.testValidAge();
+                             break;
+                         case "Age - Invalid":
+                             returnString = t.testInValidAge();
+                             break;
+                         case "Age - All":
                              returnString = t.testAge();
                              break;
-                         case "Weight":
+                         case "Weight - Valid":
+                             returnString = t.testValidWeight();
+                             break;
+                         case "Weight - Invalid":
+                             returnString = t.testInValidWeight();
+                             break;
+                         case "Weight - All":
                              returnString = t.testWeight();
                              break;
                          case "Max Speed":

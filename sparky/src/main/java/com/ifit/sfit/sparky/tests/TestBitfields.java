@@ -164,11 +164,7 @@ public class TestBitfields extends CommonFeatures {
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of  "+timeOfTest+"  secs \n";
 
-        if(issuesList.equals(" "))
-        {
-            issuesListHtml = "<br>No Issues Found<br>";
-            issuesList = "\nNo Issues Found\n";
-        }
+
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
 
         return results;
@@ -261,11 +257,7 @@ public class TestBitfields extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of  "+timeOfTest+"  secs \n";
-        if(issuesList.equals(" "))
-        {
-            issuesListHtml = "<br>No Issues Found<br>";
-            issuesList = "\nNo Issues Found\n";
-        }
+
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
@@ -436,11 +428,7 @@ public class TestBitfields extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
-        if(issuesList.equals(" "))
-        {
-            issuesListHtml = "<br>No Issues Found<br>";
-            issuesList = "\nNo Issues Found\n";
-        }
+
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
@@ -620,11 +608,7 @@ public class TestBitfields extends CommonFeatures {
         timeOfTest = timeOfTest / 1.0E09;
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
-        if(issuesList.equals(" "))
-        {
-            issuesListHtml = "<br>No Issues Found<br>";
-            issuesList = "\nNo Issues Found\n";
-        }
+
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
@@ -804,11 +788,7 @@ public class TestBitfields extends CommonFeatures {
             }
 
         } while(count<7); // Do until all mode have been tested
-        if(issuesList.equals(" "))
-        {
-            issuesListHtml = "<br>No Issues Found<br>";
-            issuesList = "\nNo Issues Found\n";
-        }
+
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
@@ -1353,11 +1333,7 @@ public class TestBitfields extends CommonFeatures {
         timeOfTest = timeOfTest / 1.0E09;
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
-        if(issuesList.equals(" "))
-        {
-            issuesListHtml = "<br>No Issues Found<br>";
-            issuesList = "\nNo Issues Found\n";
-        }
+
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }

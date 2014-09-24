@@ -99,12 +99,28 @@ public class TestMotor extends CommonFeatures {
 //        //check against constant variable of 1.0 mph
 //        //make sure formatting is right for verification for english or metric units
 
-
         String results ="";
+        gitHubWikiName = "Start-Speed";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Start Speed.txt";
         double actualspeed = 0;
+        double startSpeed = 0;
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
 
+        //If metric start speed = 2.0 kph
+        if(MainDevice.getSysDevInfo().isDefaultUnitMetric())
+        {
+            startSpeed = 2.0;
+        }
+        else // if english, start speed = 1.61 kph
+        {
+            startSpeed = 1.61;
+        }
         appendMessage("<br><br>----------------------START SPEED TEST RESULTS----------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
 
@@ -156,19 +172,23 @@ public class TestMotor extends CommonFeatures {
 
         results+="The current speed after 5 seconds running is: " + currentSpeed + "\n";
         results+="The ACTUAL speed after 5 seconds running is: " + actualspeed + "\n";
-
-        if (currentSpeed == 1.61) {
+        totalTestsCount++;
+        if (currentSpeed == startSpeed) {
             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-            appendMessage("Speed correctly started at 2.0 kph<br>");
+            appendMessage("Speed correctly started at "+startSpeed+" kph<br>");
 
             results+="\n\n* PASS *\n\n";
             results+="Speed correctly started at 2.0 kph\n";
         } else {
             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-            appendMessage("Speed should have started at 2.0 kph but is actually set at " + currentSpeed + " kph<br>");
+            appendMessage("Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph<br>");
 
             results+="\n\n* FAIL *\n\n";
-            results+="Speed should have started at 2.0 kph but is actually set at " + currentSpeed + " kph\n";
+            results+="Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph\n";
+            issuesListHtml+="<br>- "+"Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph<br>";
+            issuesList+="\n- Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph\n";
+            failsCount++;
+            testValidation = "FAILED";
 
         }
 
@@ -211,7 +231,7 @@ public class TestMotor extends CommonFeatures {
 //                break;
 //
 //        }        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
-
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
 
     }
@@ -223,7 +243,6 @@ public class TestMotor extends CommonFeatures {
      */
 
     public String testDistance() throws Exception {
-        System.out.println("**************** DISTANCE TEST ****************");
 
         //outline for code support #929 in redmine
         //start timer stopwatch
@@ -231,6 +250,15 @@ public class TestMotor extends CommonFeatures {
         //wait 1.5 minutes
         //read distance value
         //verify distance is 250 meters
+
+        String results="";
+        gitHubWikiName = "Distance";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Distance.txt";
 
         double distance = 0;//resulting distance
         double [] setSpeed={10,5};// speeds to use in the test in KPH
@@ -240,8 +268,6 @@ public class TestMotor extends CommonFeatures {
         long [] time ={90,30}; // time to run test in seconds
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
-
-        String results="";
 
         appendMessage("<br>----------------------------DISTANCE TEST---------------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
@@ -319,14 +345,17 @@ public class TestMotor extends CommonFeatures {
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(1000);
 
-        //5% tolerance for passing: 250 meters = +/- 12.5
+         totalTestsCount++;
         if (Math.abs(expectedDistance-distance) > 3) {
             appendMessage("<br><font color = #ff0000>* FAIL *</font><br>");
             appendMessage("<br> Expected distance: "+expectedDistanceRounded + " read distance: "+distance+", The distance was off by " + (expectedDistance-distance) + "meters <br><br>");
 
             results+="\n* FAIL *\n\nThe distance was off by " + (expectedDistance-distance) + "meters \n\n";
             results+="\n Expected distance: "+expectedDistanceRounded + " read distance: "+distance+", The distance was off by " + (expectedDistance-distance) + "meters \n";
-
+            issuesListHtml+="<br>- Expected distance: "+expectedDistanceRounded + " read distance: "+distance+", The distance was off by " + (expectedDistance-distance) + "meters <br>";
+            issuesList+="\n- Expected distance: "+expectedDistanceRounded + " read distance: "+distance+", The distance was off by " + (expectedDistance-distance) + "meters\n";
+            failsCount++;
+            testValidation = "FAILED";
         } else {
             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The distance should be " + expectedDistance + "  meters and is " + distance + " meters which is within +/- 3 tolerance<br><br>");
 
@@ -344,7 +373,7 @@ public class TestMotor extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -357,7 +386,6 @@ public class TestMotor extends CommonFeatures {
 
 
      public String testPauseResume() throws Exception {
-        System.out.println("**************** PAUSE/RESUME TEST ****************");
 
         //Support #954 in Redmine
         //Turn mode to Running (mimics Start button press)
@@ -366,11 +394,28 @@ public class TestMotor extends CommonFeatures {
         //Set mode to Running
         //Verify actual speed is 1.0 mph/2.0 kph (as of 3/12/14, the resume speed is 1.0 kph)
         String results="";
+         gitHubWikiName = "Pause-Resume-Speed";
+         testValidation ="PASSED";
+         issuesListHtml = "";
+         issuesList = "";
+         failsCount=0;
+         totalTestsCount = 0;
+         mAct.filename = "Pause Resume Speed.txt";
+        double startSpeed = 0;
         double actualspeed = 0;
         double setSpeed = 5;//speed to be used in this test
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
-        appendMessage("<br><br>----------------------PAUSE/RESUME SPEED TEST RESULTS----------------------<br><br>");
+         //If metric start speed = 2.0 kph
+         if(MainDevice.getSysDevInfo().isDefaultUnitMetric())
+         {
+             startSpeed = 2.0;
+         }
+         else // if english, start speed = 1.61 kph
+         {
+             startSpeed = 1.61;
+         }
+         appendMessage("<br><br>----------------------PAUSE/RESUME SPEED TEST RESULTS----------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
 
         results+="\n\n----------------------PAUSE/RESUME SPEED TEST RESULTS----------------------\n\n";
@@ -455,22 +500,25 @@ public class TestMotor extends CommonFeatures {
         results+="The current mode is " + hCmd.getMode() + "\n";
 
         currentSpeed = hCmd.getSpeed();// Read speed again
+        totalTestsCount++;
+         if (currentSpeed == startSpeed) {
+             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
+             appendMessage("Speed correctly started at "+startSpeed+" kph<br>");
 
-        if (currentSpeed == 1.61) {
-            appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-            appendMessage("The speed should be 2.0 kph and it is currently set at: " + currentSpeed + " kph<br>");
+             results+="\n\n* PASS *\n\n";
+             results+="Speed correctly started at 2.0 kph\n";
+         } else {
+             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
+             appendMessage("Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph<br>");
 
-            results+="\n* PASS *\n\n";
-            results+="The speed should be 2.0 kph and it is currently set at: " + currentSpeed + " kph\n";
+             results+="\n\n* FAIL *\n\n";
+             results+="Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph\n";
+             issuesListHtml+="<br>- "+"Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph<br>";
+             issuesList+="\n- Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph\n";
+             failsCount++;
+             testValidation = "FAILED";
 
-        } else {
-           appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-           appendMessage("The speed should be 2.0 kph, but it is currently set at: " + currentSpeed + " kph<br>");
-           
-           results+="\n* FAIL *\n\n";
-           results+="The speed should be 2.0 kph, but it is currently set at: " + currentSpeed + " kph\n";
-
-        }
+         }
 
         //Set Mode to Pause
         ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
@@ -497,7 +545,8 @@ public class TestMotor extends CommonFeatures {
 
          appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
          results+="\nThis test took a total of "+timeOfTest+" secs \n";
-        return results;
+         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+         return results;
     }
 
     /**
@@ -506,8 +555,7 @@ public class TestMotor extends CommonFeatures {
      * @throws Exception
      */
     public String testSpeedController() throws Exception {
-        System.out.println("**************** SPEED CONTROLLER TEST ****************");
-        final double MAX_SPEED = 16; //hardcode the value until we can read it
+        final double MAX_SPEED = 19; //hardcode the value until we can read it
         //outline for code support #927 in redmine
         //run test for treadmill & incline trainers
         //send speed command
@@ -516,6 +564,14 @@ public class TestMotor extends CommonFeatures {
         //validate speed response is what you sent originally
         //go through entire speed range 1-15mph, for example
         String results="";
+        gitHubWikiName = "Speed-Controller";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Speed Controller.txt";
+
         String currentWorkoutMode;
         String currentMode;
         final int NUM_TESTS = 1;
@@ -616,7 +672,7 @@ public class TestMotor extends CommonFeatures {
                 appendMessage("<br>For Speed " + roundedJ + ":<br>");
 
                 results+="\nFor Speed " + roundedJ + ":\n";
-
+                totalTestsCount++;
                 //with double values the rounding does not always work with 0.1 values
                 if ((Math.abs(roundedJ - currentSpeed) < 0.2)) {
                     appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The speed was minimally off by " + (roundedJ - currentSpeed) + "<br><br>");
@@ -625,12 +681,14 @@ public class TestMotor extends CommonFeatures {
 
                 } else {
                     appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The speed is greatly off by " + (roundedJ - currentSpeed) + "<br><br>");
-                    
                     results+="\n* FAIL *\n\nThe speed is greatly off by " + (roundedJ - currentSpeed) + "\n\n";
+                    issuesListHtml+="<br>- The speed is greatly off by " + (roundedJ - currentSpeed) + "<br>";
+                    issuesList+="\n- The speed is greatly off by " + (roundedJ - currentSpeed) + "\n";
+                    failsCount++;
+                    testValidation = "FAILED";
 
                 }
 
-                System.out.println("Current Speed " + roundedJ + " (from Brainboard): " + currentSpeed + " actual speed is " + hCmd.getActualSpeed());
             }
             //Set Mode to Pause
             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
@@ -690,7 +748,13 @@ public class TestMotor extends CommonFeatures {
 
 
         String results="";
-
+        gitHubWikiName = "Calorie";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Calorie.txt";
         //Parameters for the calories tests
         long time = 60;           //Time to be used for the test (in secs)
         double rCalories; //Calories read as result of the test
@@ -819,37 +883,6 @@ public class TestMotor extends CommonFeatures {
                         for(int s = 0; s < sLen; s++) // Speed Loop
                         {
 
-                            //TODO: Eliminate this code snippet once calibration issue has been resolved
-                            currentActualIncline = hCmd.getActualIncline();
-                            appendMessage("Incline is currently set to "+currentActualIncline+" %<br>");
-                            results+="Incline is currently set to "+currentActualIncline+" %\n";
-
-                            if(currentActualIncline != incline[i]) {
-                                appendMessage("Setting incline to " + incline[i] + " %<br>");
-                                results += "Setting incline to " + incline[i] + " %\n";
-
-                                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, incline[i]);
-                                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-                                Thread.sleep(1000);
-
-                                appendMessage("The status of setting incline is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-                                results += "The status of setting incline is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-
-                                appendMessage("Waiting for incline to reach set value...<br>");
-                                results += "Waiting for incline to reach set value...\n";
-                                startime = System.nanoTime();
-                                do {
-                                    currentActualIncline = hCmd.getActualIncline();
-                                    Thread.sleep(350);
-                                    appendMessage("Current Incline is: " + currentActualIncline + " goal: " + incline[i] + " time elapsed: " + seconds + "<br>");
-                                    results += "Current Incline is: " + currentActualIncline + " goal: " + incline[i] + " time elapsed: " + seconds + "\n";
-                                    elapsedTime = System.nanoTime() - startime;
-                                    seconds = elapsedTime / 1.0E09;
-                                }
-                                while (incline[i] != currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
-                            }
-                            //----------------------TODO: End of code snippet to be eliminated---------------------------------
-
                             // Console has to be in running mode to be able to set speed
                             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
                             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
@@ -923,6 +956,7 @@ public class TestMotor extends CommonFeatures {
                                 resultsCalsArray[calsIndex] = rCalories;
                                 calsIndex++;
 
+                                totalTestsCount++;
                                 if( Math.abs(eCalories-rCalories)< eCalories*0.05) // If calories are within 5% of expected, PASS
                                 {
                                     appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
@@ -940,6 +974,10 @@ public class TestMotor extends CommonFeatures {
                                     appendMessage("Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>");
                                     results+="Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
 
+                                    issuesListHtml+="<br>- Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>";
+                                    issuesList+="\n- Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
+                                    failsCount++;
+                                    testValidation = "FAILED";
                                 }
 
                                 //To reset calories value, system must be stopped and set to IDLE
@@ -950,9 +988,6 @@ public class TestMotor extends CommonFeatures {
                                 ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
                                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
                                 Thread.sleep(1000);
-
-                                // Give time for incline to calibrate. This is temporary until calibration issue is solved
-                                Thread.sleep(90000);
 
                             }
                     }
@@ -965,7 +1000,7 @@ public class TestMotor extends CommonFeatures {
 
        // appendMessage(expectedCalories+" calories are expected at speed of "+setSpeed+ ", incline of "+incline+", time of "+time+" seconds and weight of "+weight+"<br><br>");
        // results+=expectedCalories+" calories are expected at speed of "+setSpeed+ ", incline of "+incline+", time of "+time+" seconds and weight of "+weight+"\n\n";
-
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -976,7 +1011,6 @@ public class TestMotor extends CommonFeatures {
      * @throws Exception
      */
     public String testPwmOvershoot() throws Exception {
-        System.out.println("**************** PWM OVERSHOOT TEST ****************");
 
         //RedMine Support #956
         //Checklist item #39
@@ -988,7 +1022,14 @@ public class TestMotor extends CommonFeatures {
         //Pause, then send a requesto to set max speed (while in pause mode)
         //It should ignore this request and continue to slow down til it stops
         String results="";
-        double maxSpeed = 16.0; //TODO: Hardcoded because our console only reaches 15.0 KPH
+        gitHubWikiName = "PWM-Overshoot";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "PWM Overshoot.txt";
+        double maxSpeed = 19.0; //TODO: Hardcoded because our console only reaches 15.0 KPH
         double[] actualSpeeds = new double[4];
         boolean alwaysLess = true;
         double timeOfTest = 0; //how long test took in seconds
@@ -1094,7 +1135,7 @@ public class TestMotor extends CommonFeatures {
                 break;
             }
         }
-
+        totalTestsCount++;
         if (alwaysLess) {
             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
             appendMessage("The Speed did not increase once the Start button was pressed<br>");
@@ -1107,6 +1148,10 @@ public class TestMotor extends CommonFeatures {
 
             results+="\n* FAIL *\n\n";
             results+="The Speed increased or the Speed never changed from zero\n";
+            issuesListHtml+="<br>- The Speed increased or the Speed never changed from zero<br>";
+            issuesList+="\n- The Speed increased or the Speed never changed from zero\n";
+            failsCount++;
+            testValidation = "FAILED";
         }
 
         ///Set Mode to Pause
@@ -1128,6 +1173,7 @@ public class TestMotor extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of"+timeOfTest+"secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -1142,11 +1188,12 @@ public class TestMotor extends CommonFeatures {
         try {
             results+=this.testStartSpeed();
             results+=this.testPauseResume();
-            //results+=this.testCalories();
-           results+=this.testPwmOvershoot();
+            results+=this.testPwmOvershoot();
             results+=this.testDistance();
-           results+=this.testSpeedController();
+            results+=this.testSpeedController();
             results+= this.testCals();
+            mAct.filename = "All Motor Tests.txt";
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }

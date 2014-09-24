@@ -72,7 +72,7 @@ import java.util.Calendar;
      }
 
     /**
-     * Verifies valid age values can be set as well as invalid age values cant be set
+     * Runs all ages test  (valid, invalid)
      * @return text log of test results
      * @throws Exception
      */
@@ -84,52 +84,61 @@ import java.util.Calendar;
          //Validate the Age
          //Repeat 6 times with values in increments of 5 years
  
-         System.out.println("NOW RUNNING AGE TEST<br>");
- 
-         String results;
- 
-         results = "\n\n------------------------AGE TEST RESULTS------------------------\n\n";
-         results += Calendar.getInstance().getTime() + "\n\n";
+         String results = "";
+         results+=testValidAge();
+         results+=testInValidAge();
+         mAct.filename = "Age - All.txt";
+         return results;
+     }
 
-         appendMessage("<br><br>------------------------AGE TEST RESULTS------------------------<br><br>");
-         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
+    /**
+     * Verifies valid age values can be set
+     * @return text log of test results
+     * @throws Exception
+     */
+     public String testValidAge() throws Exception{
+         String results="";
+         gitHubWikiName = "Age-Valid";
+         testValidation ="PASSED";
+         issuesListHtml = "";
+         issuesList = "";
+         failsCount=0;
+         totalTestsCount = 0;
+         mAct.filename = "Age - Valid.txt";
 
          appendMessage("<br><br>---------------Valid Age Values------------------<br><br>");
          results+="\n\n---------------Valid Age Values------------------\n\n";
- 
+
          double age;
          double prevAge;
          double timeOfTest = 0; //how long test took in seconds
          long startTestTimer = System.nanoTime();
- 
+
          age = hCmd.getAge();
          results += "The default age is set to " + age + " years old\n";
 
          appendMessage("The default age is set to " + age + " years old<br>");
- 
-         //Set age to min=18 and increment by 1 up to maxage= 95
- 
-         int failureCounter = 0;
-         long elapsedTime = 0;
-         int i;
-         long startTime;
 
-         for(i = 18; i <=95; i++) {
+         //Set age to min=18 and increment by 1 up to maxage= 95
+
+
+         for(int i = 18; i <=95; i++) {
              ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
              mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
              Thread.sleep(500);
- 
+
              results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
 
              appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
              age = hCmd.getAge();
+             totalTestsCount++;
              if(age == i){
                  results += "\n* PASS *\n\n";
                  results += "Current Age is set to: " + age + " years old (age should really be " + i + ")\n";
 
                  appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                  appendMessage("Current Age is set to: " + age + " years old (age should really be " + i + ")<br>");
-                 failureCounter++;
+
              }
              else{
                  results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
@@ -137,53 +146,98 @@ import java.util.Calendar;
 
                  appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                  appendMessage("Current Age is set to: " + age + " years old, but should be set to: " + i + " years old<br>");
+                 issuesListHtml+="<br>- "+"Current Age is set to: " + age + " years old, but should be set to: " + i + " years old<br>";
+                 issuesList+="\n- "+"Current Age is set to: " + age + " years old, but should be set to: " + i + " years old\n";
+                 failsCount++;
+                 testValidation = "FAILED";
              }
          }
 
-
-         appendMessage("<br><br>---------------Invalid Age Values------------------<br><br>");
-         results+="\n\n---------------Invalid Age Values------------------\n\n";
-
-         for(i = 1; i <=105; i++) {
-             if(i==18)
-             {
-                 i=96;
-             }
-             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(500);
-
-             results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-
-             appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-             age = hCmd.getAge();
-             if(age !=i) // i is invalid age so it should not have been written
-             {
-                 results += "\n* PASS *\n\n";
-                 results += "Current age is set to: " + age + " years. Invalid value " + i + " was not written!\n";
-
-                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                 appendMessage("Current age is set to: " + age + " years. Invalid value " + i + " was not written!<br>");
-             }
-             else{
-                 results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
-                 results += "Current age is set to: " + age + " which matches invalid value " + i + "<br>";
-
-                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                 appendMessage("Current age is set to: " + age + " which matches invalid value " + i + " \n");
-
-             }
-         }
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
          appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
          results+="\nThis test took a total of "+timeOfTest+" secs \n";
-         return results;
+         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+         return  results;
      }
 
     /**
-     * Verifies valid weight ranges can be set as well as invalid weight values cant be set
+     * Verifies Invalid age values can NOT be written
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testInValidAge() throws Exception{
+        String results="";
+        gitHubWikiName = "Age-Invalid";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Age - Inalid.txt";
+
+        results = "\n\n------------------------Invalid Age Values------------------------\n\n";
+        results += Calendar.getInstance().getTime() + "\n\n";
+
+        appendMessage("<br><br>------------------------Invalid Age Values------------------------<br><br>");
+        appendMessage(Calendar.getInstance().getTime() + "<br><br>");
+
+
+        double age;
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+
+        age = hCmd.getAge();
+        results += "The default age is set to " + age + " years old\n";
+
+        appendMessage("The default age is set to " + age + " years old<br>");
+
+        for(int i = 1; i <=105; i++) {
+            if(i==18)
+            {
+                i=96;
+            }
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(500);
+
+            results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+            appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            age = hCmd.getAge();
+            totalTestsCount++;
+            if(age !=i) // i is invalid age so it should not have been written
+            {
+                results += "\n* PASS *\n\n";
+                results += "Current age is set to: " + age + " years. Invalid value " + i + " was not written!\n";
+
+                appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
+                appendMessage("Current age is set to: " + age + " years. Invalid value " + i + " was not written!<br>");
+            }
+            else{
+                results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
+                results += "Current age is set to: " + age + " which matches invalid value " + i + "\n";
+
+                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
+                appendMessage("Current age is set to: " + age + " which matches invalid value " + i + "<br>");
+                issuesListHtml+="<br>- "+"Current age is set to: " + age + " which matches invalid value " + i + "<br>";
+                issuesList+="\n- "+"Current age is set to: " + age + " which matches invalid value " + i + "\n";
+                failsCount++;
+                testValidation = "FAILED";
+            }
+        }
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of "+timeOfTest+" secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+        return  results;
+    }
+
+    /**
+     * Runs all weight tests (valid, invalid)
      * @return text log of test results
      * @throws Exception
      */
@@ -196,106 +250,164 @@ import java.util.Calendar;
          //Read the Weight
          //Validate the Weight
          //Repeat 6 times with different values
-         String results;
-         System.out.println("NOW RUNNING WEIGHT TEST<br>");
- 
-         results = "\n\n------------------------WEIGHT TEST RESULTS------------------------\n\n";
-         results += Calendar.getInstance().getTime() + "\n\n";
-         appendMessage("<br><br>------------------------WEIGHT TEST RESULTS------------------------<br><br>");
-         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
-
-         appendMessage("<br><br>---------------Valid Weight Values------------------<br><br>");
-         results+="\n\n---------------Valid Weight Values------------------\n\n";
-         double weight;
-         double timeOfTest = 0; //how long test took in seconds
-         long startTestTimer = System.nanoTime();
- 
-         weight = hCmd.getWeight();
-         results += "The default weight is set to " + weight + " kilograms\n";
-         appendMessage("The default weight is set to " + weight + " kilograms<br>");
-
-         double diff;
- 
-         //Set weight to 50 kg and increment by 10 up to 175 kg (max is 400lbs = 181 kg)
-         for(double i = 45.35; i <=175; i+=10) {
- 
-             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(500);
- 
-             results += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-             appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-             weight = hCmd.getWeight();
-             diff = Math.abs(weight - i);
- 
-           if(diff < i*.01) // if values are within 1% of each other
-           {
-                 results += "\n* PASS *\n\n";
-                 results += "Current Weight is set to: " + weight + " kilograms should be set to: " + i + " kilograms\n";
-                 results+="set and read values have a difference of "+diff+" which is within 1% tolerance\n";
-
-               appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-               appendMessage("Current Weight is set to: " + weight + " kilograms should be set to: " + i + " kilograms<br>");
-               appendMessage("set and read values have a difference of "+diff+" which is within 1% tolerance<br>");
-
-
-           }
-             else{
-                 results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
-                 results += "Current Weight is set to: " + weight + " kilograms, but should be set to: " + i + " kilograms\n";
-                 results+="set and read values have a difference of "+diff+" which is outside the 1% tolerance\n";
-
-               appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-               appendMessage("Current Weight is set to: " + weight + " kilograms, but should be set to: " + i + " kilograms<br>");
-               appendMessage("set and read values have a difference of "+diff+" which is outside the 1% tolerance<br>");
-
-           }
-         }
-         appendMessage("<br><br>---------------Ivalid Weight Values------------------<br><br>");
-         results+="\n\n---------------Ivalid Weight Values------------------\n\n";
-         //Set weight to 1 kg and increment by 5
-         for(double i = 0; i <=220; i+=5) {
-
-             //Jump to beyond max invalid weights
-             if(i == 45)
-             {
-                 i=190;
-             }
-             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             //need more time for weight controller
-             Thread.sleep(500);
-
-             results += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-             appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-             weight = hCmd.getWeight();
-
-             if(weight !=i) // i is invalid weight so it should not have been written
-             {
-                 results += "\n* PASS *\n\n";
-                 results += "Current Weight is set to: " + weight + " kilograms. Invalid value " + i + " kilograms was not written!\n";
-
-                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                 appendMessage("Current Weight is set to: " + weight + " kilograms. Invalid value " + i + " kilograms was not written!\n");
-             }
-             else{
-                 results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
-                 results += "Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms\n";
-
-                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                 appendMessage("Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms\n");
-
-             }
-         }
-         timeOfTest = System.nanoTime() - startTestTimer;
-         timeOfTest = timeOfTest / 1.0E09;
-
-         appendMessage("<br><br>This test took a total of "+timeOfTest+" secs <br>");
-         results+="\n\nThis test took a total of "+timeOfTest+" secs \n";
+         String results="";
+         results+=testValidWeight();
+         results+=testInValidWeight();
+         mAct.filename = "Weight - All.txt";
          return results;
      }
+
+
+    /**
+     * Verifies valid weight values can be set
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testValidWeight() throws Exception{
+        String results="";
+        gitHubWikiName = "Weight-Valid";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Weight - Valid.txt";
+
+        double weight;
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+
+        weight = hCmd.getWeight();
+        results += "The default weight is set to " + weight + " kilograms\n";
+        appendMessage("The default weight is set to " + weight + " kilograms<br>");
+
+        double diff;
+
+        //Set weight to 50 kg and increment by 10 up to 175 kg (max is 400lbs = 181 kg)
+        for(double i = 45.35; i <=175; i+=10) {
+
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(500);
+
+            results += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+
+            weight = hCmd.getWeight();
+            diff = Math.abs(weight - i);
+            totalTestsCount++;
+            if(diff < i*.01) // if values are within 1% of each other
+            {
+                results += "\n* PASS *\n\n";
+                results+="set value "+i+"and read value "+weight+" have a difference of "+diff+" which is within the 1% tolerance\n";
+
+                appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
+                appendMessage("set value "+i+"and read value "+weight+" have a difference of "+diff+" which is outside the 1% tolerance<br>");
+
+
+            }
+            else{
+                results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
+                results+="set value "+i+"and read value "+weight+" have a difference of "+diff+" which is outside the 1% tolerance\n";
+
+                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
+                appendMessage("set value "+ i +" and read value "+weight+" have a difference of "+diff+" which is outside the 1% tolerance<br>");
+
+                issuesListHtml+="<br>- "+"set value "+i+"and read value "+weight+" have a difference of "+diff+" which is outside the 1% tolerance<br>";
+                issuesList+="\n- "+"set value "+i+"and read value "+weight+" have a difference of "+diff+" which is outside the 1% tolerance\n";
+                failsCount++;
+                testValidation = "FAILED";
+
+            }
+        }
+
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+
+        appendMessage("<br><br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\n\nThis test took a total of "+timeOfTest+" secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+
+        return  results;
+    }
+
+    /**
+     * Verifies Invalid weight values can NOT be written
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testInValidWeight() throws Exception{
+        String results="";
+        gitHubWikiName = "Weight-Inalid";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Weight - Invalid.txt";
+        double weight;
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+
+        weight = hCmd.getWeight();
+
+        results += "The default weight is set to " + weight + " kilograms\n";
+        appendMessage("The default weight is set to " + weight + " kilograms<br>");
+
+        double diff;
+
+        results = "\n\n------------------------Invalid Weight Values------------------------\n\n";
+        results += Calendar.getInstance().getTime() + "\n\n";
+        appendMessage("<br><br>------------------------Invalid Weight Values------------------------<br><br>");
+        appendMessage(Calendar.getInstance().getTime() + "<br><br>");
+
+        //Set weight to 1 kg and increment by 5
+        for(double i = 0; i <=220; i+=5) {
+
+            //Jump to beyond max invalid weights
+            if(i == 45)
+            {
+                i=190;
+            }
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            //need more time for weight controller
+            Thread.sleep(500);
+
+            results += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+
+            weight = hCmd.getWeight();
+            totalTestsCount++;
+            if(weight !=i) // i is invalid weight so it should not have been written
+            {
+                results += "\n* PASS *\n\n";
+                results += "Current Weight is set to: " + weight + " kilograms. Invalid value " + i + " kilograms was not written!\n";
+
+                appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
+                appendMessage("Current Weight is set to: " + weight + " kilograms. Invalid value " + i + " kilograms was not written!<br>");
+            }
+            else{
+                results += "\n<font color = #ff0000>* FAIL *</font>\n\n";
+                results += "Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms\n";
+
+                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
+                appendMessage("Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms<br>");
+                issuesListHtml+="<br>- "+"Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms<br>";
+                issuesList+="\n- "+"Current Weight is set to: " + weight + " which matches invalid value " + i + " kilograms\n";
+                failsCount++;
+                testValidation = "FAILED";
+
+            }
+        }
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+
+        appendMessage("<br><br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\n\nThis test took a total of "+timeOfTest+" secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+        return  results;
+    }
 
     /**
      * Verifies branboard config values are correct for the corresponding console
@@ -307,12 +419,18 @@ import java.util.Calendar;
          //outline for code support #951
          //read System Config data from Brainboard
          //try to output all values from System Device and Device Info
-         String titleString;
-         String systemString = "";
- 
-         titleString = "\n----------------------SYSTEM CONFIGURATION TEST----------------------\n\n";
+         String results = "";
+         gitHubWikiName = "System%20Configuration";
+         testValidation ="PASSED";
+         issuesListHtml = "";
+         issuesList = "";
+         failsCount=0;
+         totalTestsCount = 0;
+         mAct.filename = "System Config.txt";
+
+         results = "\n----------------------SYSTEM CONFIGURATION TEST----------------------\n\n";
          appendMessage("<br>----------------------SYSTEM CONFIGURATION TEST----------------------<br><br>");
-         titleString += Calendar.getInstance().getTime() + "\n\n";
+         results += Calendar.getInstance().getTime() + "\n\n";
          appendMessage(Calendar.getInstance().getTime() + "<br><br>");
  
          double maxIncline;
@@ -350,26 +468,29 @@ import java.util.Calendar;
          {
              if(brainboardLines[i].equals(inputLines[i]))
              {
-                 systemString += "\nBrainboard " + brainboardLines[i] + "\nKeyboard Input " + inputLines[i] + "\n\n* PASS *\n\n";
+                 results += "\nBrainboard " + brainboardLines[i] + "\nKeyboard Input " + inputLines[i] + "\n\n* PASS *\n\n";
                  appendMessage("<br>Brainboard " + brainboardLines[i] + "<br>Keyboard Input " + inputLines[i] + "<br><font color = #00ff00>* PASS *</font><br><br>");
 
              }
              else
              {
-                 systemString += "\nBrainboard " + brainboardLines[i] + "\n Keyboard Input " + inputLines[i] + "\n\n* FAIL *\n\n";
+                 results += "\nBrainboard " + brainboardLines[i] + "\n Keyboard Input " + inputLines[i] + "\n\n* FAIL *\n\n";
                  appendMessage("<br>Brainboard " + brainboardLines[i] + "<br>Keyboard Input " + inputLines[i] + "<br><br><font color = #ff0000>* FAIL *</font><br><br>");
+                 issuesListHtml+="<br>- " +"Brainboard " + brainboardLines[i] + "<br>Keyboard Input " + inputLines[i] + "<br>";
+                 issuesList+="\n- " +"Brainboard " + brainboardLines[i] + "<br>Keyboard Input " + inputLines[i] + "\n";
+                 failsCount++;
+                 testValidation = "FAILED";
 
              }
          }
  
-         systemString = titleString + systemString;
-
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
          appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
-         systemString+="\nThis test took a total of "+timeOfTest+" secs \n";
-         return systemString;
+         results+="\nThis test took a total of "+timeOfTest+" secs \n";
+         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+         return results;
      }
 
     /**
@@ -383,8 +504,15 @@ import java.util.Calendar;
          //Set mode to Pause
          //Delay for 60 seconds
          //Verify Pause timeout by reading the mode and ensuring it is in Results mode
-         System.out.println("NOW PAUSE/IDLE TIMEOUT TEST<br>");
          String results = "";
+         gitHubWikiName = "Pause-&-Idle-Timeout";
+         testValidation ="PASSED";
+         issuesListHtml = "";
+         issuesList = "";
+         failsCount=0;
+         totalTestsCount = 0;
+         mAct.filename = "Pause & Idle Timeout.txt";
+
          double pauseTimeout;
          double idleTimeout;
          //setPauseTimeout and setIdleTimeout arrays are parallel arrays so they should be same length and contain same amount of data
@@ -407,7 +535,6 @@ import java.util.Calendar;
          results+="Current Mode: " + hCmd.getMode()+"\n";
 
 
-         //Set pause timeout to 30 secs
          for(int i = 0; i<setPauseTimeout.length; i++) {
              appendMessage("Setting the pause timeout to " + setPauseTimeout[i] + " secs...<br>");
              results += "Setting the pause timeout to "+ setPauseTimeout[i] + " secs...\n";
@@ -465,6 +592,7 @@ import java.util.Calendar;
                      break;
                  }
              }
+             totalTestsCount++;
              if (hCmd.getMode().getDescription() != "Pause Mode") {
                  appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                  results += "\n* PASS *\n\n";
@@ -473,8 +601,12 @@ import java.util.Calendar;
              } else {
                  appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                  results += "\n* FAIL *\n\n";
-                 appendMessage("Pause Mode did not time out after " + pauseTimeout + " seconds\n");
+                 appendMessage("Pause Mode did not time out after " + pauseTimeout + " seconds<br>");
                  results += "\nPause Mode did not time out after " + pauseTimeout + " seconds\n";
+                 issuesListHtml+="<br>- "+"Pause Mode did not time out after " + pauseTimeout + " seconds<br>";
+                 issuesList+="\n- "+"Pause Mode did not time out after " + pauseTimeout + " seconds\n";
+                 failsCount++;
+                 testValidation = "FAILED";
              }
              //Now wait for the IDLE timeout to happen and change mode from RESULTS to IDLE
              //TODO: verify that bitfields are resetting after IDLE timeout
@@ -490,7 +622,7 @@ import java.util.Calendar;
                      break;
                  }
              }
-
+             totalTestsCount++;
              if (hCmd.getMode().name() != "RESULTS") {
                  appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                  results += "\n* PASS *\n\n";
@@ -501,6 +633,10 @@ import java.util.Calendar;
                  results += "\n* FAIL *\n\n";
                  appendMessage("Results mode did not time out after " + idleTimeout + " seconds<br>");
                  results += "Results mode did not time out after " + idleTimeout + " seconds\n";
+                 issuesListHtml+="<br>- "+"Results mode did not time out after " + idleTimeout + " seconds<br>";
+                 issuesList+="\n- "+"Results mode did not time out after " + idleTimeout + " seconds\n";
+                 failsCount++;
+                 testValidation = "FAILED";
              }
          }
          timeOfTest = System.nanoTime() - startTestTimer;
@@ -508,6 +644,7 @@ import java.util.Calendar;
 
          appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
          results+="\nThis test took a total of "+timeOfTest+" secs \n";
+         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
          return results;
      }
 
@@ -522,6 +659,13 @@ import java.util.Calendar;
          //outline for code support #930 in redmine
          
          String results;
+         gitHubWikiName = "Running-Time";
+         testValidation ="PASSED";
+         issuesListHtml = "";
+         issuesList = "";
+         failsCount=0;
+         totalTestsCount = 0;
+         mAct.filename = "Running Time.txt";
 
          long runtime; //time for running test (in secs)
          long pauseruntime; //time for running test with pause in secs
@@ -587,19 +731,27 @@ import java.util.Calendar;
          //read the running time
  
          double timeOfRunningTest = hCmd.getRunTime();
- 
+         totalTestsCount++;
          //Test whether the running time is within +/- 2 second of 60 seconds (allow for 1 sec read time)
          if(timeOfRunningTest >= runtime-2 && timeOfRunningTest <= runtime+2) {
              appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br>");
+             appendMessage("The running time for this "+runtime+" second test was " + timeOfRunningTest + " seconds which is within +/- 2 secs tolerance<br>");
+             results+="The running time for this "+runtime+" second test was " + timeOfRunningTest + " seconds which is within +/- 2 secs tolerance\n";
              results+="\n\n* PASS *\n\n";
          }
          else {
              appendMessage("<br><br><font color = #ff0000>* FAIL *</font><br><br>");
              results+="\n\n* FAIL *\n\n";
+             appendMessage("The running time for this "+runtime+" second test was " + timeOfRunningTest + " seconds which is outside +/- 2 secs tolerance<br>");
+             results+="The running time for this "+runtime+" second test was " + timeOfRunningTest + " seconds which is outside +/- 2 secs tolerance\n";
+
+             issuesListHtml+="<br>- "+"The running time for this "+runtime+" second test was " + timeOfRunningTest + " seconds which is outside +/- 2 secs tolerance<br>";
+             issuesList+="\n- "+"The running time for this "+runtime+" second test was " + timeOfRunningTest + " seconds which is outside +/- 2 secs tolerance\n";
+             failsCount++;
+             testValidation = "FAILED";
          }
  
-         appendMessage("The running time for this "+runtime+" second test was " + timeOfRunningTest + " seconds<br>");
-         results+="The running time for this "+runtime+" second test was " + timeOfRunningTest + " seconds\n";
+
          //set mode back to Pause to stop the test
          ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
          mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
@@ -668,6 +820,7 @@ import java.util.Calendar;
          double timeOfPauseTest = hCmd.getRunTime();
          pauseruntime*=2; // This time is used twice
          //Test whether the running time is within +/- 2 seconds of 55 seconds
+         totalTestsCount++;
          if(timeOfPauseTest >= pauseruntime-2 && timeOfPauseTest <= pauseruntime+2){
              appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br>");
              appendMessage("The total time for this "+pauseruntime+ " sec test with 30 sec pause correctly ran for " + timeOfPauseTest + " secs<br><br>");
@@ -679,7 +832,10 @@ import java.util.Calendar;
              appendMessage("The total time for this "+pauseruntime+" sec test with 30 sec pause actually ran for " + timeOfPauseTest +"<br><br>");
              results+="\n\n* FAIL *\n\n";
              results+="The total time for this "+pauseruntime+ " sec test with 30 sec pause actually ran for " + timeOfPauseTest + " secs\n\n";
-
+             issuesListHtml+="<br>- "+"The total time for this "+pauseruntime+" sec test with 30 sec pause actually ran for " + timeOfPauseTest +"<br>";
+             issuesList+="\n- "+"The total time for this "+pauseruntime+" sec test with 30 sec pause actually ran for " + timeOfPauseTest +"\n";
+             failsCount++;
+             testValidation = "FAILED";
          }
  
          //set mode back to idle to stop the test
@@ -699,6 +855,7 @@ import java.util.Calendar;
 
          appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
          results+="\nThis test took a total of "+timeOfTest+" secs \n";
+         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
          return results;
      }
  
@@ -722,14 +879,20 @@ import java.util.Calendar;
          //send command to change speed to max speed
          //read current speed until actual is the same as target
          //stop stopwatch and return/display/record the value of the stopwatch
-         
+         String results="";
          double maxSpeed;
          double currentActualSpeed = 0;
          double timeOfTest = 0; //how long test took in seconds
          long startTestTimer = System.nanoTime();
 
-         System.out.println("NOW RUNNING MAX SPEED TIME TEST<br>");
-         String results="";
+         gitHubWikiName = "Max-Speed";
+         testValidation ="PASSED";
+         issuesListHtml = "";
+         issuesList = "";
+         failsCount=0;
+         totalTestsCount = 0;
+         mAct.filename = "Max Speed Time.txt";
+
          appendMessage("<br>--------------------------MAX SPEED TEST--------------------------<br><br>");
          appendMessage(Calendar.getInstance().getTime() + "<br><br>");
          results+="\n--------------------------MAX SPEED TEST--------------------------\n\n";
@@ -774,7 +937,8 @@ import java.util.Calendar;
          appendMessage("The motor took " + seconds + " seconds to go to max speed<br>");
          results+="The max speed is " + maxSpeed + "\n";
          results+="The motor took " + seconds + " seconds to go to max speed\n";
- 
+
+         totalTestsCount++;
          if(maxSpeed < 10){
              appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The Max Speed was not properly read from the brainboard (Max Speed: "+maxSpeed+" kph)<br>");
              results+="\n<font color = #ff0000>* FAIL *</font>\n\nThe Max Speed was not properly read from the brainboard (Max Speed: "+maxSpeed+" kph)\n";
@@ -785,6 +949,10 @@ import java.util.Calendar;
          if((seconds <= 22) || (seconds >= 24)) {
              appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The time for motor to reach max speed was off by " + (seconds - 23) + " seconds<br>");
              results+="\n* FAIL *\n\nThe time for motor to reach max speed was off by " + (seconds - 23) + " seconds\n";
+             issuesListHtml+="<br>- "+"The time for motor to reach max speed was off by " + (seconds - 23) + " seconds<br>";
+             issuesList+="\n- "+"The time for motor to reach max speed was off by " + (seconds - 23) + " seconds\n";
+             failsCount++;
+             testValidation = "FAILED";
          }
  
          else {
@@ -813,6 +981,7 @@ import java.util.Calendar;
 
          appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
          results+="\nThis test took a total of "+timeOfTest+" secs \n";
+         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
          return results;
      }
 
@@ -825,11 +994,14 @@ import java.util.Calendar;
      public String runAll() {
         String results = "";
          try {
-             results+=this.testAge();
-             results+=this.testWeight();
+             results+=this.testValidAge();
+             results+=this.testInValidAge();
+             results+=this.testValidWeight();
+             results+=this.testInValidWeight();
              results+=this.testMaxSpeedTime();
              results+=this.testRunningTime(" ");
              results+=this.testPauseIdleTimeout();
+             mAct.filename = "All Integration Tests.txt";
          }
          catch (Exception ex) {
              ex.printStackTrace();
