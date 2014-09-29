@@ -49,6 +49,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
                     Thread.sleep(1000);
                     //Get current system device
                     MainDevice = this.mFecpController.getSysDev();
+                    this.currentVersion = "SAL v"+ String.valueOf(mFecpController.getVersion());
                     this.wrCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd);
                     this.rdCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd,0,100);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.MAX_GRADE);

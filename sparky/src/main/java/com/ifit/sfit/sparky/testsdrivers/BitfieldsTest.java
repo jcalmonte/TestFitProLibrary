@@ -66,6 +66,15 @@ public class BitfieldsTest extends BaseTest implements View.OnClickListener, Ada
                         case "Bf - All":
                             returnString = t.testBitfields();
                             break;
+                        case "Pulse - Valid":
+                            returnString = t.testPulseValid();
+                            break;
+                        case "Pulse - Invalid":
+                            returnString = t.testPulseInValid();
+                            break;
+                        case "Pulse - All":
+                            returnString = t.testPulse();
+                            break;
                         case "Modes - All":
                             returnString = t.testModes();
                             break;

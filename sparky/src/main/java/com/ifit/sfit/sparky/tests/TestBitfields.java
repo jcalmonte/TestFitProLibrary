@@ -161,7 +161,7 @@ public class TestBitfields extends CommonFeatures {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        appendMessage("<br>This test took a total of " + timeOfTest + " secs <br>");
         results+="\nThis test took a total of  "+timeOfTest+"  secs \n";
 
 
@@ -290,7 +290,7 @@ public class TestBitfields extends CommonFeatures {
         double   valueToWrite;
         Object defaultValue;
         Object temp;
-
+        Random rand = new Random();
         //Loop through all read/write supported fields, write invalid value and verify read value from brainboard is the default value
         // Then write a valid value and verify it by reading it from brainboard
 
@@ -302,7 +302,6 @@ public class TestBitfields extends CommonFeatures {
             //TRANS_MAX, BV_VOLUME, BV_FREQUENCY IDLE_TIMEOUT, PAUSE_TIMEOUT, SYSTEM_UNITS, GENDER, FIRST_NAME, LAST_NAME, IFIT_USER_NAME,
             //HEIGHT, KPH_GOAL, GRADE_GOAL, RESISTANCE_GOAL, WATT_GOAL, RPM_GOAL, DISTANCE_GOAL,PULSE_GOAL
 
-            //TODO: Make sure to test one invalid value from below and from above valid range for each  bitfield
             switch (bf.name()) {
                 case "KPH":
                     valueToWrite = -5.0;//Invalid value
@@ -323,12 +322,22 @@ public class TestBitfields extends CommonFeatures {
                 case "RESISTANCE":
                     break;
                 case "FAN_SPEED":
-                    valueToWrite = -3.0;//Invalid value
+                    valueToWrite = -1.0;//Invalid value
                     results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
-                    valueToWrite = 12.0; //set fan speed to 15% of max
+                    valueToWrite = (double)rand.nextInt(100)+50; // Send a random value ( 10 to 20) on each mode                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
+                    break;
+                case "PULSE":
+                    valueToWrite = -4.0;//Invalid value
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
+                    valueToWrite = (double)rand.nextInt(100)+50; // Send a random value ( 10 to 20) on each mode                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
                     results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
                     break;
                 case "VOLUME":
+                    valueToWrite = -3.0;//Invalid value
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
+                    valueToWrite = (double)rand.nextInt(100)+50; // Send a random value ( 10 to 20) on each mode                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
                     break;
                 case "WORKOUT_MODE":
                     ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(bf);
@@ -344,6 +353,8 @@ public class TestBitfields extends CommonFeatures {
                 case "AUDIO_SOURCE":
                     break;
                 case "WORKOUT":
+                    break;
+                case "REQUESTED_WORKOUT":
                     break;
                 case "AGE":
                     valueToWrite = 2.0; //invalid value
@@ -399,6 +410,8 @@ public class TestBitfields extends CommonFeatures {
                     break;
                 case "WATT_GOAL":
                     break;
+                case "TORQUE_GOAL":
+                    break;
                 case "RPM_GOAL":
                     break;
                 case "DISTANCE_GOAL":
@@ -434,6 +447,101 @@ public class TestBitfields extends CommonFeatures {
     }
 
     /**
+     * Runs all Pulse tests
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testPulse() throws Exception {
+
+        String results = "";
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+
+        results+= testPulseValid();
+        results+= testPulseInValid();
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+
+        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        results+="\nThis test took a total of  "+timeOfTest+"  secs \n";
+        mAct.filename = "Pulse - All.txt";
+        return results;
+    }
+
+    /**
+     * Checks that valid values can be written to "Pulse" bitfield
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testPulseValid() throws Exception{
+    String results="";
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+        gitHubWikiName="Pulse-Valid";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Pulse - Valid.txt";
+
+        appendMessage("<br><br>----------------------------Testing Valid Pulse Values----------------------------<br><br>");
+        results+="\n\n----------------------------Testing Valid Pulse Values----------------------------\n\n";
+
+        for(int i = 0; i<128; i++)
+        {
+            totalTestsCount++;
+            results+=verifyBitfield(ModeId.IDLE,BitFieldId.PULSE,i,true);
+        }
+
+      timeOfTest = System.nanoTime() - startTestTimer;
+      timeOfTest = timeOfTest / 1.0E09;
+      appendMessage("<br>Combined, all Mode tests took a total of "+timeOfTest+" secs <br>");
+      results+="\nCombined, all Mode tests took a total of "+timeOfTest+" secs \n";
+      results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+
+        return results;
+    }
+
+    /**
+     * Checks that invalid values can NOT be written to "Pulse" bitfield
+     * @return text log of test results
+     * @throws Exception
+     */
+    public String testPulseInValid() throws Exception{
+        String results="";
+        double timeOfTest = 0; //how long test took in seconds
+        long startTestTimer = System.nanoTime();
+
+        gitHubWikiName="Pulse-Invalid";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Pulse - Invalid.txt";
+
+        appendMessage("<br><br>----------------------------Testing Invalid Pulse Values----------------------------<br><br>");
+        results+="\n\n----------------------------Testing Invalid Pulse Values----------------------------\n\n";
+
+        for(int i = -10; i<138; i++)
+        {
+            if(i==0)
+            {
+                i=128;
+            }
+            totalTestsCount++;
+            results+=verifyBitfield(ModeId.IDLE,BitFieldId.PULSE,i,false);
+        }
+
+        timeOfTest = System.nanoTime() - startTestTimer;
+        timeOfTest = timeOfTest / 1.0E09;
+        appendMessage("<br>Combined, all Mode tests took a total of "+timeOfTest+" secs <br>");
+        results+="\nCombined, all Mode tests took a total of "+timeOfTest+" secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+        return results;
+    }
+    /**
      * Helper function for {@link #testBitfieldValuesValidation()}
      * @param modeId the right mode id to be able to use bitfield
      * @param bitFieldId the Id of the bitfield being tested
@@ -447,15 +555,24 @@ public class TestBitfields extends CommonFeatures {
         long time=1000;
 
         try {
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modeId);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(bitFieldId, valueToWrite);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(time);
+            if(bitFieldId!= BitFieldId.PULSE) {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modeId);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+            }
+            else
+            {
+                time = 25;
+            }
             ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(bitFieldId);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(bitFieldId, valueToWrite);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
         }
         catch (Exception ex)
         {
@@ -472,10 +589,11 @@ public class TestBitfields extends CommonFeatures {
             
             } else {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "<br>");
-                issuesListHtml+="<br>- "+"value "+ hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"<br>";
                 results+="\n* FAIL *\n\n value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "\n";
+                issuesListHtml+="<br>- "+"value "+ hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"<br>";
                 issuesList+="\n- "+"value "+ hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"\n";
                 testValidation = "FAILED";
+                failsCount++;
 
             }
         }
@@ -486,12 +604,11 @@ public class TestBitfields extends CommonFeatures {
 
             if (hCmd.getValue(bitFieldId) == valueToWrite) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() + "<br>");
-                issuesListHtml="";
-                issuesListHtml+="<br>- "+"invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() +"<br>";
                 results+="\n* FAIL *\n\n invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() + "\n";
-                issuesList="";
+                issuesListHtml+="<br>- "+"invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() +"<br>";
                 issuesList+="\n- "+"invalid value " + hCmd.toString() + " read from brainboard should have not been written for bitfield " + bitFieldId.name() +"\n";
                 testValidation = "FAILED";
+                failsCount++;
 
             } else {
                 appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> invalid value " + valueToWrite + " was not written to brainboard for bitfield " + bitFieldId.name()+" value "+hCmd.toString() + " was written instead<br>");
@@ -1428,12 +1545,13 @@ public class TestBitfields extends CommonFeatures {
      */
     @Override
     public String runAll() throws Exception {
-        String results = "";
+       String results = "";
 
-       results="";
        results+=this.testBitfieldsUnsupported();
        results+=this.testBitfieldsRdOnly();
        results+=this.testBitfieldValuesValidation();
+       results+=this.testPulseValid();
+       results+=this.testPulseInValid();
        results+=this.testModesValid();
        results+=this.testModesInValid();
        results+=this.testModesActions();

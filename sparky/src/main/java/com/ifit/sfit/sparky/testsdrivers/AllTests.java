@@ -41,7 +41,7 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
         // 2. get message value from intent
         String message = intent.getStringExtra("message");
         isAlarmMessage = message.equals("runAll");
-        if(isAlarmMessage == true);
+        if(isAlarmMessage)
         {
             testToRun = "All Tests";
             runTest();
@@ -164,6 +164,7 @@ public class AllTests extends BaseTest implements View.OnClickListener, AdapterV
         results += m.runAll();
         results += i.runAll();
         results += b.runAll();
+        BaseTest.filename = "All Tests.txt ";
         return results;
     }
 }

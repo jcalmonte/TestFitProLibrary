@@ -54,6 +54,7 @@ public class TestMotor extends CommonFeatures {
                 Thread.sleep(1000);
                 //Get current system device
                 MainDevice = this.mFecpController.getSysDev();
+                this.currentVersion = "SAL v"+ String.valueOf(mFecpController.getVersion());
                 this.wrCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), hCmd);
                 this.rdCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA), hCmd, 0, 100);
                ((WriteReadDataCmd) rdCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_KPH);
@@ -555,7 +556,7 @@ public class TestMotor extends CommonFeatures {
      * @throws Exception
      */
     public String testSpeedController() throws Exception {
-        final double MAX_SPEED = 19; //hardcode the value until we can read it
+        final double MAX_SPEED = 19.0; //hardcode the value until we can read it
         //outline for code support #927 in redmine
         //run test for treadmill & incline trainers
         //send speed command
@@ -582,7 +583,7 @@ public class TestMotor extends CommonFeatures {
         double actualSpeed = 0;
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
-
+        double currentActualIncline;
         appendMessage("<br>--------------------------SPEED TEST RESULTS--------------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
 
@@ -593,6 +594,32 @@ public class TestMotor extends CommonFeatures {
         appendMessage(currentMode);
 
         results+="Current Mode is: " + hCmd.getMode() + "\n";
+
+        //Set Incline to zero to avoid speed/incline limits
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 0);
+        mFecpController.addCmd(wrCmd);
+        Thread.sleep(1000);
+        appendMessage("Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+        appendMessage("Checking incline will reach set value...<br>");
+
+        results+="Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        results+="Checking incline will reach set value...\n";
+
+
+        //check actual incline until value reaches minIncline
+        startime = System.nanoTime();
+        do
+        {
+            currentActualIncline = hCmd.getActualIncline();
+            Thread.sleep(300);
+            appendMessage("Current Incline is: " + currentActualIncline+ " goal: 0 time elapsed: "+seconds+"<br>");
+
+            results+="Current Incline is: " + currentActualIncline+ " goal: 0 time elapsed: "+seconds+"\n";
+
+            elapsedTime = System.nanoTime() - startime;
+            seconds = elapsedTime / 1.0E09;
+        } while(0!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+
 
         //Set the Mode to Running Mode
         ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
@@ -974,8 +1001,10 @@ public class TestMotor extends CommonFeatures {
                                     appendMessage("Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>");
                                     results+="Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
 
-                                    issuesListHtml+="<br>- Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>";
-                                    issuesList+="\n- Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
+                                    issuesListHtml+="<br>- Calories value is: "+resultCalories+" and it should have been "+expectedCalories+" Calories were off by " + (eCalories - rCalories)+ "<br>"
+                                            +"Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs<br>";
+                                    issuesList+="\n- Calories value is: "+resultCalories+" and it should have been "+expectedCalories+" Calories were off by " + (eCalories - rCalories)+ "\n"
+                                            +"Weight-->"+currentWeightLbsRounded+" lbs, speed-->"+currentSpeed+" kph, incline-->"+currentActualIncline+" %, time-->"+time+" secs\n";
                                     failsCount++;
                                     testValidation = "FAILED";
                                 }

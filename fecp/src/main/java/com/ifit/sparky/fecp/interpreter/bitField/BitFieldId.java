@@ -22,7 +22,7 @@ public enum BitFieldId {
     KEY_OBJECT(7, 14, true, new KeyObjectConverter(), "Key Object"),
     FAN_SPEED(8, 1, false, new ByteConverter(), "Fan Speed"),
     VOLUME(9, 1, false, new ByteConverter(), "Volume"),
-    PULSE(10, 1, true, new ByteConverter(), "Pulse"),
+    PULSE(10, 1, false, new ByteConverter(), "Pulse"),
     RUNNING_TIME(11, 4, true, new LongConverter(), "Running Time"),
     WORKOUT_MODE(12, 1, false, new ModeConverter(), "Workout Mode"),
     CALORIES(13, 4, true, new CaloriesConverter(), "Calories"),

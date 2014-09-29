@@ -27,7 +27,7 @@
         <item>Age - All</item>
         <item>Weight - Valid</item>
         <item>Weight - Invalid</item>
-        <item>Weight - All</item>
+        <item>Weight</item>
         <item>Max Speed</item>
         <item>Running Time</item>
         <item>Mar Running Time</item>
@@ -41,6 +41,9 @@
         <item>Bf - Read Only</item>
         <item>Bf - Values Validation</item>
         <item>Bf - All</item>
+        <item>Pulse - Valid</item>
+        <item>Pulse - Invalid</item>
+        <item>Pulse - All</item>
         <item>Modes - Valid</item>
         <item>Modes - Invalid</item>
         <item>Modes - Actions</item>
