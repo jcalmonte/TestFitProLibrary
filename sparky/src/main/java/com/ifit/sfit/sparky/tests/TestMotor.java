@@ -556,7 +556,7 @@ public class TestMotor extends CommonFeatures {
      * @throws Exception
      */
     public String testSpeedController() throws Exception {
-        final double MAX_SPEED = 19.0; //hardcode the value until we can read it
+        final double MAX_SPEED = hCmd.getMaxSpeed();
         //outline for code support #927 in redmine
         //run test for treadmill & incline trainers
         //send speed command
@@ -656,7 +656,7 @@ public class TestMotor extends CommonFeatures {
                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
                 Thread.sleep(1000);
 
-/* THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
+/* TODO: THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
                 startime= System.nanoTime();
                 do
                 {
@@ -669,6 +669,7 @@ public class TestMotor extends CommonFeatures {
                 } while(j!=actualSpeed && seconds < 20);//Do while the incline hasn't reached its point yet or took more than 20 secs
 
 */
+             // TODO: THIS CODE SNIPPET WILL BE DELETED ONCE ACTUAL SPEED IS ACCURATE
                 if (roundedJ == 0) {
                     Thread.sleep(3000);
                 } else if (roundedJ < MAX_SPEED && roundedJ > 0) {
@@ -677,6 +678,7 @@ public class TestMotor extends CommonFeatures {
                     Thread.sleep((long) (j) * 1000 * 2); //Typecast j (speed) to a long to delay time for double the time based on the speed
                     //Ex: delay for 12 kph should be 24 seconds (24000 milliseconds)
                 }
+            //END OF CODE SNIPPET TO BE DELETED
 
                 //Check status of the command to send the speed
                 appendMessage("Status of sending speed " + roundedJ + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");

@@ -55,6 +55,7 @@ public class HandleCmd implements OnCommandReceivedListener
     private WorkoutId mWorkoutId;
     private  double mResistance = 0;
     private  double mActualResistance = 0;
+    private  double mPulse = 0;
 
 
     private KeyObject mKey;
@@ -104,6 +105,17 @@ public class HandleCmd implements OnCommandReceivedListener
                 try {
                     mSpeed = ((SpeedConverter)commandData.get(BitFieldId.KPH).getData()).getSpeed();
                     this.valueToString = String.valueOf(mSpeed);
+                    //System.out.println("Current Speed (TestHandleInfo): " + mSpeed);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            //Read the KPH value off of the Brainboard
+            if(commandData.containsKey(BitFieldId.PULSE)) {
+
+                try {
+                    mPulse = ((ByteConverter)commandData.get(BitFieldId.PULSE).getData()).getValue();
+                    this.valueToString = String.valueOf(mPulse);
                     //System.out.println("Current Speed (TestHandleInfo): " + mSpeed);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -432,6 +444,9 @@ public class HandleCmd implements OnCommandReceivedListener
                 break;
             case "WORKOUT_MODE":
                 value = this.mResultMode.getValue();
+                break;
+            case "PULSE":
+                value = this.mPulse;
                 break;
         }
         this.valueToString = String.valueOf(value);
