@@ -8,7 +8,9 @@ import com.ifit.sparky.fecp.FecpCommand;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.InvalidBitFieldException;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.AudioSourceId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
+import com.ifit.sparky.fecp.interpreter.bitField.converter.WorkoutId;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.InvalidCommandException;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
@@ -37,6 +39,8 @@ public class TestBitfields extends CommonFeatures {
 
     private String testValidation = "", currentVersion="", gitHubWikiName="", issuesListHtml="", issuesList="";
     private int failsCount = 0, totalTestsCount = 0;
+    private FecpCommand workoutCmd;
+    private FecpCommand audioSrcCmd;
 
     private String emailAddress;
 
@@ -61,6 +65,9 @@ public class TestBitfields extends CommonFeatures {
                 MainDevice = this.mFecpController.getSysDev();
                 this.currentVersion = "SAL v"+ String.valueOf(mFecpController.getVersion());
                 this.wrCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd);
+                this.workoutCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd);
+                this.audioSrcCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd);
+
                 ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
                 Thread.sleep(1000);
@@ -298,7 +305,7 @@ public class TestBitfields extends CommonFeatures {
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         for (BitFieldId bf : supportedWrBitFields) {
-            //All Write/Read bitfields are: KPH, GRADE, RESISTANCE, FAN_SPEED,VOLUME, WORKOUT_MODE, AUDIO_SOURCE, WORKOUT, AGE, WEIGHT, GEARS
+            //All Write/Read bitfields are: KPH, GRADE, RESISTANCE, FAN_SPEED,VOLUME, WORKOUT_MODE, AUDIO_SOURCE, WORKOUT,REQUESTED_WORKOUT, AGE, WEIGHT, GEARS
             //TRANS_MAX, BV_VOLUME, BV_FREQUENCY IDLE_TIMEOUT, PAUSE_TIMEOUT, SYSTEM_UNITS, GENDER, FIRST_NAME, LAST_NAME, IFIT_USER_NAME,
             //HEIGHT, KPH_GOAL, GRADE_GOAL, RESISTANCE_GOAL, WATT_GOAL, RPM_GOAL, DISTANCE_GOAL,PULSE_GOAL
 
@@ -324,25 +331,25 @@ public class TestBitfields extends CommonFeatures {
                 case "FAN_SPEED":
                     valueToWrite = -1.0;//Invalid value
                     results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
-                    for(int i = 20; i<=100; i+=20) {
+                    for(double i = 20; i<=100.0; i+=20.0) {
                         results +=verifyBitfield(ModeId.RUNNING, bf, i, true);
                     }
+                    results +=verifyBitfield(ModeId.RUNNING, bf, 0.0, true); //Turn Off Fan
                     break;
                 case "PULSE":
                     valueToWrite = -4.0;//Invalid value
                     results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
-                    for(int i = 80; i<=120; i+=20) {
+                    for(double i = 80; i<=120.0; i+=20.0) {
                         results +=verifyBitfield(ModeId.RUNNING, bf, i, true);
                     }
                     break;
                 case "VOLUME":
                     valueToWrite = -3.0;//Invalid value
                     results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
-                    for(int i = 20; i<=100; i+=20) {
+                    for(double i = 20; i<=100.0; i+=20.0) {
                         results +=verifyBitfield(ModeId.RUNNING, bf, i, true);
                     }
-                    results +=verifyBitfield(ModeId.RUNNING, bf, 0, true); //Turn Off Fan
-
+                    results +=verifyBitfield(ModeId.RUNNING, bf, 0.0, true); //Turn Off Volume
                     break;
                 case "WORKOUT_MODE":
                     ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(bf);
@@ -352,19 +359,25 @@ public class TestBitfields extends CommonFeatures {
                     results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
                     valueToWrite = -13.0;
                     results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
-                    valueToWrite = ModeId.PAUSE.getValue(); //Pause Mode
+                    valueToWrite = (double) ModeId.PAUSE.getValue(); //Pause Mode
                     results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
                     break;
                 case "AUDIO_SOURCE":
+//                    for(AudioSourceId audioSourceId: AudioSourceId.values()) {
+//                        results +=verifyBitfield(ModeId.RUNNING,bf,audioSourceId);
+//                    }
                     break;
                 case "WORKOUT":
+//                    for(WorkoutId workoutId: WorkoutId.values()) {
+//                        results +=verifyBitfield(ModeId.RUNNING,bf,workoutId,workoutCmd);
+//                    }
                     break;
                 case "REQUESTED_WORKOUT":
                     break;
                 case "AGE":
                     valueToWrite = 2.0; //invalid value
                     results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,false);
-                    valueToWrite = 100; //invalid value
+                    valueToWrite = 100.0; //invalid value
                     results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,false);
                     valueToWrite = 18.0; //set age to 20 years old
                     results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,true);
@@ -372,7 +385,7 @@ public class TestBitfields extends CommonFeatures {
                 case "WEIGHT":
                     valueToWrite = 20.0; //invalid value
                     results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,false);
-                    valueToWrite = 200; //invalid value
+                    valueToWrite = 200.0; //invalid value
                     results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,false);
                     valueToWrite = 68.0; //set weight to 20 years old
                     results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,true);
@@ -380,8 +393,17 @@ public class TestBitfields extends CommonFeatures {
                 case "GEARS":
                     break;
                 case "TRANS_MAX":
+                    valueToWrite = -2.0; //invalid value
+                    results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,false);
+                    valueToWrite = 100.0; // valid value
+                    results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,true);
                     break;
                 case "BV_VOLUME":
+                    valueToWrite = -13.0;//Invalid value
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
+                    for(double i = 20; i<=100.0; i+=20.0) {
+                        results +=verifyBitfield(ModeId.RUNNING, bf, i, true);
+                    }
                     break;
                 case "BV_FREQUENCY":
                     break;
@@ -398,18 +420,44 @@ public class TestBitfields extends CommonFeatures {
                     results+=verifyBitfield(ModeId.PAUSE,bf,valueToWrite,true);
                     break;
                 case "SYSTEM_UNITS":
+                    valueToWrite = -5.0;
+                    results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,false);
+                    // Write "True" (Male)
+                    results+=verifyBitfield(ModeId.IDLE,bf,1,true);
+                    // Write "False" (Female)
+                    results+=verifyBitfield(ModeId.IDLE,bf,0,true);
                     break;
                 case "GENDER":
+                    valueToWrite = -11.0;
+                    results+=verifyBitfield(ModeId.IDLE,bf,valueToWrite,false);
+                   // Write "True" (Male)
+                    results+=verifyBitfield(ModeId.IDLE,bf,1,true);
+                   // Write "False" (Female)
+                    results+=verifyBitfield(ModeId.IDLE,bf,0,true);
                     break;
-                case "FIRST_NAME":
-                    break;
-                case "LAST_NAME":
-                    break;
+//                case "FIRST_NAME":
+//                    results+=verifyBitfield(ModeId.IDLE,bf,"First");
+//                    break;
+//                case "LAST_NAME":
+//                    results+=verifyBitfield(ModeId.IDLE,bf,"Last");
+//                    break;
+//                case "IFIT_USER_NAME":
+//                    results+=verifyBitfield(ModeId.IDLE,bf,"JcA");
+//                    break;
                 case "HEIGHT":
+                    valueToWrite = -1.0;//Invalid value
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,false);
+                    for(double i = 150; i<=200; i+=10) {
+                        results +=verifyBitfield(ModeId.RUNNING, bf, i, true);
+                    }
                     break;
                 case "KPH_GOAL":
+                    valueToWrite = 10.0;
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
                     break;
                 case "GRADE_GOAL":
+                    valueToWrite = -4.0;
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
                     break;
                 case "RESISTANCE_GOAL":
                     break;
@@ -420,8 +468,12 @@ public class TestBitfields extends CommonFeatures {
                 case "RPM_GOAL":
                     break;
                 case "DISTANCE_GOAL":
+                    valueToWrite = 100.0;
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
                     break;
                 case "PULSE_GOAL":
+                    valueToWrite = 105;
+                    results+=verifyBitfield(ModeId.RUNNING,bf,valueToWrite,true);
                     break;
                 default:
                     break;
@@ -505,6 +557,17 @@ public class TestBitfields extends CommonFeatures {
       results+="\nCombined, all Mode tests took a total of "+timeOfTest+" secs \n";
       results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
 
+        //set mode back to idle to stop the test
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+
         return results;
     }
 
@@ -544,6 +607,17 @@ public class TestBitfields extends CommonFeatures {
         appendMessage("<br>Combined, all Mode tests took a total of "+timeOfTest+" secs <br>");
         results+="\nCombined, all Mode tests took a total of "+timeOfTest+" secs \n";
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+
+        //set mode back to idle to stop the test
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
         return results;
     }
 
@@ -558,16 +632,16 @@ public class TestBitfields extends CommonFeatures {
      */
     private String verifyPulse(double valueToWrite, boolean validValue) throws InvalidCommandException, InvalidBitFieldException {
         String results = "";
-        long time=1000;
+        long time=100;
 
 
         try {
             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.PULSE, valueToWrite);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(25);
+            Thread.sleep(time);
             ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(BitFieldId.PULSE);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(25);
+            Thread.sleep(time);
             appendMessage("<br>Status of trying to write " +valueToWrite +" to bitfield "+BitFieldId.PULSE+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
             results+="\nStatus of trying to write " +valueToWrite +" to bitfield "+BitFieldId.PULSE+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
 
@@ -635,20 +709,33 @@ public class TestBitfields extends CommonFeatures {
     private String verifyBitfield(ModeId modeId, BitFieldId bitFieldId, double valueToWrite, boolean validValue) throws InvalidCommandException, InvalidBitFieldException {
         String results = "";
         long time=1000;
+        boolean boolValtoWrite;
 
 
         try {
             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modeId);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(1000);
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(bitFieldId, valueToWrite);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(time);
+            if(bitFieldId== BitFieldId.GENDER || bitFieldId== BitFieldId.SYSTEM_UNITS )
+            {
+                boolValtoWrite = (valueToWrite == 1) ? true:false;
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(bitFieldId, boolValtoWrite);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                appendMessage("<br>Status of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                results+="\nStatus of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+            }
+            else {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(bitFieldId, valueToWrite);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                appendMessage("<br>Status of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                results+="\nStatus of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            }
             ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(bitFieldId);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
-            appendMessage("<br>Status of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
 
         }
         catch (Exception ex)
@@ -688,7 +775,7 @@ public class TestBitfields extends CommonFeatures {
                 failsCount++;
 
             } else {
-                appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> invalid value " + valueToWrite + " was not written to brainboard for bitfield " + bitFieldId.name()+" value "+hCmd.toString() + " was written instead<br>");
+                appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> invalid value " + valueToWrite + " was not written to brainboard for bitfield " + bitFieldId.name()+" current value is "+hCmd.toString() + "<br>");
                 results+="\n\n* PASS *\n\n invalid value " + valueToWrite + " was not written to brainboard for bitfield " + bitFieldId.name()+" current value is "+hCmd.toString() + " \n";
 
             }
@@ -701,6 +788,157 @@ public class TestBitfields extends CommonFeatures {
             e.printStackTrace();
         }
     return results;
+    }
+
+    /**
+     * helper function of {@link #testBitfieldValuesValidation()}
+     * Handles the bitfields of return type String
+     * @param modeId the right mode id to be able to use bitfield
+     * @param bitFieldId the Id of the bitfield being tested
+     * @param valueToWrite the String value to write to the bitfield
+     * @return text log of test results
+     * @throws InvalidCommandException
+     * @throws InvalidBitFieldException
+     */
+    private String verifyBitfield(ModeId modeId, BitFieldId bitFieldId, String valueToWrite) throws InvalidCommandException, InvalidBitFieldException {
+        String results = "";
+        long time=1000;
+
+        try {
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modeId);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(1000);
+
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(bitFieldId, valueToWrite);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+            ((WriteReadDataCmd) wrCmd.getCommand()).addReadBitField(bitFieldId);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+
+            appendMessage("<br>using VALID value "+ valueToWrite);
+
+            results+="\nusing VALID value "+ valueToWrite;
+            if (hCmd.getValueStr(bitFieldId) == valueToWrite) {
+                appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> value " + hCmd.toString() + " read from brainboard matches value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "<br>");
+
+                results+="\n\n* PASS *\n\n value " + hCmd.toString() + " read from brainboard matches value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "\n";
+
+            } else {
+                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "<br>");
+                results+="\n* FAIL *\n\n value " + hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "\n";
+                issuesListHtml+="<br>- "+"value "+ hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"<br>";
+                issuesList+="\n- "+"value "+ hCmd.toString() + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"\n";
+                testValidation = "FAILED";
+                failsCount++;
+
+            }
+        try {
+            ((WriteReadDataCmd) wrCmd.getCommand()).removeReadDataField(bitFieldId);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    /**
+     * helper function of {@link #testBitfieldValuesValidation()}
+     * intends to Handle the bitfields workoutId, AudiosourceId, and KeyObject
+     * @param modeId
+     * @param bitFieldId
+     * @param valueToWrite
+     * @param cmd
+     * @return
+     * @throws InvalidCommandException
+     * @throws InvalidBitFieldException
+     */
+    private String verifyBitfield(ModeId modeId, BitFieldId bitFieldId, Object valueToWrite, FecpCommand cmd) throws InvalidCommandException, InvalidBitFieldException {
+        String results = "";
+        long time=1000;
+        AudioSourceId audioSourceId;
+        WorkoutId workoutId;
+        try {
+            ((WriteReadDataCmd) cmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, modeId);
+            mSFitSysCntrl.getFitProCntrl().addCmd(cmd);
+            Thread.sleep(1000);
+            ((WriteReadDataCmd) cmd.getCommand()).addWriteData(bitFieldId, valueToWrite);
+            mSFitSysCntrl.getFitProCntrl().addCmd(cmd);
+            Thread.sleep(time);
+            ((WriteReadDataCmd) cmd.getCommand()).addReadBitField(bitFieldId);
+            mSFitSysCntrl.getFitProCntrl().addCmd(cmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (cmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of trying to write " +valueToWrite +" to bitfield "+bitFieldId+" "+ (cmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+
+        switch(bitFieldId.name())
+        {
+            case "AUDIO_SOURCE":
+                audioSourceId = hCmd.getAudioSourceId();
+                appendMessage("<br>using VALID value "+ valueToWrite);
+
+                results+="\nusing VALID value "+ valueToWrite;
+                if ( audioSourceId == (AudioSourceId)valueToWrite) {
+                    appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> value " + audioSourceId + " read from brainboard matches value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "<br>");
+
+                    results+="\n\n* PASS *\n\n value " + audioSourceId + " read from brainboard matches value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "\n";
+
+                } else {
+                    appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> value " + audioSourceId + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "<br>");
+                    results+="\n* FAIL *\n\n value " + audioSourceId + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "\n";
+                    issuesListHtml+="<br>- "+"value "+ audioSourceId + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"<br>";
+                    issuesList+="\n- "+"value "+ audioSourceId + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"\n";
+                    testValidation = "FAILED";
+                    failsCount++;
+
+                }
+                break;
+            case "WORKOUT":
+                workoutId = hCmd.getWorkoutId();
+                appendMessage("<br>using VALID value "+ valueToWrite);
+
+                results+="\nusing VALID value "+ valueToWrite;
+                if ( workoutId == (WorkoutId)valueToWrite) {
+                    appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br> value " + workoutId + " read from brainboard matches value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "<br>");
+
+                    results+="\n\n* PASS *\n\n value " + workoutId + " read from brainboard matches value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "\n";
+
+                } else {
+                    appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> value " + workoutId + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "<br>");
+                    results+="\n* FAIL *\n\n value " + workoutId + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() + "\n";
+                    issuesListHtml+="<br>- "+"value "+ workoutId + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"<br>";
+                    issuesList+="\n- "+"value "+ workoutId + " read from brainboard DOESN'T match value " + valueToWrite + " written to bitfield " + bitFieldId.name() +"\n";
+                    testValidation = "FAILED";
+                    failsCount++;
+
+                }
+                break;
+        }
+
+        try {
+            ((WriteReadDataCmd) wrCmd.getCommand()).removeReadDataField(bitFieldId);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return results;
     }
 
     /**
@@ -984,6 +1222,17 @@ public class TestBitfields extends CommonFeatures {
         } while(count<7); // Do until all mode have been tested
 
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
+
+        //set mode back to idle to stop the test
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
         return results;
     }
 
@@ -1514,7 +1763,14 @@ public class TestBitfields extends CommonFeatures {
         }
 
 
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+        //set mode back to idle to stop the test
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(1000);
 
