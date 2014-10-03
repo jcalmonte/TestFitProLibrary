@@ -163,6 +163,21 @@ public class TestMotor extends CommonFeatures {
         results+="The actual speed is: " + actualspeed + "\n";
         results+="Wait 5 secs.. for motor to reach speed\n";
         Thread.sleep(5000); // Give the motor 5 secs to reach the desired speed
+// TODO: Uncomment this part once Actual Speed is accurate
+// double actualSpeed = 0;
+//        while(true)
+//        {
+//            currentSpeed = hCmd.getSpeed();
+//            actualSpeed = hCmd.getActualSpeed();
+//            appendMessage("Current Speed is "+currentSpeed+" actual speed is "+actualSpeed+" Max speed is "+ hCmd.getMaxSpeed()+"<br>");
+//            appendMessage("Wait 5 secs... and clear screen<br>");
+//            Thread.sleep(5000);
+//            res = "";
+//            Thread.sleep(2000);
+//            if(hCmd.getIncline() == 0)
+//                break;
+//
+//        }
 
         currentSpeed = hCmd.getSpeed();
         actualspeed = hCmd.getActualSpeed();
@@ -218,20 +233,7 @@ public class TestMotor extends CommonFeatures {
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
 
-//        double actualSpeed = 0;
-//        while(true)
-//        {
-//            currentSpeed = hCmd.getSpeed();
-//            actualSpeed = hCmd.getActualSpeed();
-//            appendMessage("Current Speed is "+currentSpeed+" actual speed is "+actualSpeed+" Max speed is "+ hCmd.getMaxSpeed()+"<br>");
-//            appendMessage("Wait 5 secs... and clear screen<br>");
-//            Thread.sleep(5000);
-//            res = "";
-//            Thread.sleep(2000);
-//            if(hCmd.getIncline() == 0)
-//                break;
-//
-//        }        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
+        appendMessage("<br>This test took a total of"+timeOfTest+"secs <br>");
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
 
@@ -276,7 +278,8 @@ public class TestMotor extends CommonFeatures {
         for(int i = 0; i<setSpeed.length;i++)
         {
 
-        expectedDistance = setSpeed[i]*0.277778*time[i]; //D = S*T, S in m/s, and T in seconds
+       // there is 1 added second because of code ops delays
+        expectedDistance = setSpeed[i]*0.277778*(time[i]+1); //D = S * T --> S in m/s, and T in seconds
         expectedDistanceRounded = new BigDecimal(expectedDistance);
         expectedDistanceRounded = expectedDistanceRounded.setScale(0, BigDecimal.ROUND_UP);
 
@@ -285,7 +288,7 @@ public class TestMotor extends CommonFeatures {
 
         results+="\n----------------------------DISTANCE TEST---------------------------\n\n";
         results+=Calendar.getInstance().getTime() + "\n\n";
-        results+="Test runs for " +time+ " seconds at a speed of "+setSpeed[i]+" KPH. Expected distance is: "+expectedDistance+" meters\n";
+        results+="Test runs for " +time[i]+ " seconds at a speed of "+setSpeed[i]+" KPH. Expected distance is: "+expectedDistance+" meters\n";
         results+="Current Mode is: " + hCmd.getMode() + "\n";
 
         //set mode to running
@@ -358,9 +361,9 @@ public class TestMotor extends CommonFeatures {
             failsCount++;
             testValidation = "FAILED";
         } else {
-            appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The distance should be " + expectedDistance + "  meters and is " + distance + " meters which is within +/- 3 tolerance<br><br>");
+            appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The distance should be " + expectedDistanceRounded + "  meters and is " + distance + " meters which is within +/- 3 tolerance<br><br>");
 
-            results+="\n* PASS *\n\nThe distance should be "+expectedDistance+"  meters and is " + distance + " meters which is within +/- 3 tolerance\n\n";
+            results+="\n* PASS *\n\nThe distance should be "+expectedDistanceRounded+"  meters and is " + distance + " meters which is within +/- 3 tolerance\n\n";
 
         }
 
@@ -507,7 +510,7 @@ public class TestMotor extends CommonFeatures {
              appendMessage("Speed correctly started at "+startSpeed+" kph<br>");
 
              results+="\n\n* PASS *\n\n";
-             results+="Speed correctly started at 2.0 kph\n";
+             results+="Speed correctly started at "+startSpeed+" kph<br>";
          } else {
              appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
              appendMessage("Speed should have started at "+startSpeed+" kph but is actually at " + currentSpeed + " kph<br>");
@@ -1060,7 +1063,7 @@ public class TestMotor extends CommonFeatures {
         failsCount=0;
         totalTestsCount = 0;
         mAct.filename = "PWM Overshoot.txt";
-        double maxSpeed = 19.0; //TODO: Hardcoded because our console only reaches 15.0 KPH
+        final double MAX_SPEED = hCmd.getMaxSpeed();
         double[] actualSpeeds = new double[4];
         boolean alwaysLess = true;
         double timeOfTest = 0; //how long test took in seconds
@@ -1090,7 +1093,7 @@ public class TestMotor extends CommonFeatures {
         results+="About to set speed to MAX (16 Kph)... Current speed is: " + hCmd.getSpeed() + " actual speed is " + hCmd.getActualSpeed() + "\n";
 
         //Set speed to Max Speed
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, maxSpeed);
+        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(1000);
         appendMessage("Status of changing speed to 16kph " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
@@ -1127,7 +1130,7 @@ public class TestMotor extends CommonFeatures {
         results+="After aprox 5 secs in pause mode Current Speed is: " + hCmd.getSpeed() + " actual speed is " + hCmd.getActualSpeed() + "\n";
         results+="About to try to set speed to Max... This action SHOULD NOT CHANGE the speed!\n";
         
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, maxSpeed);
+        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(4000);
         actualSpeeds[2] = hCmd.getActualSpeed(); // Speed here should be decreasing still
