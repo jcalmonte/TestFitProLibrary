@@ -747,6 +747,7 @@ public class TestIncline extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -808,7 +809,7 @@ public class TestIncline extends CommonFeatures {
         appendMessage("Wait 23 seconds...<br>");
         results+="Wait 23 seconds...\n";
         Thread.sleep(23000); // give it 23 secs to reach max speed
-/* THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
+/* TODO: THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
                 startime= System.nanoTime();
                 do
                 {
@@ -1012,7 +1013,7 @@ public class TestIncline extends CommonFeatures {
             }
 
             //-2% to -1.1% = 8.5 mph
-            if((i < -1 && i >= -2)  && currentSpeed == 13.6) {
+            if((i < -1 && i >= -2)  && currentSpeed == 13.60) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                 appendMessage("At Incline " +currentIncline+", Current speed is " + speedRounded + " mph or "+currentSpeed+" kph <br>");
 
@@ -1104,45 +1105,42 @@ public class TestIncline extends CommonFeatures {
         results+="\n\n----------------------Speed Incline Limits for "+devId.getDescription()+" Club Unit----------------------\n\n";
         results+=Calendar.getInstance().getTime() + "\n\n";
 
-        //set Incline to zero
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 0);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        currentIncline = hCmd.getIncline();
-        appendMessage("Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
 
-        results+="Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        //Start incline at -1, then go to -6
+        for(int i = -1; i >= MIN_INCLINE; i--) {
+            //set Incline to zero
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 0);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(1000);
+            currentIncline = hCmd.getIncline();
+            appendMessage("Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
 
-        appendMessage("Checking incline will reach set value...<br>");
+            results+="Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
 
-        results+="Checking incline will reach set value...\n";
-        //Wait til incline reaches target value
-        startime = System.nanoTime();
-        do
-        {
-            currentActualIncline = hCmd.getActualIncline();
-            Thread.sleep(350);
-            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + currentIncline+" time elapsed: "+seconds+"<br>");
+            appendMessage("Checking incline will reach set value...<br>");
 
-            results+="Current Incline is: " + currentActualIncline+ " goal: " + currentIncline+" time elapsed: "+seconds+"\n";
+            results+="Checking incline will reach set value...\n";
+            //Wait til incline reaches target value
+            startime = System.nanoTime();
+            do
+            {
+                currentActualIncline = hCmd.getActualIncline();
+                Thread.sleep(350);
+                appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + currentIncline+" time elapsed: "+seconds+"<br>");
 
-            elapsedTime = System.nanoTime() - startime;
-            seconds = elapsedTime / 1.0E09;
-        } while(currentIncline!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1 mins
+                results+="Current Incline is: " + currentActualIncline+ " goal: " + currentIncline+" time elapsed: "+seconds+"\n";
 
-        //set speed to max
-        appendMessage("set speed to max...<br>");
-        results+="set speed to max...\n";
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        appendMessage("Status of setting speed to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+                elapsedTime = System.nanoTime() - startime;
+                seconds = elapsedTime / 1.0E09;
+            } while(0!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1 mins
 
-        results+="Status of setting speede to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-        appendMessage("Wait 20 seconds...<br>");
-        results+="Wait 20 seconds...\n";
-        Thread.sleep(20000); // give it 20 secs to reach max speed
-/* THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
+            //set speed to max
+            appendMessage("set speed to max...<br>");
+            results+="set speed to max...\n";
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(1000);
+            /*TODO: THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
                 startime= System.nanoTime();
                 do
                 {
@@ -1155,8 +1153,15 @@ public class TestIncline extends CommonFeatures {
                 } while(j!=actualSpeed && seconds < 20);//Do while the incline hasn't reached its point yet or took more than 20 secs
 
 */
-        //Start incline at -1, then go to -6
-        for(int i = -1; i >= MIN_INCLINE; i--) {
+            appendMessage("Status of setting speed to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+
+            results+="Status of setting speede to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+            appendMessage("Wait 10 seconds...<br>");
+            results+="Wait 10 seconds...\n";
+            Thread.sleep(10000); // give it 10 secs to reach max speed
+            appendMessage("Current speed is: "+hCmd.getSpeed()+"<br>");
+            results+="Current speed is: "+hCmd.getSpeed()+"\n";
+
             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, i);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(1000);
@@ -1196,65 +1201,23 @@ public class TestIncline extends CommonFeatures {
             speedRounded = speedRounded.setScale(0, BigDecimal.ROUND_HALF_UP);
 
             totalTestsCount++;
-            if ((i < 0) && currentSpeed == 16.09) {
+            if ((currentIncline < 0) && currentSpeed == 16.09) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                 appendMessage("At Incline " + currentIncline + ", Current speed dropped to" + speedRounded + " mph or " + currentSpeed + " kph <br>");
 
                 results += "\n* PASS *\n\n";
                 results += "At Incline " + currentIncline + ", Current speed dropped to " + speedRounded + " mph or " + currentSpeed + " kph \n";
-            } else if ((i < 0) && currentSpeed != 16.09) {
+            } else if ((currentIncline < 0) && currentSpeed != 16.09) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                 appendMessage("At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph <br>");
 
                 results += "\n* FAIL *\n\n";
-                results += "At Incline " + currentIncline + " Current speed should be 12 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph \n";
+                results += "At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph \n";
                 issuesListHtml = "<br>- At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph <br>";
                 issuesList+="\n- At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph \n";
                 testValidation  = "FAILED";
                 failsCount++;
             }
-
-
-            //set Incline to zero
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 0);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-            currentIncline = hCmd.getIncline();
-            appendMessage("Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-
-            results+="Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-
-            appendMessage("Checking incline will reach set value...<br>");
-
-            results+="Checking incline will reach set value...\n";
-            //Wait til incline reaches target value
-            startime = System.nanoTime();
-            do
-            {
-                currentActualIncline = hCmd.getActualIncline();
-                Thread.sleep(350);
-                appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + currentIncline+" time elapsed: "+seconds+"<br>");
-
-                results+="Current Incline is: " + currentActualIncline+ " goal: " + currentIncline+" time elapsed: "+seconds+"\n";
-
-                elapsedTime = System.nanoTime() - startime;
-                seconds = elapsedTime / 1.0E09;
-            } while(0!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1 mins
-
-            //set speed to max
-            appendMessage("set speed to max...<br>");
-            results+="set speed to max...\n";
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-            appendMessage("Status of setting speed to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-
-            results+="Status of setting speede to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Wait 10 seconds...<br>");
-            results+="Wait 10 seconds...\n";
-            Thread.sleep(10000); // give it 10 secs to reach max speed
-            appendMessage("Current speed is: "+hCmd.getSpeed()+"<br>");
-            results+="Current speed is: "+hCmd.getSpeed()+"\n";
         }
         return results;
     }
