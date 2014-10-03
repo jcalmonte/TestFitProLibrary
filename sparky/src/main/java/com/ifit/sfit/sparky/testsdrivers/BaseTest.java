@@ -69,7 +69,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener{
         filename: filename of the text file where results will be saved
     */
     protected FileOutputStream outputStream;
-    protected String filename = "test.txt";
+    public static String filename;
 
     // To hold application context
     protected static Context context;

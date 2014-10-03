@@ -35,7 +35,7 @@ public class SendEmailAsyncTask extends AsyncTask<Void, Void, Boolean> {
 //        m.setBody("see attachment");
         try {
             //Add attachment at the filename listed
-            m.addAttachment("data/data/com.ifit.sfit.sparky/files/test.txt");
+            m.addAttachment("data/data/com.ifit.sfit.sparky/files/"+BaseTest.filename);
 
 //            if(m.send()) {
 //                for(int i = 0; i < toArr.length; i++){

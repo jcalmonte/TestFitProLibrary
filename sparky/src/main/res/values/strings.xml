@@ -22,7 +22,11 @@
     </string-array>
 
     <string-array name="integration_array">
-        <item>Age</item>
+        <item>Age - Valid</item>
+        <item>Age - Invalid</item>
+        <item>Age - All</item>
+        <item>Weight - Valid</item>
+        <item>Weight - Invalid</item>
         <item>Weight</item>
         <item>Max Speed</item>
         <item>Running Time</item>
@@ -33,9 +37,17 @@
     </string-array>
 
     <string-array name="bitfields_array">
-        <item>Unsupported/RdOnly</item>
-        <item>Values Validation</item>
-        <item>Modes</item>
+        <item>Bf - Unsupported</item>
+        <item>Bf - Read Only</item>
+        <item>Bf - Values Validation</item>
+        <item>Bf - All</item>
+        <item>Pulse - Valid</item>
+        <item>Pulse - Invalid</item>
+        <item>Pulse - All</item>
+        <item>Modes - Valid</item>
+        <item>Modes - Invalid</item>
+        <item>Modes - Actions</item>
+        <item>Modes - All</item>
         <item>Run All</item>
     </string-array>
 

@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.ifit.sfit.sparky.R;
+import com.ifit.sfit.sparky.activities.ManageTests;
 import com.ifit.sfit.sparky.tests.TestTreadmillKeyCodes;
 
 /**
@@ -45,7 +46,7 @@ public class TreadmillKeyCodesTest  extends BaseTest implements AdapterView.OnIt
     @Override
     void runTest() {
 
-        final TestTreadmillKeyCodes t = new TestTreadmillKeyCodes(fecpController, (BaseTest) context, this.mSFitSysCntrl);
+        final TestTreadmillKeyCodes t = new TestTreadmillKeyCodes(ManageTests.fecpController, (BaseTest) context, ManageTests.mSFitSysCntrl);
 
         Thread th = new Thread(new Runnable() {
             @Override

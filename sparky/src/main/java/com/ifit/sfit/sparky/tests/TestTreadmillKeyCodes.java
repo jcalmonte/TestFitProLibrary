@@ -5,7 +5,6 @@ import com.ifit.sfit.sparky.helperclasses.HandleCmd;
 import com.ifit.sfit.sparky.helperclasses.SFitSysCntrl;
 import com.ifit.sfit.sparky.testsdrivers.BaseTest;
 import com.ifit.sparky.fecp.FecpCommand;
-import com.ifit.sparky.fecp.SystemDevice;
 import com.ifit.sparky.fecp.communication.FecpController;
 import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
@@ -26,14 +25,8 @@ import java.util.Calendar;
  */
 public class TestTreadmillKeyCodes extends CommonFeatures {
 
-        //Variables needed to initialize connection with Brainboard
-        private FecpController mFecpController;
-        private BaseTest mAct;
-        private HandleCmd hCmd;
-        private SFitSysCntrl mSFitSysCntrl;
-        private SystemDevice MainDevice;
-        private FecpCommand wrCmd;
-        private FecpCommand rdCmd;
+        private String testValidation = "", currentVersion="", gitHubWikiName="", issuesListHtml="", issuesList="";
+        private int failsCount = 0, totalTestsCount = 0;
         private FecpCommand sendKeyCmd;
         private String emailAddress;
 
@@ -56,6 +49,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
                     Thread.sleep(1000);
                     //Get current system device
                     MainDevice = this.mFecpController.getSysDev();
+                    this.currentVersion = "SAL v"+ String.valueOf(mFecpController.getVersion());
                     this.wrCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd);
                     this.rdCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd,0,100);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.MAX_GRADE);
@@ -64,8 +58,8 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.ACTUAL_KPH);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.KPH);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.GRADE);
-                    // ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.AGE);
-                    //((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
+                    ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.AGE);
+                    ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WEIGHT);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.WORKOUT_MODE);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.PAUSE_TIMEOUT);
                     ((WriteReadDataCmd)rdCmd.getCommand()).addReadBitField(BitFieldId.IDLE_TIMEOUT);
@@ -102,6 +96,14 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             //Validate that mode is changed to Pause
 
             String results="";
+            gitHubWikiName = "Stop-Key-Test";
+            testValidation ="PASSED";
+            issuesListHtml = "";
+            issuesList = "";
+            failsCount=0;
+            totalTestsCount = 0;
+            mAct.filename = "Stop Key.txt";
+
             double timeOfTest = 0; //how long test took in seconds
             long startTestTimer = System.nanoTime();
             String currentMode;
@@ -154,7 +156,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             Thread.sleep(1000);
 
             currentMode = hCmd.getMode().getDescription();
-
+            totalTestsCount++;
             //When the Stop key is pressed, it should change the mode from Running to Pause Mode
             if(currentMode.equals("Pause Mode")){
                 results += "\n* PASS *\n\n";
@@ -171,6 +173,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
                 appendMessage(" <br><font color = #ff0000>* FAIL *</font><br><br>");
                 appendMessage("Mode should have changed to Pause Mode, but is currently set at " + currentMode + "<br>");
+                issuesListHtml+="<br>- Mode should have changed to Pause Mode, but is currently set at " + currentMode + "<br>";
+                issuesList+="\n- Mode should have changed to Pause Mode, but is currently set at " + currentMode + "\n";
+                failsCount++;
+                testValidation = "FAILED";
             }
 
 
@@ -188,7 +194,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
             appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
             results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+            results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
             return results;
         }
 
@@ -206,6 +212,14 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 //        Change mode to Pause (stop)
 
         String results="";
+        gitHubWikiName = "Start-Key-Test";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Start Key.txt";
+
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         String currentMode;
@@ -244,7 +258,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         Thread.sleep(1000);
 
         currentMode = hCmd.getMode().getDescription();
-
+        totalTestsCount++;
         //When the Stop key is pressed, it should change the mode from Running to Pause Mode
         if(currentMode.equals("Running Mode")){
             results += "\n* PASS *\n\n";
@@ -261,6 +275,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
             appendMessage(" <br><font color = #ff0000>* FAIL *</font><br><br>");
             appendMessage("Mode should be changed to Running, but is currently set at " + currentMode + "<br>");
+            issuesListHtml+="<br>- Mode should have changed to Running, but is currently set at " + currentMode + "<br>";
+            issuesList+="\n- Mode should have changed to Running, but is currently set at " + currentMode + "\n";
+            failsCount++;
+            testValidation = "FAILED";
         }
 
 
@@ -282,7 +300,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -300,6 +318,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      //4. Repeat steps 2-3 until max incline reached
 
      String results ="";
+     gitHubWikiName = "Incline-Up-Test";
+     testValidation ="PASSED";
+     issuesListHtml = "";
+     issuesList = "";
+     failsCount=0;
+     totalTestsCount = 0;
+     mAct.filename = "Incline Up Key.txt";
      double timeOfTest = 0; //how long test took in seconds
      long startTestTimer = System.nanoTime();
      double currentActualIncline = 0;
@@ -371,7 +396,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
          mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
          Thread.sleep(1000); */
-
+         totalTestsCount++;
          if((incline2 - incline1) == 0.5)
          {
              appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
@@ -387,6 +412,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
              results+="\n* FAIL *\n\n";
              results+="Previous incline: "+incline1+" current incline: "+incline2+". Incline increment was "+(incline2-incline1)+" % and should have been 0.5 %<br>";
+             issuesListHtml+="<br>- Previous incline: "+incline1+" current incline: "+incline2+". Incline increment was "+(incline2-incline1)+" % and should have been 0.5 %<br>";
+             issuesList+="\n- Previous incline: "+incline1+" current incline: "+incline2+". Incline increment was "+(incline2-incline1)+" % and should have been 0.5 %\n";
+             failsCount++;
+             testValidation = "FAILED";
          }
      }
 
@@ -395,7 +424,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
      appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
      results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+     results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
      return results;
  }
 
@@ -413,6 +442,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         //4. Repeat steps 2-3 until max incline reached
 
         String results ="";
+        gitHubWikiName = "Incline-Down-Test";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Incline Down Key.txt";
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         double currentActualIncline = 0;
@@ -484,7 +520,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
          mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
          Thread.sleep(1000); */
-
+            totalTestsCount++;
             if( (incline2 - incline1) == -0.5)
             {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
@@ -496,10 +532,14 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             else
             {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("Previous incline: "+incline1+" current incline: "+incline2+". Incline decrement was "+(incline2-incline1)+" % and should have been 0.5 %<br>");
+                appendMessage("Previous incline: "+incline1+" current incline: "+incline2+". Incline decrement was "+(incline2-incline1)+" % and should have been -0.5 %<br>");
 
                 results+="\n* FAIL *\n\n";
                 results+="Previous incline: "+incline1+" current incline: "+incline2+". Incline decrement was "+(incline2-incline1)+" % and should have been 0.5 %<br>";
+                issuesListHtml+="<br>- Previous incline: "+incline1+" current incline: "+incline2+". Incline decrement was "+(incline2-incline1)+" % and should have been -0.5 %<br>";
+                issuesList+="\n- Previous incline: "+incline1+" current incline: "+incline2+". Incline increment was "+(incline2-incline1)+" % and should have been -0.5 %\n";
+                failsCount++;
+                testValidation = "FAILED";
             }
         }
 
@@ -508,7 +548,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -526,6 +566,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
 
      String results = "";
+     gitHubWikiName = "Speed-Up-Key-Test";
+     testValidation ="PASSED";
+     issuesListHtml = "";
+     issuesList = "";
+     failsCount=0;
+     totalTestsCount = 0;
+     mAct.filename = "SpeedUp Key.txt";
      double timeOfTest = 0; //how long test took in seconds
      long startTestTimer = System.nanoTime();
      double currentSpeed = 0;
@@ -579,7 +626,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
          currentSpeed = hCmd.getSpeed(); //TODO: use actual speed once speed is accurate
          appendMessage("Current speed is: " + currentSpeed + " kph<br>");
          results += "Current speed is: " + currentSpeed + " kph\n";
-
+         totalTestsCount++;
          if (currentSpeed == ((double) Math.round(expected * 10) / 10)) {   //Need to round off to the nearest tenth, because of the ultra-precision of doubles
              appendMessage("<br><font color = #00ff00>* PASS *</font><br><br> Speed Up button incremented by 0.1 <br><br>");
 
@@ -587,8 +634,11 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
          } else {
              appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> Speed Up button did not increment by 0.1 <br><br>");
-
              results += "\n* FAIL *\n\n Speed Up button did not increment by 0.1\n";
+             issuesListHtml+="<br>- Speed Up button did not increment speed by 0.1 <br>";
+             issuesList+="\n Speed Up button did not increment speed by 0.1 \n";
+             failsCount++;
+             testValidation = "FAILED";
 
          }
      }
@@ -597,6 +647,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      timeOfTest = timeOfTest / 1.0E09;
 
      appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+     results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
      results+="\nThis test took a total of "+timeOfTest+" secs \n";
 
      return results;
@@ -617,6 +668,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
 
         String results = "";
+        gitHubWikiName = "Speed-Down-Key-Test";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "SpeedDown Key.txt";
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         double currentSpeed = 0;
@@ -697,7 +755,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             currentSpeed = hCmd.getSpeed(); //TODO: use actual speed once speed is accurate
             appendMessage("Current speed is: " + currentSpeed + " kph<br>");
             results += "Current speed is: " + currentSpeed + " kph\n";
-
+            totalTestsCount++;
             if (currentSpeed == ((double) Math.round(expected * 10) / 10)) {   //Need to round off to the nearest tenth, because of the ultra-precision of doubles
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br> Speed Down button decremented by 0.1 <br><br>");
 
@@ -707,6 +765,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> Speed Down button did not decrement by 0.1 <br><br>");
 
                 results += "\n* FAIL *\n\n Speed Down button did not decrement by 0.1\n";
+                issuesListHtml+="<br>- Speed Down button did not decrement speed by 0.1 <br>";
+                issuesList+="\n Speed Down button did not decrement speed by 0.1 \n";
+                failsCount++;
+                testValidation = "FAILED";
 
             }
         }
@@ -716,7 +778,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
      appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
      results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+     results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
      return results;
     }
 
@@ -736,6 +798,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * */
 
      String results ="";
+     gitHubWikiName = "Quick-Incline-Keys-Test";
+     testValidation ="PASSED";
+     issuesListHtml = "";
+     issuesList = "";
+     failsCount=0;
+     totalTestsCount = 0;
+     mAct.filename = "Quick Incline Keys.txt";
      double timeOfTest = 0; //how long test took in seconds
      long startTestTimer = System.nanoTime();
      double currentActualIncline = 0;
@@ -795,6 +864,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
              seconds = elapsedTime / 1.0E09;
          } while(inclines[i]!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1 mins
 
+         totalTestsCount++;
          if(hCmd.getIncline() == currentActualIncline && currentActualIncline == inclines[i] )
          {
              appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
@@ -810,6 +880,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
              results+="\n* FAIL *\n\n";
              results+="Quick incline failed to be set to "+kc[i].name()+", current incline is set to "+hCmd.getActualIncline()+"\n";
+             issuesListHtml+="<br>- Quick incline failed to be set to "+kc[i].name()+", current incline is set to "+hCmd.getActualIncline()+"<br>";
+             issuesList+="\n- Quick incline failed to be set to "+kc[i].name()+", current incline is set to "+hCmd.getActualIncline()+"\n";
+             failsCount++;
+             testValidation = "FAILED";
          }
      }
 
@@ -818,7 +892,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
      appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
      results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+     results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
      return results;
  }
 
@@ -836,6 +910,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * */
 
         String results ="";
+        gitHubWikiName = "Quick-Speed-Key-Test";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Quick Speed Key.txt";
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         double currentSpeed = 0;
@@ -904,6 +985,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             currentSpeed = hCmd.getSpeed();
             speedMPH = currentSpeed*0.621371; //Convert speed to mph.
 
+            totalTestsCount++;
             if( Math.abs(speedMPH-(i+1)) < (0.03*(i+1)) ) // Give 3% tolerance to take care of rounding issues
             {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
@@ -919,6 +1001,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
                 results+="\n* FAIL *\n\n";
                 results+="Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+hCmd.getSpeed()+"\n";
+                issuesListHtml+="<br>- Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+hCmd.getSpeed()+"<br>";
+                issuesList+="\n- Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+hCmd.getSpeed()+"\n";
+                failsCount++;
+                testValidation = "FAILED";
             }
         }
 
@@ -927,7 +1013,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
      appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
      results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+     results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
      return results;
     }
 
@@ -945,6 +1031,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         //4. Repeat steps 2-3 until max incline reached
 
         String results ="";
+        gitHubWikiName = "Age-Up-Key-Test";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Age Up Key.txt";
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         double Age1 = 0;
@@ -1006,7 +1099,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
          mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
          Thread.sleep(1000); */
-
+            totalTestsCount++;
             if((Age2 - Age1) == 1)
             {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
@@ -1022,6 +1115,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
                 results+="\n* FAIL *\n\n";
                 results+="Previous age: "+Age1+" current age: "+Age2+". age increment was "+(Age2-Age1)+" % and should have been 1 %<br>";
+                issuesListHtml+="<br>- Previous age: "+Age1+" current age: "+Age2+". age increment was "+(Age2-Age1)+" % and should have been 1 %<br>";
+                issuesList+="\n- Previous age: "+Age1+" current age: "+Age2+". age increment was "+(Age2-Age1)+" % and should have been 1 %\n";
+                failsCount++;
+                testValidation = "FAILED";
             }
         }
 
@@ -1030,7 +1127,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+        results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
     }
 
@@ -1048,6 +1145,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         //4. Repeat steps 2-3 until max incline reached
 
         String results ="";
+        gitHubWikiName = "Age-Down-Key-Test";
+        testValidation ="PASSED";
+        issuesListHtml = "";
+        issuesList = "";
+        failsCount=0;
+        totalTestsCount = 0;
+        mAct.filename = "Age Down Key.txt";
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         double Age1 = 0;
@@ -1108,7 +1212,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
          mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
          Thread.sleep(1000); */
-
+            totalTestsCount++;
             if((Age2 - Age1) == -1)
             {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
@@ -1124,6 +1228,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
                 results+="\n* FAIL *\n\n";
                 results+="Previous age: "+Age1+" current age: "+Age2+". age decrement was "+(Age2-Age1)+" % and should have been 1 %<br>";
+                issuesListHtml+="<br>- Previous age: "+Age1+" current age: "+Age2+". age decrement was "+(Age2-Age1)+" % and should have been -1 %<br>";
+                issuesList+="\n- Previous age: "+Age1+" current age: "+Age2+". age decrement was "+(Age2-Age1)+" % and should have been -1 %\n";
+                failsCount++;
+                testValidation = "FAILED";
             }
         }
 
@@ -1132,7 +1240,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
      appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
      results+="\nThis test took a total of "+timeOfTest+" secs \n";
-
+     results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
      return results;
     }
 
@@ -1157,6 +1265,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         keysResults += testQuickSpeedKeys();
         keysResults += testAgeUpKey();
         keysResults += testAgeDownKey();
+        mAct.filename = "All Key Tests.txt";
         return keysResults;
     }
 }

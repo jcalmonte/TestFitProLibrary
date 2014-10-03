@@ -54,14 +54,38 @@ public class BitfieldsTest extends BaseTest implements View.OnClickListener, Ada
                 try {
                     switch (testToRun)
                     {
-                        case "Unsupported/RdOnly":
-                            returnString = t.testBitfieldRdWr();
+                        case "Bf - Unsupported":
+                        returnString = t.testBitfieldsUnsupported();
+                        break;
+                        case "Bf - Read Only":
+                            returnString = t.testBitfieldsRdOnly();
                             break;
-                        case "Values Validation":
+                        case "Bf - Values Validation":
                             returnString = t.testBitfieldValuesValidation();
                             break;
-                        case "Modes":
+                        case "Bf - All":
+                            returnString = t.testBitfields();
+                            break;
+                        case "Pulse - Valid":
+                            returnString = t.testPulseValid();
+                            break;
+                        case "Pulse - Invalid":
+                            returnString = t.testPulseInValid();
+                            break;
+                        case "Pulse - All":
+                            returnString = t.testPulse();
+                            break;
+                        case "Modes - All":
                             returnString = t.testModes();
+                            break;
+                        case "Modes - Valid":
+                            returnString = t.testModesValid();
+                            break;
+                        case "Modes - Invalid":
+                            returnString = t.testModesInValid();
+                            break;
+                        case "Modes - Actions":
+                            returnString = t.testModesActions();
                             break;
                         case "Run All":
                             returnString = t.runAll();
@@ -89,6 +113,7 @@ public class BitfieldsTest extends BaseTest implements View.OnClickListener, Ada
                   @Override
                   public void run() {
                       resultView.setText(Html.fromHtml(passFail));
+
                   }
               });
 

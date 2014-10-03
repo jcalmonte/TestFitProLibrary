@@ -71,8 +71,7 @@ public class MotorTest extends BaseTest implements AdapterView.OnItemSelectedLis
                             returnString = t.testPwmOvershoot();
                         break;
                         case "Calories":
-                            //returnString = t.testCals();
-                            returnString = t.testCalories();
+                            returnString = t.testCals();
 
                             break;
                         case "Run All":
