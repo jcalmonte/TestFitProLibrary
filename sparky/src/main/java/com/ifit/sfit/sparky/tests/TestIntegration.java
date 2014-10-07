@@ -10,6 +10,7 @@ import com.ifit.sparky.fecp.interpreter.bitField.BitFieldId;
 import com.ifit.sparky.fecp.interpreter.bitField.converter.ModeId;
 import com.ifit.sparky.fecp.interpreter.command.CommandId;
 import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
+import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.nio.ByteBuffer;
 import java.util.Calendar;
@@ -114,6 +115,7 @@ import java.util.Calendar;
          double prevAge;
          double timeOfTest = 0; //how long test took in seconds
          long startTestTimer = System.nanoTime();
+         long time = 500;
 
          age = hCmd.getAge();
          results += "The default age is set to " + age + " years old\n";
@@ -124,21 +126,22 @@ import java.util.Calendar;
 
 
          for(int i = 18; i <=95; i++) {
-             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(500);
+            do {
+                 ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
+                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                 Thread.sleep(time);
+                 results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                 appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-             results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-
-             appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
              age = hCmd.getAge();
              totalTestsCount++;
              if(age == i){
                  results += "\n* PASS *\n\n";
-                 results += "Current Age is set to: " + age + " years old (age should really be " + i + ")\n";
+                 results += "Current age value " + age + " read from brainboard matches written value " + i + "\n";
 
                  appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                 appendMessage("Current Age is set to: " + age + " years old (age should really be " + i + ")<br>");
+                 appendMessage("Current age value " + age + " read from brainboard matches written value "+ i + "<br>");
 
              }
              else{
@@ -188,6 +191,7 @@ import java.util.Calendar;
         double age;
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
+        long time = 500;
 
         age = hCmd.getAge();
         results += "The default age is set to " + age + " years old\n";
@@ -199,13 +203,14 @@ import java.util.Calendar;
             {
                 i=96;
             }
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(500);
+            do {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, i);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-            results += "Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-
-            appendMessage("Status of setting the Age to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
             age = hCmd.getAge();
             totalTestsCount++;
             if(age !=i) // i is invalid age so it should not have been written
@@ -277,6 +282,10 @@ import java.util.Calendar;
         double weight;
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
+        long time = 500;
+
+        appendMessage("<br><br>---------------Valid Weight Values------------------<br><br>");
+        results+="\n\n---------------Valid Weight Values------------------\n\n";
 
         weight = hCmd.getWeight();
         results += "The default weight is set to " + weight + " kilograms\n";
@@ -287,12 +296,13 @@ import java.util.Calendar;
         //Set weight to 50 kg and increment by 10 up to 175 kg (max is 400lbs = 181 kg)
         for(double i = 45.35; i <=175; i+=10) {
 
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(500);
-
-            results += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-            appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            do {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                results += "Status of setting the weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of setting the weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
             weight = hCmd.getWeight();
             diff = Math.abs(weight - i);
@@ -349,8 +359,11 @@ import java.util.Calendar;
         double weight;
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
-
+        long time = 500;
         weight = hCmd.getWeight();
+
+        appendMessage("<br><br>---------------Invalid Weight Values------------------<br><br>");
+        results+="\n\n---------------Invalid Weight Values------------------\n\n";
 
         results += "The default weight is set to " + weight + " kilograms\n";
         appendMessage("The default weight is set to " + weight + " kilograms<br>");
@@ -370,13 +383,13 @@ import java.util.Calendar;
             {
                 i=190;
             }
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            //need more time for weight controller
-            Thread.sleep(500);
-
-            results += "\nStatus of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-            appendMessage("<br>Status of setting the Weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            do {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WEIGHT, i);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                results += "Status of setting the weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of setting the weight to " + i + ": " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
             weight = hCmd.getWeight();
             totalTestsCount++;
@@ -433,19 +446,15 @@ import java.util.Calendar;
          appendMessage("<br>----------------------SYSTEM CONFIGURATION TEST----------------------<br><br>");
          results += Calendar.getInstance().getTime() + "\n\n";
          appendMessage(Calendar.getInstance().getTime() + "<br><br>");
- 
-         double maxIncline;
-         double minIncline;
-         double maxSpeed;
-         double minSpeed;
+
+        final double MAX_INCLINE = hCmd.getMaxIncline();
+        final double MIN_INCLINE = hCmd.getMinIncline();
+        final double  MAX_SPEED = hCmd.getMaxSpeed();
+        final double  MIN_SPEED = hCmd.getMinSpeed();
          double timeOfTest = 0; //how long test took in seconds
          long startTestTimer = System.nanoTime();
 
-         maxIncline = hCmd.getMaxIncline();
-         minIncline = hCmd.getMinIncline();
- 
-         maxSpeed = hCmd.getMaxSpeed();
-         minSpeed = hCmd.getMinSpeed();
+
          Thread.sleep(1000);
 
          String brainboardLines[] = new String[11];
@@ -459,10 +468,10 @@ import java.util.Calendar;
          brainboardLines[4] = "Hardware Version: \"" + MainDevice.getInfo().getHWVersion() + "\"";
          brainboardLines[5] = "Serial Number: \"" + MainDevice.getInfo().getSerialNumber() + "\"";
          brainboardLines[6] = "Manufacturing Number: \"" + MainDevice.getInfo().getManufactureNumber() + "\"";
-         brainboardLines[7] = "Max Incline: \"" + maxIncline + "\"";
-         brainboardLines[8] = "Min. Incline: \"" + minIncline + "\"";
-         brainboardLines[9] = "Max Speed: \"" + maxSpeed + "\"";
-         brainboardLines[10] = "Min Speed: \"" + minSpeed + "\"";
+         brainboardLines[7] = "Max Incline: \"" + MAX_INCLINE + "\"";
+         brainboardLines[8] = "Min. Incline: \"" + MIN_INCLINE + "\"";
+         brainboardLines[9] = "Max Speed: \"" + MAX_SPEED + "\"";
+         brainboardLines[10] = "Min Speed: \"" + MIN_SPEED + "\"";
  
          //Comparing the User-entered configuration values (from PDM?) with what is stored on the Brainboard
          for(int i = 0; i < brainboardLines.length; i++)
@@ -522,6 +531,7 @@ import java.util.Calendar;
          String prevMode="";
          double timeOfTest = 0; //how long test took in seconds
          long startTestTimer = System.nanoTime();
+         long time = 500;
 
          appendMessage("<br><br>------------------------PAUSE TIMEOUT TEST RESULTS------------------------<br><br>");
          results += "\n\n------------------------PAUSE/IDLE TIMEOUT TEST RESULTS------------------------\n\n";
@@ -539,19 +549,26 @@ import java.util.Calendar;
          for(int i = 0; i<setPauseTimeout.length; i++) {
              appendMessage("Setting the pause timeout to " + setPauseTimeout[i] + " secs...<br>");
              results += "Setting the pause timeout to "+ setPauseTimeout[i] + " secs...\n";
-             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.PAUSE_TIMEOUT, setPauseTimeout[i]);//set pause timeout to 30 secs
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
-             appendMessage("<br>Status of setting the Pause timeout to "+ setPauseTimeout[i] +" secs:  " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-             results += "\nStatus of setting the Pause timeout to "+ setPauseTimeout[i] +" secs:  " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            do{
+                 ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.PAUSE_TIMEOUT, setPauseTimeout[i]);//set pause timeout to 30 secs
+                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                 Thread.sleep(time);
+                 appendMessage("<br>Status of setting the Pause timeout to "+ setPauseTimeout[i] +" secs:  " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                 results += "\nStatus of setting the Pause timeout to "+ setPauseTimeout[i] +" secs:  " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+             }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
              appendMessage("Setting the Idle timeout to " + setIdleTimeout[i] + " secs...<br>");
              results += "Setting the Idle timeout to "+ setIdleTimeout[i] + " secs...\n";
-             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.IDLE_TIMEOUT, setIdleTimeout[i]);//set pause timeout to 30 secs
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
-             appendMessage("<br>Status of setting the Idle timeout to "+ setIdleTimeout[i] +" secs:  " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-             results += "\nStatus of setting the Idle timeout to "+ setIdleTimeout[i] +" secs:  " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+            do{
+                 ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.IDLE_TIMEOUT, setIdleTimeout[i]);//set pause timeout to 30 secs
+                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                 Thread.sleep(time);
+                 appendMessage("<br>Status of setting the Idle timeout to "+ setIdleTimeout[i] +" secs:  " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                 results += "\nStatus of setting the Idle timeout to "+ setIdleTimeout[i] +" secs:  " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+             }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
+
              pauseTimeout = hCmd.getPauseTimeout();
              idleTimeout = hCmd.getIdleTimeout();
              appendMessage("New pause timeout is: " + pauseTimeout + "<br>");
@@ -560,23 +577,26 @@ import java.util.Calendar;
              results += "New Idle timeout is: " + idleTimeout + "\n";
 
              //Set mode to Running
-             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
+            do{
+                 ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                 Thread.sleep(time);
+                appendMessage("Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                results += "Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+             }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-
-             appendMessage("Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-             results += "Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
              appendMessage("Current Mode: " + hCmd.getMode() + "<br>");
              results += "Current Mode: " + hCmd.getMode() + "\n";
 
              //Set mode to Pause
-             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
+             do{
+                 ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                 Thread.sleep(time);
+                 appendMessage("Status of setting the Mode to PAUSE: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                 results += "Status of setting the Mode to PAUSE: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+             }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-             appendMessage("Status of setting the Mode to Pause: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-             results += "Status of setting the Mode to Pause: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
              appendMessage("Current Mode: " + hCmd.getMode() + "<br>");
              results += "Current Mode: " + hCmd.getMode() + "\n";
 
@@ -597,13 +617,13 @@ import java.util.Calendar;
              if (hCmd.getMode().getDescription() != "Pause Mode") {
                  appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                  results += "\n* PASS *\n\n";
-                 appendMessage("Pause Mode timed out to " + hCmd.getMode().getDescription() + "<br>");
-                 results += "\nPause Mode timed out to " + hCmd.getMode().getDescription() + "\n";
+                 appendMessage("Pause Mode timed out to " + hCmd.getMode().getDescription() + "<br><br>");
+                 results += "\nPause Mode timed out to " + hCmd.getMode().getDescription() + "\n\n";
              } else {
                  appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
                  results += "\n* FAIL *\n\n";
-                 appendMessage("Pause Mode did not time out after " + pauseTimeout + " seconds<br>");
-                 results += "\nPause Mode did not time out after " + pauseTimeout + " seconds\n";
+                 appendMessage("Pause Mode did not time out after " + pauseTimeout + " seconds<br><br>");
+                 results += "\nPause Mode did not time out after " + pauseTimeout + " seconds\n\n";
                  issuesListHtml+="<br>- "+"Pause Mode did not time out after " + pauseTimeout + " seconds<br>";
                  issuesList+="\n- "+"Pause Mode did not time out after " + pauseTimeout + " seconds\n";
                  failsCount++;
@@ -670,6 +690,8 @@ import java.util.Calendar;
 
          long runtime; //time for running test (in secs)
          long pauseruntime; //time for running test with pause in secs
+         long time =500; // time to send commands
+
         //Maybe test later 5K, 10K, Half-Marathon, Full Marathon cases
         switch (runType)
         {
@@ -702,20 +724,27 @@ import java.util.Calendar;
 
 
          //set the pause timeout to 60
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.PAUSE_TIMEOUT,60);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
-         appendMessage("Status of setting pause timeout to 60 secs: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+        do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.PAUSE_TIMEOUT,60);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting pause timeout to 60 secs: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="Status of setting pause timeout to "+runtime+" secs: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
          appendMessage("New pause timeout is: "+hCmd.getPauseTimeout()+"<br>");
-         results+="Status of setting pause timeout to "+runtime+" secs: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
          results+="New pause timeout is: "+hCmd.getPauseTimeout()+"\n";
+
          //set the mode to running
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(100);
-         appendMessage("Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         do{
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results += "Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
          appendMessage("Now wait "+runtime+ " seconds...<br>");
-         results+="Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
          results+="Now wait "+runtime+ " seconds...\n";
          Thread.sleep(runtime*1000);
 
@@ -753,32 +782,46 @@ import java.util.Calendar;
          }
  
 
-         //set mode back to Pause to stop the test
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
- 
-         //set mode back to Results
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
- 
-         //set mode back to IDLE to reset running time
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
+         //set mode back to Pause to reset running time
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
  
          appendMessage("<br>Pause Test: <br>");
          results+="\nPause Test: \n";
          //start pause test
          //start running
          //set the mode to running
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE,ModeId.RUNNING);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(100);
-         appendMessage("Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+
+         //set the mode to running
+         do{
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results += "Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
          appendMessage("Now wait "+pauseruntime+ " seconds...<br>");
-         results+="Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
          results+="Now wait "+pauseruntime+ " seconds...\n";
          Thread.sleep(pauseruntime*1000);
          //wait 30 seconds
@@ -790,22 +833,29 @@ import java.util.Calendar;
  //            seconds = elapsedTime / 1.0E09;
  //        }
          //pause the test
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(100);
-         appendMessage("Status of setting mode to pause: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+
+         do{
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results += "Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
          appendMessage("wait 30 seconds...<br>");
-         results+="Status of setting mode to pause: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
          results+="wait 30 seconds...\n";
          //wait 30 seconds
          Thread.sleep(30000);
          //go from pause to running
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(100);
-         appendMessage("Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         do{
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results += "Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
          appendMessage("Now wait "+pauseruntime+ " seconds...<br>");
-         results+="Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
          results+="Now wait "+pauseruntime+ " seconds...\n";
          Thread.sleep(pauseruntime*1000);
          //wait another 30 seconds for a total of 1 minute expected running time
@@ -838,19 +888,31 @@ import java.util.Calendar;
              failsCount++;
              testValidation = "FAILED";
          }
- 
-         //set mode back to idle to stop the test
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
-         //end the recurring callback
-         mSFitSysCntrl.getFitProCntrl().removeCmd(wrCmd);
+
+         //set mode back to Pause to stop the test
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
 
@@ -881,10 +943,14 @@ import java.util.Calendar;
          //read current speed until actual is the same as target
          //stop stopwatch and return/display/record the value of the stopwatch
          String results="";
-         double maxSpeed;
+         final double MAX_SPEED = hCmd.getMaxSpeed();
          double currentActualSpeed = 0;
          double timeOfTest = 0; //how long test took in seconds
          long startTestTimer = System.nanoTime();
+         long time = 500;
+         long elapsedTime = 0;
+         double seconds = 0;
+         long startTime;
 
          gitHubWikiName = "Max-Speed";
          testValidation ="PASSED";
@@ -898,35 +964,33 @@ import java.util.Calendar;
          appendMessage(Calendar.getInstance().getTime() + "<br><br>");
          results+="\n--------------------------MAX SPEED TEST--------------------------\n\n";
          results+=Calendar.getInstance().getTime() + "\n\n";
-         //TODO: Once Max Speed command is implemented, just change the constant MAX_SPEED to the maxSpeed variable (which reads the value off of the Brainboard)
- 
-         maxSpeed = hCmd.getMaxSpeed();
-         Thread.sleep(1000);
-         System.out.println("The max speed is " + maxSpeed + " kph but our console only reaches up to 16 kph");
- 
+
          //start timer
          //set mode to running
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
-         appendMessage("Status of setting mode to running " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-         appendMessage("setting speed to 16 kph...<br>");
-         results+="Status of setting mode to running " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-         results+="setting speed to 16 kph...\n";
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.KPH, 16.0);//replace literal by maxSpeed later on
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
-         appendMessage("Status of speed to 16kph: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-         results+="Status of speed to 16kph: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         do{
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results += "Status of setting the Mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-         long elapsedTime = 0;
-         double seconds = 0;
-         long startime = System.nanoTime();
+         appendMessage("setting speed to 16 kph...<br>");
+         results+="setting speed to 16 kph...\n";
+        do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of speed to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="Status of speed to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
+         startTime = System.nanoTime();
          //Read the actual speed and count elsaped time. Do this until speed has reached MAX
-         while(currentActualSpeed < maxSpeed) // Replace 16 by maxSpeed once we have a motor that can reach more then 16 kph
+         while(currentActualSpeed < MAX_SPEED) // Replace 16 by MAX_SPEED once we have a motor that can reach more then 16 kph
          {
              currentActualSpeed = hCmd.getActualSpeed();
-             elapsedTime = System.nanoTime() - startime;
+             elapsedTime = System.nanoTime() - startTime;
              seconds = elapsedTime / 1.0E09;
              Thread.sleep(1000);
              appendMessage("actual speed "+currentActualSpeed+" elapsed time " + seconds +" seconds<br>");
@@ -934,15 +998,15 @@ import java.util.Calendar;
          }
 
 
-         appendMessage("The max speed is " + maxSpeed + "<br>");
+         appendMessage("The max speed is " + MAX_SPEED + "<br>");
          appendMessage("The motor took " + seconds + " seconds to go to max speed<br>");
-         results+="The max speed is " + maxSpeed + "\n";
+         results+="The max speed is " + MAX_SPEED + "\n";
          results+="The motor took " + seconds + " seconds to go to max speed\n";
 
          totalTestsCount++;
-         if(maxSpeed < 10){
-             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The Max Speed was not properly read from the brainboard (Max Speed: "+maxSpeed+" kph)<br>");
-             results+="\n<font color = #ff0000>* FAIL *</font>\n\nThe Max Speed was not properly read from the brainboard (Max Speed: "+maxSpeed+" kph)\n";
+         if(MAX_SPEED < 10){
+             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>The Max Speed was not properly read from the brainboard (Max Speed: "+MAX_SPEED+" kph)<br>");
+             results+="\n<font color = #ff0000>* FAIL *</font>\n\nThe Max Speed was not properly read from the brainboard (Max Speed: "+MAX_SPEED+" kph)\n";
 
          }
          //TODO: Calculate seconds for pass/pail standard based on Max Speed. For example a 10mph max speed unit might reach max speed quicker than a 15mph max speed unit
@@ -967,15 +1031,28 @@ import java.util.Calendar;
          }
  
          //set mode back to idle to stop the test
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
-         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-         Thread.sleep(1000);
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
          timeOfTest = System.nanoTime() - startTestTimer;
          timeOfTest = timeOfTest / 1.0E09;
