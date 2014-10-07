@@ -57,34 +57,34 @@ import com.ifit.sfit.sparky.tests.TestIntegration;
                      switch (testToRun)
                      {
                          case "Age - Valid":
-                             returnString = t.testValidAge();
+                             returnString = t.ageValid();
                              break;
                          case "Age - Invalid":
-                             returnString = t.testInValidAge();
+                             returnString = t.ageInvalid();
                              break;
                          case "Age - All":
-                             returnString = t.testAge();
+                             returnString = t.age();
                              break;
                          case "Weight - Valid":
-                             returnString = t.testValidWeight();
+                             returnString = t.weightValid();
                              break;
                          case "Weight - Invalid":
-                             returnString = t.testInValidWeight();
+                             returnString = t.weightInvalid();
                              break;
                          case "Weight - All":
-                             returnString = t.testWeight();
+                             returnString = t.weight();
                              break;
                          case "Max Speed":
-                             returnString = t.testMaxSpeedTime();
+                             returnString = t.maxSpeedTime();
                              break;
                          case "Running Time":
-                             returnString = t.testRunningTime(" ");
+                             returnString = t.runningTime(" ");
                              break;
                          case "Mar Running Time":
-                             returnString = t.testRunningTime("m");
+                             returnString = t.runningTime("m");
                              break;
                          case "Pause/Idle Timeout":
-                             returnString = t.testPauseIdleTimeout();
+                             returnString = t.pauseIdleTimeout();
                              break;
                          case "Run All":
                              returnString = t.runAll();

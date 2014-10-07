@@ -57,25 +57,25 @@ public class InclineTest extends BaseTest implements View.OnClickListener, Adapt
                     switch (testToRun)
                     {
                         case "Stop Incline":
-                            returnString = t.testStopIncline();
+                            returnString = t.stopIncline();
                             break;
                         case "Retained Incline":
-                            returnString = t.testRetainedIncline();
+                            returnString = t.retainedIncline();
                             break;
                         case "Speed Incline Limits":
-                            returnString = t.testSpeedInclineLimit();
+                            returnString = t.speedInclineLimits();
                             break;
                         case "DMK Incline Retention/Recall":
-                            returnString = t.testInclineRetentionDmkRecall();
+                            returnString = t.inclineRetentionDmkRecall();
                             break;
                         case "Incline Controller":
-                            returnString = t.testInclineController();
+                            returnString = t.inclineController();
                             break;
                         case "400 ms Pause":
-                            returnString = t.testIncline400msPause();
+                            returnString = t.incline400msPause();
                             break;
                         case "Calibrate":
-                            returnString = t.testInclineCalibration();
+                            returnString = t.inclineCalibration();
                             break;
                         case "Run All":
                             returnString = t.runAll();

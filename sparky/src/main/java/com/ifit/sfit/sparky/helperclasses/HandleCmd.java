@@ -477,7 +477,7 @@ public class HandleCmd implements OnCommandReceivedListener
             }
             if(commandData.containsKey(BitFieldId.FIRST_NAME)) {
                 try {
-                    mFirstName = ((NameConverter) commandData.get(BitFieldId.FIRST_NAME).getData()).getName();
+                    mFirstName = ((NameConverter) commandData.get(BitFieldId.FIRST_NAME)).getName();
                     this.valueToString = String.valueOf(mFirstName);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -485,7 +485,7 @@ public class HandleCmd implements OnCommandReceivedListener
             }
             if(commandData.containsKey(BitFieldId.LAST_NAME)) {
                 try {
-                    mLasttName = ((NameConverter) commandData.get(BitFieldId.LAST_NAME).getData()).getName();
+                    mLasttName = ((NameConverter) commandData.get(BitFieldId.LAST_NAME)).getName();
                     this.valueToString = String.valueOf(mLasttName);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -493,7 +493,7 @@ public class HandleCmd implements OnCommandReceivedListener
             }
             if(commandData.containsKey(BitFieldId.IFIT_USER_NAME)) {
                 try {
-                    mIfitUserName = ((NameConverter) commandData.get(BitFieldId.IFIT_USER_NAME).getData()).getName();
+                    mIfitUserName = ((NameConverter) commandData.get(BitFieldId.IFIT_USER_NAME)).getName();
                     this.valueToString = String.valueOf(mIfitUserName);
                 } catch (Exception e) {
                     e.printStackTrace();

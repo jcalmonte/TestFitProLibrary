@@ -87,7 +87,7 @@ public class TestIncline extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
-    public String testInclineController() throws Exception{
+    public String inclineController() throws Exception{
         //outline for code support #928 in redmine
         //Read the Max Incline value from the brainboard
         //Read the Min Incline value from the brainboard
@@ -244,7 +244,7 @@ public class TestIncline extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
-    public String testStopIncline() throws Exception{
+    public String stopIncline() throws Exception{
         //Redmine Support #1182
         //Set Incline to 0 or Min Incline
         //Set Incline to Max Incline
@@ -510,7 +510,7 @@ public class TestIncline extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
-    public String testRetainedIncline() throws Exception {
+    public String retainedIncline() throws Exception {
         //Redmine Support #1077
         //Set Incline to 5%
         //Set mode to Running
@@ -652,7 +652,7 @@ public class TestIncline extends CommonFeatures {
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
-        appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
+        appendMessage("<br>This test took a total of " + timeOfTest + " secs <br>");
         results+="\nThis test took a total of "+timeOfTest+" secs \n";
         results+=resultsSummaryTemplate(testValidation,currentVersion,gitHubWikiName,failsCount,issuesList,issuesListHtml,totalTestsCount);
         return results;
@@ -664,7 +664,7 @@ public class TestIncline extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
-    public String testSpeedInclineLimit() throws Exception {
+    public String speedInclineLimits() throws Exception {
         //TODO: As of 3/12/14, this functionality is not yet implemented
         //Redmine issue #953
         //Testing limits on the incline and on the speed
@@ -1203,16 +1203,16 @@ public class TestIncline extends CommonFeatures {
             totalTestsCount++;
             if ((currentIncline < 0) && currentSpeed == 16.09) {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("At Incline " + currentIncline + ", Current speed dropped to" + speedRounded + " mph or " + currentSpeed + " kph <br>");
+                appendMessage("At Incline " + currentIncline + ", Current speed dropped to" + speedRounded + " mph or " + currentSpeed + " kph <br><br>");
 
                 results += "\n* PASS *\n\n";
-                results += "At Incline " + currentIncline + ", Current speed dropped to " + speedRounded + " mph or " + currentSpeed + " kph \n";
+                results += "At Incline " + currentIncline + ", Current speed dropped to " + speedRounded + " mph or " + currentSpeed + " kph \n\n";
             } else if ((currentIncline < 0) && currentSpeed != 16.09) {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph <br>");
+                appendMessage("At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph <br><br>");
 
                 results += "\n* FAIL *\n\n";
-                results += "At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph \n";
+                results += "At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph \n\n";
                 issuesListHtml = "<br>- At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph <br>";
                 issuesList+="\n- At Incline " + currentIncline + " Current speed should be 10 MPH, but it is " + speedRounded + " mph or " + currentSpeed + " kph \n";
                 testValidation  = "FAILED";
@@ -1228,7 +1228,7 @@ public class TestIncline extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
-    public String testInclineRetentionDmkRecall() throws Exception {
+    public String inclineRetentionDmkRecall() throws Exception {
              //From Software Checklist #44
              //Redmine Support #1079
              //Set mode to Idle
@@ -1429,7 +1429,7 @@ public class TestIncline extends CommonFeatures {
      * @throws Exception
      */
 
-    public String testIncline400msPause() throws Exception
+    public String incline400msPause() throws Exception
     {
         String results="";
         gitHubWikiName = "Incline-Pause-Direction";
@@ -1630,7 +1630,7 @@ public class TestIncline extends CommonFeatures {
      * @throws Exception
      */
 
-    public String testInclineCalibration() throws Exception{
+    public String inclineCalibration() throws Exception{
         String results = "";
 
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE,ModeId.MAINTENANCE);
@@ -1654,12 +1654,12 @@ public class TestIncline extends CommonFeatures {
     public String runAll() {
         String results="";
         try {
-//        results+=this.testInclineRetentionDmkRecall();
-          results+=this.testIncline400msPause();
-          results+=this.testRetainedIncline();
-          results+=this.testSpeedInclineLimit();
-          results+=this.testStopIncline();
-          results+=this.testInclineController();
+//        results+=this.inclineRetentionDmkRecall();
+         // results+=this.incline400msPause();
+          results+=this.retainedIncline();
+          results+=this.speedInclineLimits();
+          results+=this.stopIncline();
+          results+=this.inclineController();
         }
         catch (Exception ex) {
             ex.printStackTrace();

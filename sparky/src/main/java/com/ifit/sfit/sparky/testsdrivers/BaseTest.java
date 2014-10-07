@@ -696,7 +696,7 @@ public abstract class BaseTest extends Activity implements View.OnClickListener{
                 public void run() {
                     try {
 
-                      returnString = t.testSystemConfiguration(systemString);
+                      returnString = t.systemConfiguration(systemString);
                         try {
                             returnString += "\n" + systemString;
 

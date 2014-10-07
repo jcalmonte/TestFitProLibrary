@@ -82,7 +82,7 @@ public class TestMotor extends CommonFeatures {
     //             Testing Start Speed            //
     //                                            //
     //--------------------------------------------//
-    //The testStartSpeed is planned to automate #16 of the software
+    //The startSpeed is planned to automate #16 of the software
     //checklist to make sure that the machine starts at 1.0mph or 2.0kph
 
     /**
@@ -91,7 +91,7 @@ public class TestMotor extends CommonFeatures {
      * @throws Exception
      */
 
-    public String testStartSpeed() throws Exception {
+    public String startSpeed() throws Exception {
 
 //        //outline for code support #958 **first task to automate**
 //        //send basic start command to start motor at on position
@@ -245,7 +245,7 @@ public class TestMotor extends CommonFeatures {
      * @throws Exception
      */
 
-    public String testDistance() throws Exception {
+    public String distance() throws Exception {
 
         //outline for code support #929 in redmine
         //start timer stopwatch
@@ -389,7 +389,7 @@ public class TestMotor extends CommonFeatures {
      */
 
 
-     public String testPauseResume() throws Exception {
+     public String pauseResume() throws Exception {
 
         //Support #954 in Redmine
         //Turn mode to Running (mimics Start button press)
@@ -558,7 +558,7 @@ public class TestMotor extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
-    public String testSpeedController() throws Exception {
+    public String speedController() throws Exception {
         final double MAX_SPEED = hCmd.getMaxSpeed();
         //outline for code support #927 in redmine
         //run test for treadmill & incline trainers
@@ -756,7 +756,7 @@ public class TestMotor extends CommonFeatures {
      * @throws Exception
      */
 
-    public String testCals() throws Exception {
+    public String calories() throws Exception {
         /*
         * Calories Formula
         *
@@ -1044,7 +1044,7 @@ public class TestMotor extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
-    public String testPwmOvershoot() throws Exception {
+    public String pwmOvershoot() throws Exception {
 
         //RedMine Support #956
         //Checklist item #39
@@ -1220,12 +1220,12 @@ public class TestMotor extends CommonFeatures {
     public String runAll() {
         String results="";
         try {
-            results+=this.testStartSpeed();
-            results+=this.testPauseResume();
-            results+=this.testPwmOvershoot();
-            results+=this.testDistance();
-            results+=this.testSpeedController();
-            results+= this.testCals();
+            results+=this.startSpeed();
+            results+=this.pauseResume();
+            results+=this.pwmOvershoot();
+            results+=this.distance();
+            results+=this.speedController();
+            results+= this.calories();
             mAct.filename = "All Motor Tests.txt";
 
         } catch (Exception ex) {

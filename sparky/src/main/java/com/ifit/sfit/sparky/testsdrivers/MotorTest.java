@@ -56,22 +56,22 @@ public class MotorTest extends BaseTest implements AdapterView.OnItemSelectedLis
                     switch (testToRun)
                     {
                         case "Start Speed":
-                        returnString = t.testStartSpeed();
+                        returnString = t.startSpeed();
                         break;
                         case "Pause Resume":
-                            returnString = t.testPauseResume();
+                            returnString = t.pauseResume();
                         break;
                         case "Distance":
-                            returnString = t.testDistance();
+                            returnString = t.distance();
                         break;
                         case "Speed Controller":
-                            returnString = t.testSpeedController();
+                            returnString = t.speedController();
                         break;
                         case "PWM Overshoot":
-                            returnString = t.testPwmOvershoot();
+                            returnString = t.pwmOvershoot();
                         break;
                         case "Calories":
-                            returnString = t.testCals();
+                            returnString = t.calories();
 
                             break;
                         case "Run All":

@@ -55,37 +55,37 @@ public class BitfieldsTest extends BaseTest implements View.OnClickListener, Ada
                     switch (testToRun)
                     {
                         case "Bf - Unsupported":
-                        returnString = t.testBitfieldsUnsupported();
+                        returnString = t.bitfieldsUnsupported();
                         break;
                         case "Bf - Read Only":
-                            returnString = t.testBitfieldsRdOnly();
+                            returnString = t.bitfieldsRdOnly();
                             break;
                         case "Bf - Values Validation":
-                            returnString = t.testBitfieldValuesValidation();
+                            returnString = t.bitfieldValuesValidation();
                             break;
                         case "Bf - All":
-                            returnString = t.testBitfields();
+                            returnString = t.bitfields();
                             break;
                         case "Pulse - Valid":
-                            returnString = t.testPulseValid();
+                            returnString = t.pulseValid();
                             break;
                         case "Pulse - Invalid":
-                            returnString = t.testPulseInValid();
+                            returnString = t.pulseInValid();
                             break;
                         case "Pulse - All":
-                            returnString = t.testPulse();
+                            returnString = t.pulse();
                             break;
                         case "Modes - All":
-                            returnString = t.testModes();
+                            returnString = t.modes();
                             break;
                         case "Modes - Valid":
-                            returnString = t.testModesValid();
+                            returnString = t.modesValid();
                             break;
                         case "Modes - Invalid":
-                            returnString = t.testModesInValid();
+                            returnString = t.modesInValid();
                             break;
                         case "Modes - Actions":
-                            returnString = t.testModesActions();
+                            returnString = t.modesActions();
                             break;
                         case "Run All":
                             returnString = t.runAll();

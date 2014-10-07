@@ -88,7 +88,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testStopKey() throws Exception{
+ public String stopKey() throws Exception{
             //Redmine Support #925
             //Test Stop button press
             //Set mode to Running
@@ -203,7 +203,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testStartKey() throws Exception{
+ public String startKey() throws Exception{
         //Redmine Support #1170
         //Testing Start Key Press
 //        Read current mode
@@ -309,7 +309,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testInclineUpKey() throws Exception{
+ public String inclineUpKey() throws Exception{
      //Redmine Support #1171
      //Testing Incline Up key press
      //1. Initialize Incline to min
@@ -433,7 +433,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testInclineDownKey() throws Exception{
+ public String inclineDownKey() throws Exception{
         //Redmine Support #1171
         //Testing Incline Up key press
         //1. Initialize Incline to min
@@ -557,7 +557,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testSpeedUpKey() throws Exception {
+ public String speedUpKey() throws Exception {
      //Testing Speed Up key press
      //1. Set mode to running
      //2. Simulate Speed Up key press
@@ -658,7 +658,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testSpeedDownKey() throws Exception {
+ public String speedDownKey() throws Exception {
         //Testing Speed Down key press
 //        1. Set mode to running
 //        2. Set speed to max
@@ -787,7 +787,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testQuickInclineKeys() throws Exception{
+ public String quickInclineKeys() throws Exception{
      /*
      * 1. Read max and min inclines
      * 2. Use max and min incline values to set max and min keycodes
@@ -901,7 +901,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testQuickSpeedKeys() throws Exception{
+ public String quickSpeedKeys() throws Exception{
      /*
      * 1. Set mode to running
      * 2. Send quickspeed command
@@ -1023,7 +1023,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @throws Exception
      */
 
- public String testAgeUpKey() throws Exception{
+ public String ageUpKey() throws Exception{
         //Testing Age Up key press
         //1. Set age to 18
         //2. Simulate Incline Up key press
@@ -1136,7 +1136,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      * @return text log of test results
      * @throws Exception
      */
- public String testAgeDownKey() throws Exception{
+ public String ageDownKey() throws Exception{
         //Redmine Support #1171
         //Testing Incline Up key press
         //1. Initialize Incline to min
@@ -1255,16 +1255,16 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
         String keysResults="";
 
-        keysResults += testStopKey();
-        keysResults += testStartKey();
-        keysResults += testInclineUpKey();
-        keysResults += testInclineDownKey();
-        keysResults += testQuickInclineKeys();
-        keysResults += testSpeedUpKey();
-        keysResults += testSpeedDownKey();
-        keysResults += testQuickSpeedKeys();
-        keysResults += testAgeUpKey();
-        keysResults += testAgeDownKey();
+        keysResults += stopKey();
+        keysResults += startKey();
+        keysResults += inclineUpKey();
+        keysResults += inclineDownKey();
+        keysResults += quickInclineKeys();
+        keysResults += speedUpKey();
+        keysResults += speedDownKey();
+        keysResults += quickSpeedKeys();
+        keysResults += ageUpKey();
+        keysResults += ageDownKey();
         mAct.filename = "All Key Tests.txt";
         return keysResults;
     }

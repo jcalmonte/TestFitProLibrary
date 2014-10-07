@@ -56,34 +56,34 @@ public class TreadmillKeyCodesTest  extends BaseTest implements AdapterView.OnIt
                     switch (testToRun)
                     {
                         case "Stop Key":
-                            returnString = t.testStopKey();
+                            returnString = t.stopKey();
                             break;
                         case "Start Key":
-                            returnString = t.testStartKey();
+                            returnString = t.startKey();
                             break;
                         case "Incline Up":
-                            returnString = t.testInclineUpKey();
+                            returnString = t.inclineUpKey();
                             break;
                         case "Incline Down":
-                            returnString = t.testInclineDownKey();
+                            returnString = t.inclineDownKey();
                             break;
                         case "Speed Up":
-                            returnString = t.testSpeedUpKey();
+                            returnString = t.speedUpKey();
                             break;
                         case "Speed Down":
-                            returnString = t.testSpeedDownKey();
+                            returnString = t.speedDownKey();
                             break;
                         case "Quick Speed":
-                            returnString = t.testQuickSpeedKeys();
+                            returnString = t.quickSpeedKeys();
                             break;
                         case "Quick Incline":
-                            returnString = t.testQuickInclineKeys();
+                            returnString = t.quickInclineKeys();
                             break;
                         case "Age Up":
-                            returnString = t.testAgeUpKey();
+                            returnString = t.ageUpKey();
                             break;
                         case "Age Down":
-                            returnString = t.testAgeDownKey();
+                            returnString = t.ageDownKey();
                             break;
                         case "Run All":
                             returnString = t.runAll();

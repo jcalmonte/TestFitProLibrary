@@ -77,7 +77,7 @@ import java.util.Calendar;
      * @return text log of test results
      * @throws Exception
      */
-     public String testAge() throws Exception {
+     public String age() throws Exception {
          //Redmine Support #937
          //Read the default Age
          //Set the Age
@@ -86,8 +86,8 @@ import java.util.Calendar;
          //Repeat 6 times with values in increments of 5 years
  
          String results = "";
-         results+=testValidAge();
-         results+=testInValidAge();
+         results+= ageValid();
+         results+= ageInvalid();
          mAct.filename = "Age - All.txt";
          return results;
      }
@@ -97,7 +97,7 @@ import java.util.Calendar;
      * @return text log of test results
      * @throws Exception
      */
-     public String testValidAge() throws Exception{
+     public String ageValid() throws Exception{
          String results="";
          gitHubWikiName = "Age-Valid";
          testValidation ="PASSED";
@@ -168,7 +168,7 @@ import java.util.Calendar;
      * @return text log of test results
      * @throws Exception
      */
-    public String testInValidAge() throws Exception{
+    public String ageInvalid() throws Exception{
         String results="";
         gitHubWikiName = "Age-Invalid";
         testValidation ="PASSED";
@@ -243,7 +243,7 @@ import java.util.Calendar;
      * @throws Exception
      */
 
-     public String testWeight() throws Exception {
+     public String weight() throws Exception {
          //Weight is implemented in kilograms with a default weight of 185 lbs =84 kg
          //Redmine Support #942
          //Read the default Weight
@@ -252,8 +252,8 @@ import java.util.Calendar;
          //Validate the Weight
          //Repeat 6 times with different values
          String results="";
-         results+=testValidWeight();
-         results+=testInValidWeight();
+         results+= weightValid();
+         results+= weightInvalid();
          mAct.filename = "Weight - All.txt";
          return results;
      }
@@ -264,7 +264,7 @@ import java.util.Calendar;
      * @return text log of test results
      * @throws Exception
      */
-    public String testValidWeight() throws Exception{
+    public String weightValid() throws Exception{
         String results="";
         gitHubWikiName = "Weight-Valid";
         testValidation ="PASSED";
@@ -337,7 +337,7 @@ import java.util.Calendar;
      * @return text log of test results
      * @throws Exception
      */
-    public String testInValidWeight() throws Exception{
+    public String weightInvalid() throws Exception{
         String results="";
         gitHubWikiName = "Weight-Inalid";
         testValidation ="PASSED";
@@ -416,7 +416,7 @@ import java.util.Calendar;
      * @return text log of test results
      * @throws Exception
      */
-     public String testSystemConfiguration(String inputString) throws Exception{
+     public String systemConfiguration(String inputString) throws Exception{
          //outline for code support #951
          //read System Config data from Brainboard
          //try to output all values from System Device and Device Info
@@ -500,7 +500,7 @@ import java.util.Calendar;
      * @return text log of test results
      * @throws Exception
      */
-     public String testPauseIdleTimeout() throws Exception{
+     public String pauseIdleTimeout() throws Exception{
          //part of redmine #930
          //Set mode to Pause
          //Delay for 60 seconds
@@ -656,7 +656,7 @@ import java.util.Calendar;
      * @return text log of test results
      * @throws Exception
      */
-     public String testRunningTime(String runType) throws Exception{
+     public String runningTime(String runType) throws Exception{
          //outline for code support #930 in redmine
          
          String results;
@@ -694,7 +694,7 @@ import java.util.Calendar;
          appendMessage(Calendar.getInstance().getTime() + "<br><br>");
          results+= Calendar.getInstance().getTime() + "\n\n";
 
-         appendMessage("Current pause timeout is: "+hCmd.getPauseTimeout()+"<br>");
+         appendMessage("Current pause timeout is: " + hCmd.getPauseTimeout() + "<br>");
          results+="Current pause timeout is: "+hCmd.getPauseTimeout()+"\n";
 
          appendMessage("Current Mode: "+hCmd.getMode()+"<br>");
@@ -872,7 +872,7 @@ import java.util.Calendar;
      * @throws Exception
      */
 
-     public String testMaxSpeedTime() throws Exception{
+     public String maxSpeedTime() throws Exception{
          //outline for code #1051 in redmine
          //look up max speed for device (currently is not implemented - so just going to use 20kph)
          //send basic start command to start motor at on position
@@ -902,7 +902,7 @@ import java.util.Calendar;
  
          maxSpeed = hCmd.getMaxSpeed();
          Thread.sleep(1000);
-         System.out.println("The max speed is " + maxSpeed+" kph but our console only reaches up to 16 kph");
+         System.out.println("The max speed is " + maxSpeed + " kph but our console only reaches up to 16 kph");
  
          //start timer
          //set mode to running
@@ -995,13 +995,13 @@ import java.util.Calendar;
      public String runAll() {
         String results = "";
          try {
-             results+=this.testValidAge();
-             results+=this.testInValidAge();
-             results+=this.testValidWeight();
-             results+=this.testInValidWeight();
-             results+=this.testMaxSpeedTime();
-             results+=this.testRunningTime(" ");
-             results+=this.testPauseIdleTimeout();
+             results+=this.ageValid();
+             results+=this.ageInvalid();
+             results+=this.weightValid();
+             results+=this.weightInvalid();
+             results+=this.maxSpeedTime();
+             results+=this.runningTime(" ");
+             results+=this.pauseIdleTimeout();
              mAct.filename = "All Integration Tests.txt";
          }
          catch (Exception ex) {
