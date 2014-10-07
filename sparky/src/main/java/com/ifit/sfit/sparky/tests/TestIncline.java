@@ -26,6 +26,7 @@ public class TestIncline extends CommonFeatures {
     private int failsCount = 0, totalTestsCount = 0;
 
     private FecpCommand calibrateCmd;
+    private FecpCommand sendKeyCmd;
     private String currentWorkoutMode = "";
     private double currentIncline = 0.0;
     private double actualInlcine = 0.0;
@@ -114,20 +115,21 @@ public class TestIncline extends CommonFeatures {
         results+="\n----------------------INCLINE CONTROLLER TEST RESULTS----------------------\n\n";
         results+=Calendar.getInstance().getTime() + "\n\n";
 
-        double maxIncline;
-        double minIncline;
+        final double MAX_INCLINE;
+        final double MIN_INCLINE;
         double currentActualIncline;
         double transMax;
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
+        long time = 500;
 
-        minIncline = hCmd.getMinIncline();
-        maxIncline = hCmd.getMaxIncline();
-        appendMessage("Min Incline is " + minIncline + "%<br>");
+        MIN_INCLINE = hCmd.getMinIncline();
+        MAX_INCLINE = hCmd.getMaxIncline();
+        appendMessage("Min Incline is " + MIN_INCLINE + "%<br>");
 
-        results+="Min Incline is " + minIncline + "%\n";
+        results+="Min Incline is " + MIN_INCLINE + "%\n";
 
-        System.out.println("Min Incline is " + minIncline + "%<br>");
+        System.out.println("Min Incline is " + MIN_INCLINE + "%<br>");
 
 
         //If TransMax is ever set to a ridiculously high number or something, you can reset it to this more reasonable TransMax value
@@ -152,23 +154,25 @@ public class TestIncline extends CommonFeatures {
         for(int i = 0; i < NUM_TESTS; i++)
         {
             //Set MAx incline harcoded to be 15% since that is our motor's max capacity.
-            //This value "J" will be set to maxIncline later on when we use it on a motor with higher incline range
-            for(double j = 15; j >= minIncline; j = j-0.5)
+            //This value "J" will be set to MAX_INCLINE later on when we use it on a motor with higher incline range
+            for(double j = 15; j >= MIN_INCLINE; j = j-0.5) //TODO: Replace "J = 15" with "J = MAX_INCLINE" once we have an incline motor that goes to 40%
             {
                 appendMessage("Sending a command to set incline to " + j + "%<br>");
 
                 results+="Sending a command to set incline to " + j + "%\n";
 
+            do{
                 //Set value for the incline
                 ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, j);
                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-                Thread.sleep(1000);
-
-                //Check status of the command to send the incline
+                Thread.sleep(time);
                 appendMessage("Status of setting incline to " + j + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-                appendMessage("Checking incline will reach set value...<br>");
-
                 results+="Status of setting incline to " + j + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+            }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+            //Check status of the command to send the incline
+                appendMessage("Checking incline will reach set value...<br>");
                 results+="Checking incline will reach set value...\n";
                 startime= System.nanoTime();
                 do
@@ -218,16 +222,31 @@ public class TestIncline extends CommonFeatures {
             }
         }
 
-        //set mode back to idle to stop the test
+        do{
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+        Thread.sleep(time);
+        appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+        results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+    }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+    do{
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+        Thread.sleep(time);
+        appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+        results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+    }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+    do{
         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+        Thread.sleep(time);
+        appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+        results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
+    }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
@@ -266,8 +285,8 @@ public class TestIncline extends CommonFeatures {
         totalTestsCount = 0;
         mAct.filename = "Stop Incline.txt";
 
-        double maxIncline;
-        double minIncline;
+        final double MAX_INCLINE = hCmd.getMaxIncline();;
+        final double MIN_INCLINE = hCmd.getMinIncline();
         double maxToMinIncline1;
         double maxToMinIncline2;
         double minToMaxIncline1;
@@ -285,70 +304,70 @@ public class TestIncline extends CommonFeatures {
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
         double setIncline;
-
-        maxIncline = hCmd.getMaxIncline();
-
-        appendMessage("Max Incline is " + maxIncline + "%<br>");
-
-        results+="Max Incline is " + maxIncline + "%\n";
-
-        System.out.println("Max Incline is " + maxIncline + "%<br>");
-
-        minIncline = hCmd.getMinIncline();
-
-        appendMessage("Min Incline is " + minIncline + "%<br>");
-
-        results+="Min Incline is " + minIncline + "%\n";
+        long time = 500;
 
 
-        System.out.println("MinIncline is " + minIncline + "%<br>");
+        appendMessage("Max Incline is " + MAX_INCLINE + "%<br>");
 
-        //Set Incline to Min Incline
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, minIncline);
-        mFecpController.addCmd(wrCmd);
-        Thread.sleep(1000);
-        appendMessage("Status of setting incline to min: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+        results+="Max Incline is " + MAX_INCLINE + "%\n";
+
+        System.out.println("Max Incline is " + MAX_INCLINE + "%<br>");
+
+
+        appendMessage("Min Incline is " + MIN_INCLINE + "%<br>");
+
+        results+="Min Incline is " + MIN_INCLINE + "%\n";
+
+
+        System.out.println("MinIncline is " + MIN_INCLINE + "%<br>");
+        do{
+            //Set Incline to Min Incline
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, MIN_INCLINE);
+            mFecpController.addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting incline to min: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting incline to min: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+
         appendMessage("Checking incline will reach set value...<br>");
-
-        results+="Status of setting incline to min: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
         results+="Checking incline will reach set value...\n";
 
 
-        //check actual incline until value reaches minIncline
+        //check actual incline until value reaches MIN_INCLINE
         startime = System.nanoTime();
         do
         {
             currentActualIncline = hCmd.getActualIncline();
             Thread.sleep(300);
-            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + minIncline+" time elapsed: "+seconds+"<br>");
+            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + MIN_INCLINE+" time elapsed: "+seconds+"<br>");
 
-            results+="Current Incline is: " + currentActualIncline+ " goal: " + minIncline+" time elapsed: "+seconds+"\n";
+            results+="Current Incline is: " + currentActualIncline+ " goal: " + MIN_INCLINE+" time elapsed: "+seconds+"\n";
 
             elapsedTime = System.nanoTime() - startime;
             seconds = elapsedTime / 1.0E09;
-        } while(minIncline!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+        } while(MIN_INCLINE!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
 
 
-        //Set Incline to Max Incline
-        maxIncline = 15;
-        setIncline = 7;
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, maxIncline);
-        mFecpController.addCmd(wrCmd);
-        Thread.sleep(1000);
-        appendMessage("Status of setting incline to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 15);//TODO: change "15" to "MAX_INCLINE" when we get motor that reaches 40% grade
+            mFecpController.addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting incline to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting incline to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
         appendMessage("Checking incline will reach set value...<br>");
-
-        results+="Status of setting incline to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
         results+="Checking incline will reach set value...\n";
         startime = System.nanoTime();
+        setIncline = 7;
         do
         {
             currentActualIncline = hCmd.getActualIncline();
             Thread.sleep(350);
-            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + maxIncline+" time elapsed: "+seconds+"<br>");
-
-            results+="Current Incline is: " + currentActualIncline+ " goal: " + maxIncline+" time elapsed: "+seconds+"\n";
-
+            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + 15+" time elapsed: "+seconds+"<br>"); //TODO: Replace "15" by MAX_INCLINE
+            results+="Current Incline is: " + currentActualIncline+ " goal: " + 15+" time elapsed: "+seconds+"\n";
             elapsedTime = System.nanoTime() - startime;
             seconds = elapsedTime / 1.0E09;
         } while(setIncline!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
@@ -356,13 +375,33 @@ public class TestIncline extends CommonFeatures {
         //Stop
         appendMessage("Send stop command...<br>");
         results+="Send stop command...\n";
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-        mFecpController.addCmd(wrCmd);
-        Thread.sleep(1000);
+//        TODO: Use this part instead of setting mode to Pause once set_testing_key is working
+//        Device keyPressTemp = this.MainDevice.getSubDevice(DeviceId.KEY_PRESS);
+//
+//        if(keyPressTemp != null){
+//            Command writeKeyPressCmd = keyPressTemp.getCommand(CommandId.SET_TESTING_KEY);
+//            if(writeKeyPressCmd != null){
+//                sendKeyCmd = new FecpCommand(writeKeyPressCmd, hCmd);
+//                ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyCode(KeyCodes.STOP);
+//                ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyOverride(true);
+//                ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setTimeHeld(1000);
+//                ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setIsSingleClick(true);
+//            }
+//        }
+//       do{
+//          mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+//          Thread.sleep(time);
+//          appendMessage("Status of sending Stop key command: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+//          results+="Status of sending Stop key command: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+//      }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-        appendMessage("Status of sending Stop key command: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-
-        results+="Status of sending Stop key command: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+    do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+            mFecpController.addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting mode to PAUSE: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting mode to PAUSE: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+    }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         appendMessage("reading actual incline...<br>");
         results+="reading actual incline...\n";
@@ -394,49 +433,53 @@ public class TestIncline extends CommonFeatures {
             failsCount++;
         }
 
-        //Set Incline to Max Incline
-        maxIncline = 15;
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, maxIncline);
-        mFecpController.addCmd(wrCmd);
-        Thread.sleep(1000);
-        //check actual incline until value reaches maxIncline
-        appendMessage("Status of setting incline to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-        appendMessage("Checking incline will reach set value...<br>");
+        //set Incline to max
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 15);//TODO: change "15" to "MAX_INCLINE" when we get motor that reaches 40% grade
+            mFecpController.addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting incline to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting incline to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-        results+="Status of setting incline to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        //check actual incline until value reaches MAX_INCLINE
+        appendMessage("Checking incline will reach set value...<br>");
         results+="Checking incline will reach set value...\n";
         startime = System.nanoTime();
         do
         {
             currentActualIncline = hCmd.getActualIncline();
             Thread.sleep(300);
-            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + maxIncline+" time elapsed: "+seconds+"<br>");
+            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + 15+" time elapsed: "+seconds+"<br>");//TODO: Replace "15" by MAX_INCLINE
 
-            results+="Current Incline is: " + currentActualIncline+ " goal: " + maxIncline+" time elapsed: "+seconds+"\n";
+            results+="Current Incline is: " + currentActualIncline+ " goal: " + 15+" time elapsed: "+seconds+"\n";
 
             elapsedTime = System.nanoTime() - startime;
             seconds = elapsedTime / 1.0E09;
-        } while(maxIncline!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+        } while(15!=currentActualIncline && seconds < 90);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
 
 
-        //Set Incline to Min Incline
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, minIncline);
-        mFecpController.addCmd(wrCmd);
-        Thread.sleep(1000);    //Wait for enough time so that the incline does not go all the way to Min Incline
-        appendMessage("Status of setting incline to min: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+        do{
+            //Set Incline to Min Incline
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, MIN_INCLINE);
+            mFecpController.addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting incline to min: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting incline to min: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
         appendMessage("Checking incline will reach set value...<br>");
-
-        results+="Status of setting incline to min: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
         results+="Checking incline will reach set value...\n";
+
         setIncline = 5;
         startime = System.nanoTime();
         do
         {
             currentActualIncline = hCmd.getActualIncline();
             Thread.sleep(350);
-            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + minIncline+" time elapsed: "+seconds+"<br>");
+            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + MIN_INCLINE+" time elapsed: "+seconds+"<br>");
 
-            results+="Current Incline is: " + currentActualIncline+ " goal: " + minIncline+" time elapsed: "+seconds+"\n";
+            results+="Current Incline is: " + currentActualIncline+ " goal: " + MIN_INCLINE+" time elapsed: "+seconds+"\n";
 
             elapsedTime = System.nanoTime() - startime;
             seconds = elapsedTime / 1.0E09;
@@ -445,13 +488,32 @@ public class TestIncline extends CommonFeatures {
         //Stop
         appendMessage("Send stop command...<br>");
         results+="Send stop command...\n";
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-        mFecpController.addCmd(wrCmd);
-        Thread.sleep(1000);    //Wait for enough time so that the incline does not increase all the way to Max Incline
-
-        appendMessage("Status of setting mode to Pause: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-
-        results+="Status of setting mode to Pause: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+//        TODO: Use this part instead of setting mode to Pause once set_testing_key is working
+//        Device keyPressTemp = this.MainDevice.getSubDevice(DeviceId.KEY_PRESS);
+//
+//        if(keyPressTemp != null){
+//            Command writeKeyPressCmd = keyPressTemp.getCommand(CommandId.SET_TESTING_KEY);
+//            if(writeKeyPressCmd != null){
+//                sendKeyCmd = new FecpCommand(writeKeyPressCmd, hCmd);
+//                ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyCode(KeyCodes.STOP);
+//                ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyOverride(true);
+//                ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setTimeHeld(1000);
+//                ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setIsSingleClick(true);
+//            }
+//        }
+//       do{
+//          mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+//          Thread.sleep(time);
+//          appendMessage("Status of sending Stop key command: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+//          results+="Status of sending Stop key command: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+//      }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+            mFecpController.addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting mode to PAUSE: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting mode to PAUSE: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         appendMessage("reading actual incline...<br>");
         results+="reading actual incline...\n";
@@ -484,15 +546,28 @@ public class TestIncline extends CommonFeatures {
             failsCount++;
         }
     //set mode back to idle to stop the test
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
@@ -537,7 +612,11 @@ public class TestIncline extends CommonFeatures {
         double currentActualIncline =0;
 
         double timeOfTest = 0; //how long test took in seconds
+        long elapsedTime = 0;
+        double seconds = 0;
+        long startime = 0;
         long startTestTimer = System.nanoTime();
+        long time = 500;
 
         currentMode = "Current Mode is: " + hCmd.getMode();
         appendMessage(currentMode + "<br>");
@@ -545,21 +624,18 @@ public class TestIncline extends CommonFeatures {
         results+="Current Mode is: " + hCmd.getMode()+"\n";
 
         //Set incline to 5% for testing the incline
+        do{
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, testIncline);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("The status of setting the Incline to 5%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="The status of setting the Incline to 5%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, testIncline);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
         setIncline = hCmd.getIncline();
-        appendMessage("The status of setting the Incline to 5%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
 
-        results+="The status of setting the Incline to 5%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-
-        long elapsedTime = 0;
-        double seconds = 0;
-        long startime = 0;
         //Wait for the incline motor to go to 5%
         appendMessage("Checking incline will reach set value...<br>");
-
         results+="Checking incline will reach set value...\n";
         startime= System.nanoTime();
         do
@@ -576,16 +652,18 @@ public class TestIncline extends CommonFeatures {
         currentIncline1 = hCmd.getActualIncline();
 
         appendMessage("The actual incline is " + currentIncline1 +" % <br>");
-
         results+="The actual incline is " + currentIncline1 +" % \n";
 
         //Set Mode to Running
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE,ModeId.RUNNING);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        appendMessage("Status of setting the mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE,ModeId.RUNNING);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting the mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting the mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-        results+="Status of setting the mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+
         currentMode = hCmd.getMode().toString();
         appendMessage("Current Mode is: " + currentMode + "<br>");
 
@@ -637,15 +715,28 @@ public class TestIncline extends CommonFeatures {
         }
 
         //set mode back to idle to stop the test
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         //TODO: At this point if console is home unit, incline should stay the same. If console is club unit, incline resets to 0. Test for those conditions HERE
 
@@ -688,17 +779,9 @@ public class TestIncline extends CommonFeatures {
         //Read speed to ensure it's at 20 kph
         //Set Incline to a negative limit
         //Read speed to ensure it was lowered and matches the above limits
-        double currentActualIncline = 0;
-        long elapsedTime = 0;
-        double seconds = 0;
-        long startime = 0;
-        double setIncline =0;
-        double currentSpeed = 0;
+        long time = 500;
         BigDecimal speedRounded;
         boolean isHomeUnit = false;
-        final double  MAX_SPEED = hCmd.getMaxSpeed();
-        final double  MIN_INCLINE = hCmd.getMinIncline();
-        final double  MAX_INCLINE= hCmd.getMaxIncline();
         gitHubWikiName = "Speed-Incline-Limits";
         testValidation ="PASSED";
         issuesListHtml = "";
@@ -711,17 +794,6 @@ public class TestIncline extends CommonFeatures {
         long startTestTimer = System.nanoTime();
         String results="";
 
-        //Set mode to running
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        appendMessage("Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-        appendMessage("current mode: "+hCmd.getMode()+"\n");
-
-        results+="Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-        results+="current mode: "+hCmd.getMode()+"\n";
-
-
         if(isHomeUnit) {
             speedLimitsHomeUnits();
         }
@@ -732,15 +804,29 @@ public class TestIncline extends CommonFeatures {
 
 //
         //set mode back to idle to stop the test
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+        //set mode back to idle to stop the test
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
@@ -770,6 +856,22 @@ public class TestIncline extends CommonFeatures {
         final double  MAX_SPEED = hCmd.getMaxSpeed();
         final double  MIN_INCLINE = hCmd.getMinIncline();
         final double  MAX_INCLINE= hCmd.getMaxIncline();
+
+        appendMessage("<br><br>----------------------Speed Incline Limits for "+devId.getDescription()+" Home Unit----------------------<br><br>");
+        appendMessage(Calendar.getInstance().getTime() + "<br><br>");
+
+        results+="\n\n----------------------Speed Incline Limits for "+devId.getDescription()+" Home Unit----------------------\n\n";
+        results+=Calendar.getInstance().getTime() + "\n\n";
+
+        //Set mode to running
+        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+        Thread.sleep(1000);
+        appendMessage("Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+        appendMessage("current mode: "+hCmd.getMode()+"\n");
+
+        results+="Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        results+="current mode: "+hCmd.getMode()+"\n";
 
        // set Incline to zero
         ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 0);
@@ -1092,6 +1194,7 @@ public class TestIncline extends CommonFeatures {
         long elapsedTime = 0;
         double seconds = 0;
         long startime = 0;
+        long time = 500;
         double setIncline =0;
         double currentSpeed = 0;
         BigDecimal speedRounded;
@@ -1105,20 +1208,31 @@ public class TestIncline extends CommonFeatures {
         results+="\n\n----------------------Speed Incline Limits for "+devId.getDescription()+" Club Unit----------------------\n\n";
         results+=Calendar.getInstance().getTime() + "\n\n";
 
+        //Set mode to running
+        do{
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+        appendMessage("current mode: "+hCmd.getMode()+"\n");
+        results+="current mode: "+hCmd.getMode()+"\n";
 
         //Start incline at -1, then go to -6
         for(int i = -1; i >= MIN_INCLINE; i--) {
             //set Incline to zero
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 0);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
+            do{
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 0);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                appendMessage("Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+                results+="Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+            }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
             currentIncline = hCmd.getIncline();
-            appendMessage("Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-
-            results+="Status of setting incline to zero: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-
             appendMessage("Checking incline will reach set value...<br>");
-
             results+="Checking incline will reach set value...\n";
             //Wait til incline reaches target value
             startime = System.nanoTime();
@@ -1137,9 +1251,14 @@ public class TestIncline extends CommonFeatures {
             //set speed to max
             appendMessage("set speed to max...<br>");
             results+="set speed to max...\n";
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
+            do{
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                appendMessage("Status of setting speed to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+                results+="Status of setting speede to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+            }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
             /*TODO: THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
                 startime= System.nanoTime();
                 do
@@ -1153,43 +1272,35 @@ public class TestIncline extends CommonFeatures {
                 } while(j!=actualSpeed && seconds < 20);//Do while the incline hasn't reached its point yet or took more than 20 secs
 
 */
-            appendMessage("Status of setting speed to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-
-            results+="Status of setting speede to max: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
             appendMessage("Wait 10 seconds...<br>");
             results+="Wait 10 seconds...\n";
             Thread.sleep(10000); // give it 10 secs to reach max speed
             appendMessage("Current speed is: "+hCmd.getSpeed()+"<br>");
             results+="Current speed is: "+hCmd.getSpeed()+"\n";
-
-            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, i);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-
-            appendMessage("Status of sending incline at " + i + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-            results += "Status of sending incline at " + i + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-
+            do{
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, i);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                appendMessage("Status of sending incline at " + i + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                results += "Status of sending incline at " + i + "%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
             currentIncline = hCmd.getIncline();
 
             appendMessage("Current Incline is set to " + currentIncline + "%<br>");
-
             results += "Current Incline is set to " + currentIncline + "%\n";
 
 
             appendMessage("Checking incline will reach set value...<br>");
-
             results += "Checking incline will reach set value...\n";
+
             //Wait til incline reaches target value
             startime = System.nanoTime();
             do {
                 currentActualIncline = hCmd.getActualIncline();
                 Thread.sleep(350);
                 appendMessage("Current Incline is: " + currentActualIncline + " goal: " + currentIncline + " time elapsed: " + seconds + "<br>");
-
                 results += "Current Incline is: " + currentActualIncline + " goal: " + currentIncline + " time elapsed: " + seconds + "\n";
-
                 elapsedTime = System.nanoTime() - startime;
                 seconds = elapsedTime / 1.0E09;
             }
@@ -1250,14 +1361,15 @@ public class TestIncline extends CommonFeatures {
         long elapsedTime = 0;
         double seconds = 0;
         long startime = 0;
-        double setIncline = 0;
+        double setIncline;
         double inclineAtDMKpull = 0;
         double inclineAfterDMKpull = 0;
         double actualIncline;
-        double maxIncline;
+        final double MAX_INCLINE = hCmd.getMaxIncline();
 
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
+        long time = 500;
 
             appendMessage("<br>----------------------INCLINE RETENTION AFTER DMK TEST RESULTS----------------------<br><br>");
             appendMessage(Calendar.getInstance().getTime() + "<br><br>");
@@ -1267,17 +1379,16 @@ public class TestIncline extends CommonFeatures {
 
 
              //Set Incline to 0
-             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 0);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
-
-             //Check status of the command to receive the incline
-            appendMessage("Status of setting incline to 0%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-            results+="Status of setting incline to 0%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            setIncline = 0;
+           do{
+              ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, setIncline);
+               mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+               Thread.sleep(time);
+               appendMessage("Status of setting incline to 0%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+               results+="Status of setting incline to 0%: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
             appendMessage("Checking incline will reach set value...<br>");
-
             results+="Checking incline will reach set value...\n";
              //Wait for the incline motor to go setIncline
              startime= System.nanoTime();
@@ -1291,38 +1402,39 @@ public class TestIncline extends CommonFeatures {
                  seconds = elapsedTime / 1.0E09;
              } while(setIncline!=actualIncline && seconds < 60);//Do while the incline hasn't reached its target point. Break the  loop if it took more than a minute to reach target incline
 
-             maxIncline = 15; //hCmd.getMaxIncline();
+            do{
+                 //Set Incline to Max Incline
+                 ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, 15); //TODO: replace 15 by MAX_INCLINE
+                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                 Thread.sleep(time);
+                 appendMessage("Status of setting incline to " + 15 + "% (Max Incline): " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                 results+="Status of setting incline to " + 15 + "% (Max Incline): " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-             //Set Incline to Max Incline
-             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, maxIncline);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(3000);    //Wait a little while to get past 0, but not to max incline
+        //Wait a little while to get past 0, but not to max incline
+            Thread.sleep(2000);
 
-             appendMessage("Status of setting incline to " + maxIncline + "% (Max Incline): " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-             results+="Status of setting incline to " + maxIncline + "% (Max Incline): " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
 
         //Set Mode to Running
-             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
-
-            appendMessage("Status of setting mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-            results+="Status of setting mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            do{
+                ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+                 mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                 Thread.sleep(time);
+                 appendMessage("Status of setting mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+                 results+="Status of setting mode to Running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+             }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         //Set Mode to Pause
-             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting mode to PAUSE: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting mode to PAUSE: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-            appendMessage("Status of setting mode to Pause: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-            results+="Status of setting mode to Pause: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-
-            System.out.println("Pull DMK key now!");
+             System.out.println("Pull DMK key now!");
              appendMessage("Waiting for DMK key to be pulled...<br>");
-
              results+="Waiting for DMK key to be pulled...\n";
 
             while(hCmd.getMode()!=ModeId.DMK);
@@ -1402,17 +1514,28 @@ public class TestIncline extends CommonFeatures {
              }
 
              //set mode back to idle to stop the test
-             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
-             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
-             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-             Thread.sleep(1000);
-             //end the recurring callback
-             mSFitSysCntrl.getFitProCntrl().removeCmd(wrCmd);
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
@@ -1451,6 +1574,13 @@ public class TestIncline extends CommonFeatures {
 
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
+        long time = 500;
+
+        double incline1=0;
+        double incline2=0.1;
+        double aIncline1=0;
+        double aIncline2 = 0;
+        double timeMillisecs = 0;
 
         appendMessage("<br>----------------------400 ms INCLINE PAUSE DIRECTION TEST----------------------<br><br>");
         appendMessage(Calendar.getInstance().getTime() + "<br><br>");
@@ -1459,56 +1589,16 @@ public class TestIncline extends CommonFeatures {
         results+=Calendar.getInstance().getTime() + "\n\n";
 
         //Set Incline to 2
-        setIncline = 2;
-        startime= System.nanoTime();
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, setIncline);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-
-//        //Wait until command was successfully sent
-//        while(wrCmd.getCommand().getStatus().getStsId()!= StatusId.DONE) {
-//            elapsedTime = System.nanoTime() - startime;
-//        }
-        //Check status of the command to receive the incline
-        appendMessage("Status of setting incline to "+setIncline+"%: "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-        results+="Status of setting incline to "+setIncline+"%: "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-
-        appendMessage("Checking incline will reach set value...<br>");
-
-        results+="Checking incline will reach set value...\n";
-        //Wait for the incline motor to go setIncline
-        startime= System.nanoTime();
-        do
-        {
-            actualIncline = hCmd.getActualIncline();
-            Thread.sleep(350);
-            appendMessage("Current Incline is: " + actualIncline+ " goal: " + setIncline+" time elapsed: "+seconds+"<br>");
-            results+="Current Incline is: " + actualIncline+ " goal: " + setIncline+" time elapsed: "+seconds+"\n";
-            elapsedTime = System.nanoTime() - startime;
-            seconds = elapsedTime / 1.0E09;
-        } while(setIncline!=actualIncline && seconds < 60);//Do while the incline hasn't reached its target point. Break the  loop if it took more than a minute to reach target incline
-
-
-
-        //Set Incline to 0
         setIncline = 0;
-        startime= System.nanoTime();
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, setIncline);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
-
-//        //Wait until command was successfully sent
-//        while(wrCmd.getCommand().getStatus().getStsId()!= StatusId.DONE) {
-//            elapsedTime = System.nanoTime() - startime;
-//        }
-        //Check status of the command to receive the incline
-        appendMessage("Status of setting incline to" +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-
-        results+="Status of setting incline to to" +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, setIncline);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting incline to "+setIncline+"%: "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting incline to "+setIncline+"%: "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         appendMessage("Checking incline will reach set value...<br>");
-
         results+="Checking incline will reach set value...\n";
         //Wait for the incline motor to go setIncline
         startime= System.nanoTime();
@@ -1521,34 +1611,29 @@ public class TestIncline extends CommonFeatures {
             elapsedTime = System.nanoTime() - startime;
             seconds = elapsedTime / 1.0E09;
         } while(setIncline!=actualIncline && seconds < 60);//Do while the incline hasn't reached its target point. Break the  loop if it took more than a minute to reach target incline
-
-        double incline1=0;
-        double incline2=0.1;
-        double aIncline1=0;
-        double aIncline2 = 0;
-        double timeMillisecs = 0;
 
         setIncline = 5;
         appendMessage("Set incline to "+setIncline+"% <br>");
         results+="Set incline to "+setIncline+"% \n";
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, setIncline);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(500);
+            appendMessage("Status of setting incline to" +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting incline to " +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, setIncline);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(2000);
-        appendMessage("Status of setting incline to" +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-        results+="Status of setting incline to " +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-
+        Thread.sleep(1500); // wait a few seconds to let incline move some % before setting it back to zero
         setIncline = 0;
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, setIncline);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        startime= System.nanoTime();
-        while(wrCmd.getCommand().getStatus().getStsId()!= StatusId.DONE) {
-            elapsedTime = System.nanoTime() - startime;
-        }
-        int count = 0; //To count how many times this do-while loop is repeated
-        appendMessage("Status of setting incline to" +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-        results+="Status of setting incline to to" +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
-      // If incline1 < incline2 it means that is still moving towards first incline set ( 5 in our case)
+       do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, setIncline);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(50);
+            appendMessage("Status of setting incline to" +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting incline to to" +setIncline+"% "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+    // If incline1 < incline2 it means that is still moving towards first incline set ( 5 in our case)
       // And it has not stopped to change directions
         appendMessage("Checking if incline has stopped.. <br>");
         results+="Checking if incline has stopped.. \n";
@@ -1559,7 +1644,6 @@ public class TestIncline extends CommonFeatures {
             incline2 = hCmd.getActualIncline();
             appendMessage(" incline1: "+incline1+" incline 2: "+incline2+"<br>");
             results+=" incline1: "+incline1+" incline 2: "+incline2+"\n";
-            count++;
         } while(incline1<incline2);
         startime = System.nanoTime();
 
@@ -1576,14 +1660,12 @@ public class TestIncline extends CommonFeatures {
             elapsedTime = System.nanoTime()-startime;
             appendMessage(" incline1: "+incline1+" incline 2: "+incline2+" elapsed time: "+elapsedTime+ "<br>");
            results+=" incline1: "+incline1+" incline 2: "+incline2+" elapsed time: "+elapsedTime+ "\n";
-            count++;
         }
         elapsedTime = System.nanoTime()-startime;
         aIncline2 = hCmd.getActualIncline();
         timeMillisecs = elapsedTime/1.0E06;
         appendMessage("Pause time was "+timeMillisecs+" milliseconds<br>");
         results+="Pause time was "+timeMillisecs+" milliseconds\n";
-        count = 0;
 
         totalTestsCount++;
         if(timeMillisecs > 400 && timeMillisecs < 600)
@@ -1632,14 +1714,20 @@ public class TestIncline extends CommonFeatures {
 
     public String inclineCalibration() throws Exception{
         String results = "";
+        long time = 500;
 
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE,ModeId.MAINTENANCE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+        do{
+            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE,ModeId.MAINTENANCE);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-        calibrateCmd = new FecpCommand(MainDevice.getSubDevice(DeviceId.GRADE).getCommand(CommandId.CALIBRATE),hCmd);
-        mSFitSysCntrl.getFitProCntrl().addCmd(calibrateCmd);
-        Thread.sleep(1000);
+
+        do{
+            calibrateCmd = new FecpCommand(MainDevice.getSubDevice(DeviceId.GRADE).getCommand(CommandId.CALIBRATE),hCmd);
+            mSFitSysCntrl.getFitProCntrl().addCmd(calibrateCmd);
+            Thread.sleep(time);
+        }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
 
         return results;
@@ -1655,7 +1743,7 @@ public class TestIncline extends CommonFeatures {
         String results="";
         try {
 //        results+=this.inclineRetentionDmkRecall();
-         // results+=this.incline400msPause();
+          results+=this.incline400msPause();
           results+=this.retainedIncline();
           results+=this.speedInclineLimits();
           results+=this.stopIncline();
