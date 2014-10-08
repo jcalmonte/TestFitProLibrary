@@ -15,6 +15,7 @@ import com.ifit.sparky.fecp.interpreter.command.WriteReadDataCmd;
 import com.ifit.sparky.fecp.interpreter.device.Device;
 import com.ifit.sparky.fecp.interpreter.device.DeviceId;
 import com.ifit.sparky.fecp.interpreter.key.KeyCodes;
+import com.ifit.sparky.fecp.interpreter.status.StatusId;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -29,7 +30,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         private int failsCount = 0, totalTestsCount = 0;
         private FecpCommand sendKeyCmd;
         private String emailAddress;
-
+        private DeviceId deviceId;
         public TestTreadmillKeyCodes(FecpController fecpController, BaseTest act, SFitSysCntrl ctrl) {
             //Get controller sent from the main activity (TestApp)
             try {
@@ -49,6 +50,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
                     Thread.sleep(1000);
                     //Get current system device
                     MainDevice = this.mFecpController.getSysDev();
+                    deviceId = mFecpController.getSysDev().getInfo().getDevId();
                     this.currentVersion = "SAL v"+ String.valueOf(mFecpController.getVersion());
                     this.wrCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd);
                     this.rdCmd = new FecpCommand(MainDevice.getCommand(CommandId.WRITE_READ_DATA),hCmd,0,100);
@@ -106,6 +108,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
             double timeOfTest = 0; //how long test took in seconds
             long startTestTimer = System.nanoTime();
+            long time = 500;
             String currentMode;
 
             results += "\n\n------------------STOP KEY TEST---------------\n\n";
@@ -120,13 +123,18 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             appendMessage("setting the mode to running...<br>");
 
             //set the mode to running
-            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-            results += "Status of changing mode to running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Status of changing mode to running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+         do{
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+             results+="Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-            Thread.sleep(4000 );//Run for 5 seconds
+            appendMessage("Wait 5 secs...<br>");
+            results+="Wait 5 secs...\n";
+
+            Thread.sleep(5000 );//Run for 5 seconds
             currentMode = hCmd.getMode().getDescription();
 
             results += "Mode currently set to " + currentMode + "\n";
@@ -147,13 +155,20 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
                 }
             }
 
-            mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-            Thread.sleep(1000);
+            do{
+                mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+                Thread.sleep(time);
+                results += "Status of sending Stop key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of sending Stop key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-            results += "Status of sending Stop key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Status of sending Stop key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-            mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
-            Thread.sleep(1000);
+
+            do{
+                 mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
+                 Thread.sleep(time);
+                 results += "Status of removing Stop key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+                 appendMessage("Status of removing Stop key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
             currentMode = hCmd.getMode().getDescription();
             totalTestsCount++;
@@ -164,7 +179,6 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
                 appendMessage("Stop key successfully changed Running Mode to Pause Mode\n");
-
 
             }
             else{
@@ -180,16 +194,30 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             }
 
 
-            //set mode to Idle to reset for other tests
-            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-            timeOfTest = System.nanoTime() - startTestTimer;
+     timeOfTest = System.nanoTime() - startTestTimer;
             timeOfTest = timeOfTest / 1.0E09;
 
             appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
@@ -222,6 +250,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
         double timeOfTest = 0; //how long test took in seconds
         long startTestTimer = System.nanoTime();
+        long time = 500;
         String currentMode;
 
         results += "\n\n------------------START KEY TEST---------------\n\n";
@@ -236,6 +265,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
         results += "sending the start key command...\n";
         appendMessage("sending the start key command...<br>");
+
         Device keyPressTemp = this.MainDevice.getSubDevice(DeviceId.KEY_PRESS);
 
         if(keyPressTemp != null){
@@ -249,13 +279,21 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             }
         }
 
-        mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-        Thread.sleep(1000);
+     do{
+         mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+         Thread.sleep(time);
+         results += "Status of sending Start key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+         appendMessage("Status of sending Start key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+     }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-        results += "Status of sending Start key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-        appendMessage("Status of sending Start key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-        mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
-        Thread.sleep(1000);
+
+     do{
+         mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
+         Thread.sleep(time);
+         results += "Status of removing Start key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+         appendMessage("Status of removing Start key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+     }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
 
         currentMode = hCmd.getMode().getDescription();
         totalTestsCount++;
@@ -282,20 +320,31 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         }
 
 
-        //set mode to Idle to reset for other tests
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+         do{
+             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
-        ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
 
-        timeOfTest = System.nanoTime() - startTestTimer;
+     timeOfTest = System.nanoTime() - startTestTimer;
         timeOfTest = timeOfTest / 1.0E09;
 
         appendMessage("<br>This test took a total of "+timeOfTest+" secs <br>");
@@ -330,11 +379,12 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      double currentActualIncline = 0;
      double incline1 = 0;
      double incline2 = 0;
-     double maxIncline =  15; //hCmd.getMaxIncline(); // The motor we are using has max incline of 15%
-     double minIncline = hCmd.getMinIncline();
+     final double MAX_INCLINE =  15; //hCmd.getMaxIncline(); // The motor we are using has max incline of 15%
+     final double MIN_INCLINE = hCmd.getMinIncline();
      long elapsedTime = 0;
      double seconds = 0;
      long startime = 0;
+     long time = 500;
 
 
      results += "\n\n------------------INCLINE UP KEY TEST---------------\n\n";
@@ -346,26 +396,26 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      results += "setting incline to min...\n";
      appendMessage("setting incline to min...<br>");
     //Set value for the incline
-     ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, minIncline);
-     mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-     Thread.sleep(1000);
+     do{
+         ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, MIN_INCLINE);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("Status of setting incline to min: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="Status of setting incline to min: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-     //Check status of the command to send the incline
-     appendMessage("Status of setting incline to min: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
      appendMessage("Checking incline will reach set value...<br>");
-
-     results+="Status of setting incline to min: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
      results+="Checking incline will reach set value...\n";
      startime= System.nanoTime();
      do
      {
          currentActualIncline = hCmd.getActualIncline();
          Thread.sleep(350);
-         appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + minIncline+" time elapsed: "+seconds+"<br>");
-         results+="Current Incline is: " + currentActualIncline+ " goal: " + minIncline+" time elapsed: "+seconds+"\n";
+         appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + MIN_INCLINE+" time elapsed: "+seconds+"<br>");
+         results+="Current Incline is: " + currentActualIncline+ " goal: " + MIN_INCLINE+" time elapsed: "+seconds+"\n";
          elapsedTime = System.nanoTime() - startime;
          seconds = elapsedTime / 1.0E09;
-     } while(minIncline!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+     } while(MIN_INCLINE!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
 
      results += "sending the start key command...\n";
      appendMessage("sending the start key command...<br>");
@@ -384,13 +434,18 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
      //Increment incline by 0.5 and verify the increment happened. Repeat until max incline reached
 
-     for (double i = minIncline; i<=maxIncline; i+=0.5)
+     for (double i = MIN_INCLINE; i<=MAX_INCLINE; i+=0.5)
      {
          incline1 = hCmd.getActualIncline();
-         mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-         Thread.sleep(3000); //wait 3 seconds
-         results += "Status of sending Incline Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-         appendMessage("Status of sending Incline Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+
+         do{
+             mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+             Thread.sleep(time);
+             results += "Status of sending Incline Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+             appendMessage("Status of sending Incline Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
+         Thread.sleep(1500); //Wait 1.5 secs to make sure incline incremented by 0.5
          incline2 = hCmd.getActualIncline();
 
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
@@ -454,11 +509,12 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         double currentActualIncline = 0;
         double incline1 = 0;
         double incline2 = 0;
-        double maxIncline =  15; //hCmd.getMaxIncline(); // The motor we are using has max incline of 15%
-        double minIncline = hCmd.getMinIncline();
+        final double MAX_INCLINE =  15; //hCmd.getMaxIncline(); // The motor we are using has max incline of 15%
+        final double MIN_INCLINE = hCmd.getMinIncline();
         long elapsedTime = 0;
         double seconds = 0;
         long startime = 0;
+        long time = 500;
 
 
         results += "\n\n------------------INCLINE DOWN KEY TEST---------------\n\n";
@@ -470,26 +526,27 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         results += "setting incline to max...\n";
         appendMessage("setting incline to max...<br>");
         //Set value for the incline
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, maxIncline);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
+         do{
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.GRADE, MAX_INCLINE);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting incline to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+             results+="Status of setting incline to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-        //Check status of the command to send the incline
-        appendMessage("Status of setting incline to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
         appendMessage("Checking incline will reach set value...<br>");
-
-        results+="Status of setting incline to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         results+="Checking incline will reach set value...\n";
+
         startime= System.nanoTime();
         do
         {
             currentActualIncline = hCmd.getActualIncline();
             Thread.sleep(350);
-            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + maxIncline+" time elapsed: "+seconds+"<br>");
-            results+="Current Incline is: " + currentActualIncline+ " goal: " + maxIncline+" time elapsed: "+seconds+"\n";
+            appendMessage("Current Incline is: " + currentActualIncline+ " goal: " + MAX_INCLINE+" time elapsed: "+seconds+"<br>");
+            results+="Current Incline is: " + currentActualIncline+ " goal: " + MAX_INCLINE+" time elapsed: "+seconds+"\n";
             elapsedTime = System.nanoTime() - startime;
             seconds = elapsedTime / 1.0E09;
-        } while(minIncline!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
+        } while(MAX_INCLINE!=currentActualIncline && seconds < 60);//Do while the incline hasn't reached its point yet or took more than 1.5 mins
 
         results += "sending the start key command...\n";
         appendMessage("sending the start key command...<br>");
@@ -508,13 +565,18 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
         //Decrement incline by 0.5 and verify the decrement happened. Repeat until min incline reached
 
-        for (double i = maxIncline; i>=minIncline; i-=0.5)
+        for (double i = MAX_INCLINE; i>=MIN_INCLINE; i-=0.5)
         {
             incline1 = hCmd.getActualIncline();
-            mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-            Thread.sleep(3000); //wait 3 seconds
-            results += "Status of sending Incline Down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Status of sending Incline Down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+
+            do{
+                mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+                Thread.sleep(time);
+                results += "Status of sending Incline Down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of sending Incline Down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
+            Thread.sleep(1500); //Wait 1.5 secs to make sure incline decremented by 0.5
             incline2 = hCmd.getActualIncline();
 
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
@@ -576,9 +638,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      double timeOfTest = 0; //how long test took in seconds
      long startTestTimer = System.nanoTime();
      double currentSpeed = 0;
+     final double MAX_SPEED = hCmd.getMaxSpeed();
      long elapsedTime = 0;
      double seconds = 0;
      long startime = 0;
+     double speed1 = 0;
+     double speed2 = 0;
+     long time = 500;
 
 
      results += "\n\n------------------SPEED UP KEY TEST---------------\n\n";
@@ -589,13 +655,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
      results += "setting mode to running...\n";
      appendMessage("setting mode to running...<br>");
-     ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-     mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-     Thread.sleep(1000);
-
-     //Check status of the command to send the incline
-     appendMessage("Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-     results+="Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     do{
+         ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+         results+="Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
      results += "sending the Speed Up key command...\n";
      appendMessage("sending the Speed Up key command...<br>");
@@ -613,12 +679,18 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      }
 
      double expected = 1.0;
-//Tests range from 1.1 up to 16.0
-     for (int i=0; i < 150; i++) {
-         mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-         Thread.sleep(3000); //wait 3 seconds
-         results += "Status of sending Speed Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-         appendMessage("Status of sending Speed Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+//Tests range from 1.1 up to MAX_SPEED
+     while(currentSpeed < MAX_SPEED) {
+        speed1 = hCmd.getSpeed();
+
+         do{
+             mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+             Thread.sleep(time);
+             results += "Status of sending Speed Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+             appendMessage("Status of sending Speed Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
+         speed2 = hCmd.getSpeed();
 
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
          mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
@@ -627,21 +699,44 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
          appendMessage("Current speed is: " + currentSpeed + " kph<br>");
          results += "Current speed is: " + currentSpeed + " kph\n";
          totalTestsCount++;
-         if (currentSpeed == ((double) Math.round(expected * 10) / 10)) {   //Need to round off to the nearest tenth, because of the ultra-precision of doubles
-             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br> Speed Up button incremented by 0.1 <br><br>");
+         if ((speed2-speed1) == 0.1) {
+             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br> Speed incremented by 0.1 <br><br>");
 
              results += "\n* PASS *\n\nSpeed Up button incremented by 0.1\n";
 
          } else {
-             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> Speed Up button did not increment by 0.1 <br><br>");
-             results += "\n* FAIL *\n\n Speed Up button did not increment by 0.1\n";
-             issuesListHtml+="<br>- Speed Up button did not increment speed by 0.1 <br>";
-             issuesList+="\n Speed Up button did not increment speed by 0.1 \n";
+             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> Speed did not increment by 0.1 <br><br>");
+             results += "\n* FAIL *\n\n Speed did not increment by 0.1\n";
+             issuesListHtml+="<br>- Speed did not increment by 0.1 <br>";
+             issuesList+="\n Speed did not increment by 0.1 \n";
              failsCount++;
              testValidation = "FAILED";
 
          }
      }
+
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
      timeOfTest = System.nanoTime() - startTestTimer;
      timeOfTest = timeOfTest / 1.0E09;
@@ -681,7 +776,10 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         long elapsedTime = 0;
         double seconds = 0;
         long startime = 0;
-        double maxSpeed = 16; //hCmd.getMaxSpeed();
+        final double MAX_SPEED = hCmd.getMaxSpeed();
+        long time = 500;
+        double speed1 = 0;
+        double speed2 = 0;
 
 
         results += "\n\n------------------SPEED DOWN KEY TEST---------------\n\n";
@@ -692,25 +790,27 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
 
         results += "setting mode to running...\n";
         appendMessage("setting mode to running...<br>");
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
 
-        //Check status of the command to send the incline
-        appendMessage("Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-        results+="Status of setting mode to running: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         do{
+             ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+             Thread.sleep(time);
+             appendMessage("Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+             results+="Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
         results += "setting speed to max...\n";
         appendMessage("setting speed to max...<br>");
-        ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, maxSpeed);
-        mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-        Thread.sleep(1000);
 
-        //Check status of the command to send the incline
-        appendMessage("Status of setting speed to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-        results+="Status of setting speed to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         do{
+            ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.KPH, MAX_SPEED);
+            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+            Thread.sleep(time);
+            appendMessage("Status of setting speed to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+            results+="Status of setting speed to max: " + (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
-       Thread.sleep(23000);// Wait for speed to reach max
+       Thread.sleep(20000);// Wait for speed to reach max
 
         /* THIS PART WILL BE UNCOMMENTED ONCE ACTUAL SPEED IS ACCURATE
                 startime= System.nanoTime();
@@ -741,37 +841,64 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             }
         }
 
-        double expected = 1.0;
-//Tests range from 16.0 t0 1.0
-        for (int i=149; i >= 0; i--) {
-            mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-            Thread.sleep(3000); //wait 3 seconds
-            results += "Status of sending Speed Down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Status of sending Speed Down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+     while(currentSpeed > 1) {
+         speed1 = hCmd.getSpeed();
+
+         do{
+             mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+             Thread.sleep(time);
+             results += "Status of sending Speed Down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+             appendMessage("Status of sending Speed Down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
+         speed2 = hCmd.getSpeed();
 
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
          mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
          Thread.sleep(1000); */
-            currentSpeed = hCmd.getSpeed(); //TODO: use actual speed once speed is accurate
-            appendMessage("Current speed is: " + currentSpeed + " kph<br>");
-            results += "Current speed is: " + currentSpeed + " kph\n";
-            totalTestsCount++;
-            if (currentSpeed == ((double) Math.round(expected * 10) / 10)) {   //Need to round off to the nearest tenth, because of the ultra-precision of doubles
-                appendMessage("<br><font color = #00ff00>* PASS *</font><br><br> Speed Down button decremented by 0.1 <br><br>");
+         currentSpeed = hCmd.getSpeed(); //TODO: use actual speed once speed is accurate
+         appendMessage("Current speed is: " + currentSpeed + " kph<br>");
+         results += "Current speed is: " + currentSpeed + " kph\n";
+         totalTestsCount++;
+         if ((speed2-speed1) == - 0.1) {
+             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br> Speed decremented by 0.1 <br><br>");
 
-                results += "\n* PASS *\n\nSpeed Down button decremented by 0.1\n";
+             results += "\n* PASS *\n\nSpeed decremented by 0.1\n";
 
-            } else {
-                appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> Speed Down button did not decrement by 0.1 <br><br>");
+         } else {
+             appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br> Speed Up button did not increment by 0.1 <br><br>");
+             results += "\n* FAIL *\n\n Speed did not decrement by 0.1\n";
+             issuesListHtml+="<br>- Speed did not decrement speed by 0.1 <br>";
+             issuesList+="\n Speed did not decrement speed by 0.1 \n";
+             failsCount++;
+             testValidation = "FAILED";
 
-                results += "\n* FAIL *\n\n Speed Down button did not decrement by 0.1\n";
-                issuesListHtml+="<br>- Speed Down button did not decrement speed by 0.1 <br>";
-                issuesList+="\n Speed Down button did not decrement speed by 0.1 \n";
-                failsCount++;
-                testValidation = "FAILED";
+         }
+     }
 
-            }
-        }
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
 
      timeOfTest = System.nanoTime() - startTestTimer;
      timeOfTest = timeOfTest / 1.0E09;
@@ -808,22 +935,51 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      double timeOfTest = 0; //how long test took in seconds
      long startTestTimer = System.nanoTime();
      double currentActualIncline = 0;
-     double maxIncline =  15; //hCmd.getMaxIncline(); // The motor we are using has max incline of 15%
-     double minIncline = hCmd.getMinIncline();
+     double MAX_INCLINE =  15; //hCmd.getMaxIncline(); // The motor we are using has max incline of 15%
+     double MIN_INCLINE = hCmd.getMinIncline();
      long elapsedTime = 0;
      double seconds = 0;
      long startime = 0;
-     KeyCodes [] kc = {KeyCodes.INCLINE_NEG_6,KeyCodes.INCLINE_NEG_4, KeyCodes.INCLINE_NEG_2,KeyCodes.INCLINE_0,KeyCodes.INCLINE_5,
-                       KeyCodes.INCLINE_10,KeyCodes.INCLINE_15};
-     double []inclines = {-6,-4,-2,0,5,10,15};
+     long time = 500;
+     KeyCodes [] kc = null;
+     double []inclines = null;
+
+     /*TODO: Generalize tests for all consoles. For now assume Incline trainer with max incline 40% and min -6%
+     *
+     * DONE!
+     *
+     * TODO: Ask Quinn about standarizing incline limits because every machine has different limits
+     * */
+
+     switch (deviceId.name())
+     {
+         case "INCLINE_TRAINER":
+             if(MAX_INCLINE == 40) {
+                 kc = new KeyCodes[]{KeyCodes.INCLINE_NEG_6, KeyCodes.INCLINE_NEG_4, KeyCodes.INCLINE_NEG_2, KeyCodes.INCLINE_0, KeyCodes.INCLINE_5,
+                         KeyCodes.INCLINE_10, KeyCodes.INCLINE_15/*,KeyCodes.INCLINE_20,KeyCodes.INCLINE_25,KeyCodes.INCLINE_30,KeyCodes.INCLINE_35,KeyCodes.INCLINE_40*/};
+                 inclines = new double[]{-6, -4, -2, 0, 5, 10, 15/*,20,25,30,35,40*/};
+             }
+             else if(MAX_INCLINE == 30)
+             {
+                 kc = new KeyCodes[]{KeyCodes.INCLINE_NEG_6, KeyCodes.INCLINE_NEG_4, KeyCodes.INCLINE_NEG_2, KeyCodes.INCLINE_0, KeyCodes.INCLINE_5,
+                         KeyCodes.INCLINE_10, KeyCodes.INCLINE_15/*,KeyCodes.INCLINE_20,KeyCodes.INCLINE_25,KeyCodes.INCLINE_30*/};
+                 inclines = new double[]{-6, -4, -2, 0, 5, 10, 15/*,20,25,30*/};
+             }
+         break;
+
+         case "TREADMILL":
+             kc = new KeyCodes[]{KeyCodes.INCLINE_NEG_3, KeyCodes.INCLINE_NEG_2, KeyCodes.INCLINE_NEG_1, KeyCodes.INCLINE_0, KeyCodes.INCLINE_1,
+                     KeyCodes.INCLINE_2, KeyCodes.INCLINE_4,KeyCodes.INCLINE_6,KeyCodes.INCLINE_8,KeyCodes.INCLINE_10,KeyCodes.INCLINE_12,KeyCodes.INCLINE_15};
+             inclines = new double[]{-3, -2, -1, 0, 1, 2, 4, 6, 8, 10, 12, 15};
+         break;
+     }
+
+
 
      results += "\n\n------------------QUICK INCLINE KEYS TEST---------------\n\n";
      results+= Calendar.getInstance().getTime() + "\n\n";
      appendMessage("<br><br>------------------QUICK INCLINE KEYS TEST------------------<br><br>");
      appendMessage(Calendar.getInstance().getTime() + "<br><br>");
-
-//TODO: Generalize tests for all consoles. For now assume Incline trainer with max incline 40% and min -6%
-
 
      Device keyPressTemp = this.MainDevice.getSubDevice(DeviceId.KEY_PRESS);
 
@@ -842,11 +998,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      {
          appendMessage("Sending quick incline keycode: "+kc[i].name()+"<br>");
          results+="Sending quick incline keycode: "+kc[i].name()+"\n";
-         ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyCode(kc[i]);
-         mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-         Thread.sleep(1000);
-         results += "Status of sending  key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-         appendMessage("Status of sending key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+         do{
+             ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyCode(kc[i]);
+             mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+             Thread.sleep(time);
+             results += "Status of sending  key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+             appendMessage("Status of sending key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+         }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
 
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
          mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
@@ -926,10 +1084,26 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         double seconds = 0;
         long startime = 0;
         double speedMPH = 0;
+        long time = 500;
         String currentMode = "";
         BigDecimal roundedResult;
-        KeyCodes [] kc = {KeyCodes.MPH_1, KeyCodes.MPH_2,KeyCodes.MPH_3,KeyCodes.MPH_4,
-                KeyCodes.MPH_5,KeyCodes.MPH_6,KeyCodes.MPH_7,KeyCodes.MPH_8,KeyCodes.MPH_9,KeyCodes.MPH_10};
+        KeyCodes [] kc = null;
+
+     /*TODO: Generalize tests for all consoles. For now assume Incline trainer with max speed of 16 kph
+     *
+     * Ask Quinn if speeds are standardized
+     * */
+     switch (deviceId.name()) {
+         case "INCLINE_TRAINER":
+         kc = new KeyCodes[]{KeyCodes.MPH_1, KeyCodes.MPH_2, KeyCodes.MPH_3, KeyCodes.MPH_4,
+                 KeyCodes.MPH_5, KeyCodes.MPH_6, KeyCodes.MPH_7, KeyCodes.MPH_8, KeyCodes.MPH_9, KeyCodes.MPH_10};
+         break;
+
+         case "TREADMILL":
+             kc = new KeyCodes[]{KeyCodes.MPH_1, KeyCodes.MPH_2, KeyCodes.MPH_3, KeyCodes.MPH_4,
+                     KeyCodes.MPH_5, KeyCodes.MPH_6, KeyCodes.MPH_7, KeyCodes.MPH_8, KeyCodes.MPH_9, KeyCodes.MPH_10};
+             break;
+     }
 
         results += "\n\n------------------QUICK SPEED KEYS TEST---------------\n\n";
         results+= Calendar.getInstance().getTime() + "\n\n";
@@ -943,17 +1117,19 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
      appendMessage("setting the mode to running...<br>");
 
      //set the mode to running
-     ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
-     mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-     Thread.sleep(1000);
-     results += "Status of changing mode to running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-     appendMessage("Status of changing mode to running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+     do{
+         ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RUNNING);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+         results+="Status of setting mode tu running: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
      currentMode = hCmd.getMode().getDescription();
 
      results += "Mode currently set to " + currentMode + "\n";
      appendMessage("Mode currently set to " + currentMode + "<br>");
 
-//TODO: Generalize tests for all consoles. For now assume Incline trainer with max speed of 16 kph
 
 
         Device keyPressTemp = this.MainDevice.getSubDevice(DeviceId.KEY_PRESS);
@@ -973,11 +1149,14 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         {
             appendMessage("Sending quick speed keycode: "+kc[i].name()+"<br>");
             results+="Sending quick speed keycode: "+kc[i].name()+"\n";
+         do{
             ((SetTestingKeyCmd)sendKeyCmd.getCommand()).setKeyCode(kc[i]);
             mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-            Thread.sleep(1000);
+            Thread.sleep(time);
             results += "Status of sending  key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
             appendMessage("Status of sending key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+        }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
+
 
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
          mSFitSysCntrl.getFitProCntrl().removeCmd(sendKeyCmd);
@@ -989,24 +1168,47 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             if( Math.abs(speedMPH-(i+1)) < (0.03*(i+1)) ) // Give 3% tolerance to take care of rounding issues
             {
                 appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>");
-                appendMessage("Quick speed correctly set to "+kc[i].name()+" mph<br>");
+                appendMessage("Quick speed correctly set to "+kc[i].name()+" which is "+speedMPH+" mph ("+hCmd.getSpeed()+" kph)<br>");
                 results+="\n* PASS *\n\n";
-                results+="Quick incline correctly set to "+kc[i].name()+" mph\n";
+                results+="Quick incline correctly set to "+kc[i].name()+" which is "+speedMPH+" mph ("+hCmd.getSpeed()+" kph)\n";
 
             }
             else
             {
                 appendMessage("<br><font color = #ff0000>* FAIL *</font><br><br>");
-                appendMessage("Quick speed failed to be set to "+kc[i].name()+", mph current speed is set to "+hCmd.getSpeed()+"<br>");
+                appendMessage("Quick speed failed to be set to "+kc[i].name()+", mph current speed is set to "+speedMPH+" mph ("+hCmd.getSpeed()+" kph)<br>");
 
                 results+="\n* FAIL *\n\n";
-                results+="Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+hCmd.getSpeed()+"\n";
-                issuesListHtml+="<br>- Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+hCmd.getSpeed()+"<br>";
-                issuesList+="\n- Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+hCmd.getSpeed()+"\n";
+                results+="Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+speedMPH+" mph ("+hCmd.getSpeed()+" kph)\n";
+                issuesListHtml+="<br> Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+speedMPH+" mph ("+hCmd.getSpeed()+" kph)<br>";;
+                issuesList+="\n- Quick speed failed to be set to "+kc[i].name()+", current speed is set to "+speedMPH+" mph ("+hCmd.getSpeed()+" kph)\n";
                 failsCount++;
                 testValidation = "FAILED";
             }
         }
+
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.PAUSE);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
+     do{
+         ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
+         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+         Thread.sleep(time);
+         appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
+         results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
      timeOfTest = System.nanoTime() - startTestTimer;
      timeOfTest = timeOfTest / 1.0E09;
@@ -1046,6 +1248,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         long elapsedTime = 0;
         double seconds = 0;
         long startime = 0;
+        long time = 500;
 
 
         results += "\n\n------------------AGE UP KEY TEST---------------\n\n";
@@ -1063,15 +1266,17 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             appendMessage("setting the mode 18...<br>");
 
             //set the age to 18
-            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.AGE, 18);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-            results += "Status of setting age to 18 years old: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Status of setting age to 18 years old: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            do {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, 18);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                results += "Status of setting age to 18 years old: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of setting age to 18 years old: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            }while (true);
         }
 
-        results += "sending the start key command...\n";
-        appendMessage("sending the start key command...<br>");
+        results += "sending the age up key command...\n";
+        appendMessage("sending the age up key command...<br>");
         Device keyPressTemp = this.MainDevice.getSubDevice(DeviceId.KEY_PRESS);
 
         if(keyPressTemp != null){
@@ -1090,10 +1295,12 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         for (int i=18; i<=95; i++ )// Go through all valid ages
         {
             Age1 = hCmd.getAge();
-            mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-            Thread.sleep(1000);
-            results += "Status of sending Age Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Status of sending Age Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            do{
+                mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+                Thread.sleep(time);
+                results += "Status of sending Age Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of sending Age Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
             Age2 = hCmd.getAge();
 
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
@@ -1160,6 +1367,7 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         long elapsedTime = 0;
         double seconds = 0;
         long startime = 0;
+        long time = 500;
 
 
         results += "\n\n------------------AGE DOWN KEY TEST---------------\n\n";
@@ -1177,11 +1385,13 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
             appendMessage("setting the mode 95...<br>");
 
             //set the age to 95
-            ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.AGE, 95);
-            mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
-            Thread.sleep(1000);
-            results += "Status of setting age to 95 years old: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Status of setting age to 95 years old: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            do {
+                ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.AGE, 95);
+                mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
+                Thread.sleep(time);
+                results += "Status of setting age to 95 years old: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of setting age to 95 years old: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            }while (true);
         }
 
         results += "sending the start key command...\n";
@@ -1203,10 +1413,12 @@ public class TestTreadmillKeyCodes extends CommonFeatures {
         for (int i=95; i>=18; i--)// Go through all valid ages
         {
             Age1 = hCmd.getAge();
-            mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
-            Thread.sleep(1000);
-            results += "Status of sending Age Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
-            appendMessage("Status of sending Age Up key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            do{
+                mSFitSysCntrl.getFitProCntrl().addCmd(sendKeyCmd);
+                Thread.sleep(time);
+                results += "Status of sending Age down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+                appendMessage("Status of sending Age down key command: " + sendKeyCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
+            }while(wrCmd.getCommand().getStatus().getStsId()== StatusId.FAILED); // If command failed, send it again
             Age2 = hCmd.getAge();
 
         /* This part might be optional. Depends on wheter a command already added exception is thrown or not
