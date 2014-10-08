@@ -271,6 +271,8 @@ public class TestMotor extends CommonFeatures {
         double distance = 0;//resulting distance
         double [] setSpeed={10,5};// speeds to use in the test in KPH
         double expectedDistance;// calcualted expected distance
+        double totalDistance = 0; // initialize it with Total distance bitfield here
+        double expectedTotalDistance = 0; // total distance expected after running the workout
         BigDecimal expectedDistanceRounded;
         BigDecimal resultDistanceRounded;
         long [] runTime ={90,30}; // runTime to run test in seconds
@@ -343,11 +345,14 @@ public class TestMotor extends CommonFeatures {
         resultDistanceRounded = new BigDecimal(expectedDistance);
         resultDistanceRounded = resultDistanceRounded.setScale(0, BigDecimal.ROUND_UP);
 
-        appendMessage("The distance was " + distance + "<br>");
-        results+="The distance was " + distance + "\n";
+        expectedTotalDistance = totalDistance + distance;
+        //totalDistance = hCmd.getTotalDistance();    TODO: Uncomment this line once total distance bitfield is added
 
-        appendMessage("The status of reading the distance is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "<br>");
-        results+="The status of reading the distance is: " + wrCmd.getCommand().getStatus().getStsId().getDescription() + "\n";
+
+        appendMessage("The distance is " + distance + "<br>");
+        results+="The distance is " + distance + "\n";
+        appendMessage("Total distance is " + totalDistance + "<br>");
+        results+="Total distance is " + totalDistance + "\n";
 
             do{
                 ((WriteReadDataCmd) wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.RESULTS);
@@ -382,6 +387,26 @@ public class TestMotor extends CommonFeatures {
             results+="\n* PASS *\n\nThe distance should be "+expectedDistanceRounded+"  meters and is " + distance + " meters which is within +/- 3 tolerance\n\n";
 
         }
+            appendMessage("<br>----------------------------TOTAL DISTANCE---------------------------<br><br>");
+
+            results+="\n----------------------------TOTAL DISTANCE---------------------------\n\n";
+
+            if (Math.abs(expectedTotalDistance-totalDistance) > 3) {
+                appendMessage("<br><font color = #ff0000>* FAIL *</font><br>");
+                results+="\n* FAIL *\n\n";
+
+                appendMessage("<br> Expected total distance: "+expectedTotalDistance + " read total distance: "+totalDistance+", total distance was off by " + (expectedTotalDistance-totalDistance) + "meters <br><br>");
+                results+="\n Expected total distance: "+expectedTotalDistance + " read total distance: "+totalDistance+", total distance was off by " + (expectedTotalDistance-totalDistance) + "meters \n\n";
+
+                issuesListHtml+="<br>- Expected total distance: "+expectedTotalDistance + " read total distance: "+totalDistance+", total distance was off by " + (expectedTotalDistance-totalDistance) + "meters <br>";
+                issuesList+="\n- Expected total distance: "+expectedTotalDistance + " read total distance: "+totalDistance+", total distance was off by " + (expectedTotalDistance-totalDistance) + "meters \n";
+                failsCount++;
+                testValidation = "FAILED";
+            } else {
+                appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The distance should be " + expectedTotalDistance + "  meters and is " + totalDistance + " meters which is within +/- 3 tolerance<br><br>");
+
+                results+="\n* PASS *\n\nThe distance should be "+expectedTotalDistance+"  meters and is " + totalDistance + " meters which is within +/- 3 tolerance\n\n";
+            }
 
         }
         //Remove all commands from the device that have a command ID = "WRITE_READ_DATA"
