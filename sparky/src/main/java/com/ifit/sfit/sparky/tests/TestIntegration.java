@@ -691,7 +691,10 @@ import java.util.Calendar;
          long runtime; //time for running test (in secs)
          long pauseruntime; //time for running test with pause in secs
          long time =500; // time to send commands
-
+         double totalRunningTime = 0;// Set it to total Running Time bitfield when available
+         double expectedTotalRunningTime = 0;
+         double timeOfRunningTest = 0;
+         double timeOfPauseTest = 0;
         //Maybe test later 5K, 10K, Half-Marathon, Full Marathon cases
         switch (runType)
         {
@@ -760,7 +763,7 @@ import java.util.Calendar;
  //        }
          //read the running time
  
-         double timeOfRunningTest = hCmd.getRunTime();
+         timeOfRunningTest = hCmd.getRunTime();
          totalTestsCount++;
          //Test whether the running time is within +/- 2 second of 60 seconds (allow for 1 sec read time)
          if(timeOfRunningTest >= runtime-2 && timeOfRunningTest <= runtime+2) {
@@ -780,7 +783,6 @@ import java.util.Calendar;
              failsCount++;
              testValidation = "FAILED";
          }
- 
 
          //set mode back to Pause to reset running time
          do{
@@ -868,11 +870,15 @@ import java.util.Calendar;
  //        }
  
  
-         double timeOfPauseTest = hCmd.getRunTime();
+         timeOfPauseTest = hCmd.getRunTime();
          pauseruntime*=2; // This time is used twice
          //Test whether the running time is within +/- 2 seconds of 55 seconds
          totalTestsCount++;
-         if(timeOfPauseTest >= pauseruntime-2 && timeOfPauseTest <= pauseruntime+2){
+
+         expectedTotalRunningTime =  totalRunningTime + timeOfRunningTest + pauseruntime;
+         //totalRunningTime = hCmd.getTotalRunningTime()
+
+         if(Math.abs(timeOfPauseTest - pauseruntime)<=2){
              appendMessage("<br><br><font color = #00ff00>* PASS *</font><br><br>");
              appendMessage("The total time for this "+pauseruntime+ " sec test with 30 sec pause correctly ran for " + timeOfPauseTest + " secs<br><br>");
              results+="\n\n* PASS *\n\n";
@@ -887,6 +893,27 @@ import java.util.Calendar;
              issuesList+="\n- "+"The total time for this "+pauseruntime+" sec test with 30 sec pause actually ran for " + timeOfPauseTest +"\n";
              failsCount++;
              testValidation = "FAILED";
+         }
+
+         appendMessage("<br>----------------------------TOTAL RUNNING TIME---------------------------<br><br>");
+
+         results+="\n----------------------------TOTAL RUNNING TIME---------------------------\n\n";
+
+         if (Math.abs(expectedTotalRunningTime-totalRunningTime) > 3) {
+             appendMessage("<br><font color = #ff0000>* FAIL *</font><br>");
+             results+="\n* FAIL *\n\n";
+
+             appendMessage("<br> Expected total running time: "+expectedTotalRunningTime + " read total running time: "+totalRunningTime+", total running time was off by " + (expectedTotalRunningTime-totalRunningTime) + "secs <br><br>");
+             results+="\n Expected total running time: "+expectedTotalRunningTime + " read total running time: "+totalRunningTime+", total running time was off by " + (expectedTotalRunningTime-totalRunningTime) + "secs \n\n";
+
+             issuesListHtml+="<br>- Expected total running time: "+expectedTotalRunningTime + " read total running time: "+totalRunningTime+", total running time was off by " + (expectedTotalRunningTime-totalRunningTime) + "secs <br>";
+             issuesList+="\n- Expected total running time: "+expectedTotalRunningTime + " read total running time: "+totalRunningTime+", total running time was off by " + (expectedTotalRunningTime-totalRunningTime) + "secs \n";
+             failsCount++;
+             testValidation = "FAILED";
+         } else {
+             appendMessage("<br><font color = #00ff00>* PASS *</font><br><br>The running time should be " + expectedTotalRunningTime + "  secs and is " + totalRunningTime + " secs which is within +/- 3 tolerance<br><br>");
+
+             results+="\n* PASS *\n\nThe running time should be "+expectedTotalRunningTime+"  secs and is " + totalRunningTime + " secs which is within +/- 3 tolerance\n\n";
          }
 
          //set mode back to Pause to stop the test
