@@ -227,7 +227,7 @@ public class TestIncline extends CommonFeatures {
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(time);
         appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-        results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
 
     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
@@ -236,7 +236,7 @@ public class TestIncline extends CommonFeatures {
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(time);
         appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-        results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
 
     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
     do{
@@ -244,7 +244,7 @@ public class TestIncline extends CommonFeatures {
         mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
         Thread.sleep(time);
         appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-        results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+        results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
 
     }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
@@ -551,7 +551,7 @@ public class TestIncline extends CommonFeatures {
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         do{
@@ -559,14 +559,14 @@ public class TestIncline extends CommonFeatures {
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
         do{
             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         timeOfTest = System.nanoTime() - startTestTimer;
@@ -720,7 +720,7 @@ public class TestIncline extends CommonFeatures {
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         do{
@@ -728,14 +728,14 @@ public class TestIncline extends CommonFeatures {
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
         do{
             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         //TODO: At this point if console is home unit, incline should stay the same. If console is club unit, incline resets to 0. Test for those conditions HERE
@@ -810,7 +810,7 @@ public class TestIncline extends CommonFeatures {
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to PAUSE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         do{
@@ -818,14 +818,14 @@ public class TestIncline extends CommonFeatures {
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
         do{
             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         timeOfTest = System.nanoTime() - startTestTimer;
@@ -1519,7 +1519,7 @@ public class TestIncline extends CommonFeatures {
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to pause"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to PAUSE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         do{
@@ -1527,14 +1527,14 @@ public class TestIncline extends CommonFeatures {
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to RESULTS"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to RESULTS "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
         do{
             ((WriteReadDataCmd)wrCmd.getCommand()).addWriteData(BitFieldId.WORKOUT_MODE, ModeId.IDLE);
             mSFitSysCntrl.getFitProCntrl().addCmd(wrCmd);
             Thread.sleep(time);
             appendMessage("<br>Status of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "<br>");
-            results+="\nStatus of settting mode to IDLE"+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
+            results+="\nStatus of settting mode to IDLE "+ (wrCmd.getCommand()).getStatus().getStsId().getDescription() + "\n";
         }while(wrCmd.getCommand().getStatus().getStsId()==StatusId.FAILED); // If command failed, send it again
 
         timeOfTest = System.nanoTime() - startTestTimer;
@@ -1742,8 +1742,8 @@ public class TestIncline extends CommonFeatures {
     public String runAll() {
         String results="";
         try {
-//        results+=this.inclineRetentionDmkRecall();
-          results+=this.incline400msPause();
+//          results+=this.inclineRetentionDmkRecall();
+//          results+=this.incline400msPause();
           results+=this.retainedIncline();
           results+=this.speedInclineLimits();
           results+=this.stopIncline();
